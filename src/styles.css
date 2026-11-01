@@ -278,3 +278,5 @@ input[type=search]::-webkit-search-cancel-button { -webkit-appearance: none; dis
 .switch.on { background: var(--gold); }
 .switch.on i { transform: translateX(26px); background: #111; }
 .artist > button { min-width: 0; }
+/* Éléments optionnels utilisés par les thèmes */
+.letter-head { grid-column: 1 / -1; height: 0; overflow: hidden; }

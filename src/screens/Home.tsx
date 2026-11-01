@@ -92,21 +92,24 @@ function ArtistList({ open, onToggle }: { open: string | null; onToggle: (name: 
     <div>
       <div class="count">{state.artists.length} artistes · {state.songs.size} morceaux</div>
       <div class="artists-grid">
-        {state.artists.map((a) => {
+        {state.artists.flatMap((a) => {
           const l = initial(a.name);
-          const anchor = seen.has(l) ? undefined : `az-${l}`;
+          const first = !seen.has(l);
           seen.add(l);
           const isOpen = open === a.name;
-          return (
-            <div class={`artist${isOpen ? ' is-open' : ''}`} id={anchor} key={a.name}>
+          const nodes = [];
+          if (first) nodes.push(<div class="letter-head" id={`az-${l}`} key={`h-${l}`}><span>{l}</span></div>);
+          nodes.push(
+            <div class={`artist${isOpen ? ' is-open' : ''}`} key={a.name}>
               <button onClick={() => onToggle(a.name)} aria-expanded={isOpen}>
                 <IconChevron size={24} />
                 <span class="name">{a.name}</span>
                 <span class="n">{a.songs.length}</span>
               </button>
               {isOpen && <div class="songs-grid">{a.songs.map((s) => <SongLine song={s} key={s.id} />)}</div>}
-            </div>
+            </div>,
           );
+          return nodes;
         })}
       </div>
     </div>

@@ -1,0 +1,36 @@
+/* Thème « Scène » (validé 2026-11-01) : fond ambré, en-tête verre dépoli, titres en Barlow Condensed.
+   Polices embarquées et précachées : fonctionnent hors ligne. */
+@import '@fontsource/barlow-condensed/600.css';
+@import '@fontsource/barlow-condensed/700.css';
+
+:root {
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --bg: #0b0a08; --bg-2: rgba(255, 255, 255, .05); --bg-3: rgba(255, 255, 255, .1); --line: rgba(255, 255, 255, .07); --radius: 14px;
+}
+body {
+  background: radial-gradient(120% 60% at 50% -10%, rgba(255, 170, 0, .18), transparent 60%), #0b0a08;
+}
+.screen, .top { background: transparent; }
+.top { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); background: rgba(11, 10, 8, .55); border-bottom: 1px solid rgba(255, 192, 0, .15); }
+.tab { font-family: var(--display); font-size: calc(var(--tab-fs) + 4px); font-weight: 700; letter-spacing: .1em; background: var(--bg-2); border: 1px solid var(--line); }
+.tab[aria-current='page'] { background: linear-gradient(180deg, #ffd54a, #ffb300); color: #1a1200; border-color: transparent; box-shadow: 0 0 24px rgba(255, 192, 0, .35); }
+.search { background: var(--bg-2); border: 1px solid var(--line); border-radius: 999px; }
+.scroll .search { box-shadow: none; backdrop-filter: blur(10px); }
+.artist { border-bottom: 1px solid var(--line); }
+.artist > button { font-family: var(--display); font-size: 27px; font-weight: 600; letter-spacing: .03em; min-height: 62px; }
+.artist > button > svg { color: var(--gold); }
+.artist .n { font-family: var(--font); font-size: 14px; color: #c9b27a; background: rgba(255, 192, 0, .1); border-radius: 999px; padding: 3px 10px; }
+.artists-grid .artist.is-open { background: linear-gradient(180deg, rgba(255, 192, 0, .08), transparent); border-radius: 16px; border-bottom-color: transparent; }
+.song-row .t { font-family: var(--display); font-size: 24px; font-weight: 600; letter-spacing: .02em; }
+.key { font-family: var(--display); font-size: 21px; border-radius: 999px; border-width: 1.5px; box-shadow: 0 0 12px rgba(255, 192, 0, .2) inset; }
+.az { background: rgba(255, 255, 255, .04); border: 1px solid var(--line); }
+.az span { font-family: var(--display); font-size: clamp(13px, 1.8vh, 18px); }
+.count { color: #a08a5a; }
+.artist .n { white-space: nowrap; flex: none; }
+.part-title { font-family: var(--display); font-size: 28px; letter-spacing: .08em; }
+.sheet { background: #0b0a08; }
+.sheet-title .t { font-family: var(--display); font-size: 28px; letter-spacing: .03em; }
+.sel option { background: #1c1a16; }
+.update { background: #1c1a16; }
+.sheet.compact { background: #14120e; }

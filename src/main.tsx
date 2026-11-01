@@ -6,6 +6,8 @@ import { initEditor } from './lib/publish';
 import { loadSetlistOverride } from './lib/setlistEdit';
 import { initWakeLock } from './lib/wakeLock';
 import './styles.css';
+import './themes.css';
+
 
 initWakeLock();
 void initEditor();
