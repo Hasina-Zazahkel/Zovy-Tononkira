@@ -221,7 +221,8 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .btn.primary.small { color: #111; }
 .ns-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 10px; }
 .ns-actions .btn.ghost { color: var(--gold); border: 2px solid var(--bg-3); padding: 0 14px; }
-.ns-ta { min-height: 42vh; margin-bottom: 12px; }
+.ns-ta { min-height: calc(27 * 1.55em + 32px); margin-bottom: 12px; }
+.ns-ta::placeholder { color: var(--fg-dim); opacity: .55; }
 .ns-results { display: grid; gap: 12px; margin-top: 16px; }
 .ns-card { border: 2px solid var(--bg-3); border-radius: 14px; padding: 12px 14px; background: var(--bg-2); }
 .ns-card.bad { border-color: #7a2a24; }
@@ -241,4 +242,5 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 @media (max-width: 600px) {
   .part-pick { flex-wrap: wrap; gap: 6px; }
   .part-pick select { flex-basis: 100%; }
+  .ns-ta { font-size: 15px; min-height: calc(31 * 1.55em + 32px); }
 }

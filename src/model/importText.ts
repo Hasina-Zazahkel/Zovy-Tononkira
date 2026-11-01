@@ -56,6 +56,34 @@ Ligne 6
 Outro
 `;
 
+/** Exemple affiché dans la case d'import (aide-mémoire du format). */
+export const IMPORT_EXAMPLE = `Titre : MILA TSIKY
+Artiste : Ma'zik'
+Voix : Misa - Soprano / Hasina - Lead / Toky - Ténor
+Musique : Haja - Guitare / Toky - Guitare basse
+Ton : Do / Capo 5
+
+Intro - guitare seule
+
+Ilay tsiky avy aminao - Misa seule
+No mba zavatra tsy foiko x2
+x2
+
+[REFRAIN]
+Voix : Tous - Chœur
+Ka ny zavatra ataoko
+Toa manjary kilalaoko - doucement x2
+
+Interlude - guitare
+
+Ka rehefa hita fa matroka
+Ny vodilanitra
+
+Outro - comme l'intro
+
+---
+(morceau suivant…)`;
+
 const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
 export function slugify(s: string): string {

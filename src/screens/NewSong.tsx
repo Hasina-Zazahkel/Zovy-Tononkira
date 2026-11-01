@@ -4,7 +4,7 @@ import { goBack, replaceHash, songHref } from '../lib/router';
 import { addToSetlist } from '../lib/setlistEdit';
 import { PartSelect } from './AddSheets';
 import { serializeChordPro } from '../model/chordpro';
-import { IMPORT_TEMPLATE, parseImport, type ImportResult } from '../model/importText';
+import { IMPORT_EXAMPLE, IMPORT_TEMPLATE, parseImport, type ImportResult } from '../model/importText';
 import type { Song } from '../model/types';
 import { IconClose } from '../ui/icons';
 import { SongEditor } from './editor/SongEditor';
@@ -68,7 +68,7 @@ export function NewSong() {
           <button class="btn ghost small" onClick={() => setEditing({ song: emptySong() })}>Partir d'une page vide</button>
         </div>
         <textarea class="ed-ta ns-ta" value={text} spellcheck={false} aria-label="Texte du morceau"
-          placeholder={'Titre : …\nArtiste : …\nVoix : Prénom - Lead / …\nMusique : Prénom - Guitare / …\nTon : Do / Capo 5\n\nIntro - commentaire\nLigne 1 - commentaire\nLigne 2 x2\n…\n\nPlusieurs morceaux : séparer par une ligne ---'}
+          placeholder={IMPORT_EXAMPLE}
           onInput={(e) => input((e.target as HTMLTextAreaElement).value)} />
         <button class="btn primary wide" disabled={!text.trim()} onClick={analyse}>Analyser</button>
 

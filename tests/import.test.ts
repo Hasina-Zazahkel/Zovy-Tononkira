@@ -105,3 +105,14 @@ describe('tonalité', () => {
   });
   it('inconnue', () => expect(parseKeyLoose('capo 5')).toBeUndefined());
 });
+
+describe('exemple affiché dans la case', () => {
+  it('se lit sans erreur', async () => {
+    const { IMPORT_EXAMPLE } = await import('../src/model/importText');
+    const [r] = parseImport(IMPORT_EXAMPLE.replace('(morceau suivant…)', ''));
+    expect(r.errors).toEqual([]);
+    expect(r.warnings).toEqual([]);
+    expect(r.song.sections.find((s) => s.label === 'REFRAIN')?.voices).toEqual([{ member: '*', role: 'Chœur' }]);
+    expect(serializeChordPro(r.song)).toContain('{repeat: 2}\nIlay tsiky avy aminao // Misa seule\nNo mba zavatra tsy foiko [×2]');
+  });
+});
