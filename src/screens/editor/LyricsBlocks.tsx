@@ -2,7 +2,7 @@ import { CUE_LABEL, CUE_TYPES } from '../../model/cues';
 import {
   insertAt, keyed, mergeWithPrevious, move, removeAt, replaceAt, splitStanza, type Item, type Keyed,
 } from '../../model/edit';
-import { splitLineRepeat, withLineRepeat } from '../../model/repeat';
+import { formatLine, parseLine } from '../../model/repeat';
 import type { Assignment, CueType } from '../../model/types';
 import { Chips } from '../Stage';
 import { RoleRows, fromRows, toRows } from './RoleRows';
@@ -24,6 +24,8 @@ function focusLine(uid: number, line: number, atEnd = true) {
 
 export function LyricsBlocks({ items, onChange }: { items: KItem[]; onChange: (i: KItem[]) => void }) {
   const [voicesOpen, setVoicesOpen] = useState<number | null>(null);
+  const [notesOpen, setNotesOpen] = useState<Set<string>>(new Set());
+  const toggleNote = (k: string) => setNotesOpen((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; });
   const set = (i: number, it: Item) => onChange(replaceAt(items, i, { ...it, uid: items[i].uid }));
   const mk = (it: Item) => keyed(it);
   let para = 0;
@@ -92,47 +94,66 @@ export function LyricsBlocks({ items, onChange }: { items: KItem[]; onChange: (i
                     {REPEATS.map((n) => <option value={n} key={n}>{n === 1 ? '×1' : `×${n}`}</option>)}
                   </select>
                 </label>
-                {prevIsStanza && <button class="mini" onClick={() => onChange(mergeWithPrevious(items, i, mk))} title="Fusionner avec le paragraphe précédent">⤒ Fusionner</button>}
+                {prevIsStanza && <button class="mini" onClick={() => onChange(mergeWithPrevious(items, i, mk))} title="Fusionner avec le paragraphe précédent" aria-label="Fusionner avec le paragraphe précédent">⤒<span class="lbl-wide"> Fusionner</span></button>}
                 <Tools i={i} />
               </div>
               {it.lines.map((raw, l) => {
-                const { text, times } = splitLineRepeat(raw);
-                const setLine = (t: string, n = times) => set(i, { ...it, lines: replaceAt(it.lines, l, withLineRepeat(t, n)) });
+                const lp = parseLine(raw);
+                const { text, times, note } = lp;
+                const nk = `${it.uid}:${l}`;
+                const showNote = !!note || notesOpen.has(nk);
+                const setLine = (patch: Partial<typeof lp>) => set(i, { ...it, lines: replaceAt(it.lines, l, formatLine({ ...lp, ...patch })) });
                 return (
-                  <div class="ln-row" key={l}>
-                    <input class="ln-in" value={text} data-line={`${it.uid}:${l}`} aria-label={`Ligne ${l + 1}`}
-                      onInput={(e) => setLine((e.target as HTMLInputElement).value)}
-                      onKeyDown={(e) => {
-                        const el = e.target as HTMLInputElement;
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          // Entrée : nouvelle ligne (le texte après le curseur y part)
-                          const cut = el.selectionStart ?? text.length;
-                          const lines = [...it.lines];
-                          lines.splice(l, 1, withLineRepeat(text.slice(0, cut), times), text.slice(cut));
-                          set(i, { ...it, lines });
-                          focusLine(it.uid, l + 1, false);
-                        } else if (e.key === 'Backspace' && el.selectionStart === 0 && el.selectionEnd === 0 && l > 0) {
-                          // Retour arrière en début de ligne : fusion avec la ligne précédente
-                          e.preventDefault();
-                          const prev = splitLineRepeat(it.lines[l - 1]);
-                          const lines = [...it.lines];
-                          lines.splice(l - 1, 2, withLineRepeat(prev.text + text, prev.times));
-                          set(i, { ...it, lines });
-                          focusLine(it.uid, l - 1);
-                        }
-                      }} />
-                    <button class={`rep-btn${times > 1 ? ' on' : ''}`} onClick={() => setLine(text, nextTimes(times))}
-                      aria-label={`Répéter la ligne (actuellement ×${times})`}>×{times}</button>
-                    <span class="ln-tools">
-                      {l < it.lines.length - 1 && (
-                        <button class="mini" onClick={() => onChange(splitStanza(items, i, l, mk))} title="Couper le paragraphe après cette ligne">⏎</button>
-                      )}
-                      <button class="mini red" onClick={() => {
-                        if (it.lines.length === 1) onChange(removeAt(items, i));
-                        else set(i, { ...it, lines: removeAt(it.lines, l) });
-                      }} aria-label="Supprimer la ligne">✕</button>
-                    </span>
+                  <div class="ln-wrap" key={l}>
+                    <div class="ln-row">
+                      <input class="ln-in" value={text} data-line={`${it.uid}:${l}`} aria-label={`Ligne ${l + 1}`}
+                        onInput={(e) => setLine({ text: (e.target as HTMLInputElement).value })}
+                        onKeyDown={(e) => {
+                          const el = e.target as HTMLInputElement;
+                          if (e.key === 'Enter' && !text.trim() && l > 0) {
+                            // Entrée sur une ligne vide : nouveau paragraphe à partir d'ici (comme une ligne vide en mode Texte)
+                            e.preventDefault();
+                            const before = it.lines.slice(0, l);
+                            const after = it.lines.slice(l + 1);
+                            const next = keyed({ kind: 'stanza', lines: after.length ? after : [''], repeat: 1 });
+                            onChange([...items.slice(0, i), { ...it, lines: before }, next, ...items.slice(i + 1)]);
+                            focusLine(next.uid, 0, false);
+                          } else if (e.key === 'Enter') {
+                            e.preventDefault();
+                            // Entrée : nouvelle ligne (le texte après le curseur y part ; répétition et commentaire restent sur la 1re)
+                            const cut = el.selectionStart ?? text.length;
+                            const lines = [...it.lines];
+                            lines.splice(l, 1, formatLine({ ...lp, text: text.slice(0, cut) }), text.slice(cut));
+                            set(i, { ...it, lines });
+                            focusLine(it.uid, l + 1, false);
+                          } else if (e.key === 'Backspace' && el.selectionStart === 0 && el.selectionEnd === 0 && l > 0) {
+                            // Retour arrière en début de ligne : fusion avec la ligne précédente
+                            e.preventDefault();
+                            const prev = parseLine(it.lines[l - 1]);
+                            const lines = [...it.lines];
+                            lines.splice(l - 1, 2, formatLine({ ...prev, text: prev.text + text, note: [prev.note, note].filter(Boolean).join(' · ') }));
+                            set(i, { ...it, lines });
+                            focusLine(it.uid, l - 1);
+                          }
+                        }} />
+                      <button class={`rep-btn${times > 1 ? ' on' : ''}`} onClick={() => setLine({ times: nextTimes(times) })}
+                        aria-label={`Répéter la ligne (actuellement ×${times})`}>×{times}</button>
+                      <button class={`note-btn${note ? ' on' : ''}`} onClick={() => { toggleNote(nk); if (!showNote) requestAnimationFrame(() => document.querySelector<HTMLInputElement>(`[data-note="${nk}"]`)?.focus()); }}
+                        aria-label={note ? 'Modifier le commentaire de la ligne' : 'Ajouter un commentaire à la ligne'} aria-pressed={showNote}>💬</button>
+                      <span class="ln-tools">
+                        {l < it.lines.length - 1 && (
+                          <button class="mini" onClick={() => onChange(splitStanza(items, i, l, mk))} title="Couper le paragraphe après cette ligne">⏎</button>
+                        )}
+                        <button class="mini red" onClick={() => {
+                          if (it.lines.length === 1) onChange(removeAt(items, i));
+                          else set(i, { ...it, lines: removeAt(it.lines, l) });
+                        }} aria-label="Supprimer la ligne">✕</button>
+                      </span>
+                    </div>
+                    {showNote && (
+                      <input class="ln-note-in" value={note} data-note={nk} maxLength={80} placeholder="Commentaire de la ligne (ex. Misa seule, piano)"
+                        aria-label={`Commentaire de la ligne ${l + 1}`} onInput={(e) => setLine({ note: (e.target as HTMLInputElement).value.replace(/\/\//g, '/') })} />
+                    )}
                   </div>
                 );
               })}

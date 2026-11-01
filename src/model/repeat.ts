@@ -1,16 +1,37 @@
 /**
- * Répétitions.
- * - Ligne répétée : suffixe canonique « [×N] » en fin de ligne (ex. « AU ZOMA OUI OUI OUI [×4] »).
- * - Paragraphe répété : directive {repeat: N} avant la strophe (Section.repeats).
+ * Format d'une ligne de paroles :  « texte [×N] // commentaire »
+ * - « [×N] » : ligne répétée N fois (facultatif)
+ * - « // commentaire » : note discrète pour cette ligne (facultatif)
+ * Paragraphe répété : directive {repeat: N} avant la strophe (Section.repeats).
  */
+export interface LineParts { text: string; times: number; note: string }
+
+const NOTE_SEP = /\s*\/\/\s*/;
 const LINE_TOKEN = /\s*\[×(\d+)\]\s*$/;
 
-export function splitLineRepeat(line: string): { text: string; times: number } {
-  const m = LINE_TOKEN.exec(line);
-  return m ? { text: line.slice(0, m.index), times: Number(m[1]) } : { text: line, times: 1 };
+export function parseLine(raw: string): LineParts {
+  const i = raw.search(NOTE_SEP);
+  const main = i >= 0 ? raw.slice(0, i) : raw;
+  const note = i >= 0 ? raw.slice(i).replace(NOTE_SEP, '').trim() : '';
+  const m = LINE_TOKEN.exec(main);
+  return m ? { text: main.slice(0, m.index), times: Number(m[1]), note } : { text: main.replace(/\s+$/, ''), times: 1, note };
 }
 
-export const withLineRepeat = (text: string, times: number) => (times > 1 ? `${text.replace(LINE_TOKEN, '')} [×${times}]` : text.replace(LINE_TOKEN, ''));
+export function formatLine({ text, times, note }: LineParts): string {
+  const t = text.replace(/\s*\/\/.*$/, '').replace(/\s+$/, '');
+  return `${t}${times > 1 ? ` [×${times}]` : ''}${note.trim() ? ` // ${note.trim().replace(/[{}]/g, '')}` : ''}`;
+}
+
+/** Compatibilité : texte + répétition (le commentaire est conservé). */
+export function splitLineRepeat(line: string): { text: string; times: number } {
+  const { text, times } = parseLine(line);
+  return { text, times };
+}
+
+export const withLineRepeat = (line: string, times: number) => {
+  const p = parseLine(line);
+  return formatLine({ ...p, times });
+};
 
 const WORDS: Record<string, number> = { BIS: 2, INDROA: 2, 'IN-2': 2, INTELO: 3, 'IN-3': 3 };
 

@@ -45,6 +45,8 @@ Nom de fichier = ID du morceau (`a-z0-9-`).
 {intro}                                    repère : {intro|interlude|outro[: commentaire]}
 
 O PAPA                                     paroles ; ligne vide = fin de strophe
+AU ZOMA OUI [×4] // Misa seule             ligne répétée ×4 + commentaire discret de la ligne
+{repeat: 2}                                le paragraphe suivant est répété ×2
 QUEL MALHEUR QUEL GRAND MALHEUR POUR MOI
 
 {section: ZOMA}                            nouvelle section nommée

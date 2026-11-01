@@ -10,7 +10,7 @@ import { isCueLine } from '../lib/text';
 import { wakeState } from '../lib/wakeLock';
 import { displayKey } from '../model/chordpro';
 import { CUE_LABEL } from '../model/cues';
-import { splitLineRepeat, wholeLineMarker } from '../model/repeat';
+import { parseLine, wholeLineMarker } from '../model/repeat';
 import type { Assignment, Section, Song } from '../model/types';
 import { buildUnits, paginate, type Column, type Measure, type Unit } from '../stage/paginate';
 import { IconBack, IconCollapse, IconEdit, IconExpand, IconInfo, IconMoon, IconNext, IconPrev, IconSun } from '../ui/icons';
@@ -308,11 +308,12 @@ export function UnitView({ u }: { u: Unit }) {
     <div class={`unit${rep ? ' rep' : ''}${rep && !u.continued ? ' rep-end' : ''}`}>
       {u.header && <SectionHead s={u.section} />}
       {u.lines?.map((l, i) => {
-        const { text, times } = splitLineRepeat(l);
+        const { text, times, note } = parseLine(l);
         const cue = isCueLine(text) || wholeLineMarker(text) != null;
         return (
           <div class={cue ? 'ln cue' : 'ln'} key={i}>
             {text}{times > 1 && <span class="rep-pill" aria-label={`répéter ${times} fois`}>×{times}</span>}
+            {note && <span class="ln-note">{note}</span>}
           </div>
         );
       })}

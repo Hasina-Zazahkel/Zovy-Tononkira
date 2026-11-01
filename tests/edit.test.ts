@@ -69,3 +69,10 @@ describe('catalogue réel : Blocs et Texte sans perte', () => {
     expect(serializeChordPro(withItems(s, textToItems(s, sectionsToText(s)).items).song)).toBe(raw);
   });
 });
+
+describe('mode texte : commentaire de ligne', () => {
+  it('« // » et [x4] combinés', () => {
+    const { items } = textToItems(song, 'la la [x4] // Misa seule\nho ho //  piano \n');
+    expect(itemsToBody(items)).toBe('la la [×4] // Misa seule\nho ho // piano\n');
+  });
+});

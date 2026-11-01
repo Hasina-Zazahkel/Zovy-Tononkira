@@ -165,8 +165,9 @@ body {
 .ln-in:focus { outline: none; border-color: var(--gold); background: rgba(255, 192, 0, .08); }
 .rep-btn { flex: none; min-width: 44px; height: 38px; border-radius: 999px; background: var(--bg-2); color: var(--fg-dim); font-family: var(--display); font-weight: 700; font-size: 17px; }
 .rep-btn.on { background: var(--gold); color: #111; }
-.ln-tools { display: none; gap: 4px; flex: none; }
-.ln-row:focus-within .ln-tools { display: flex; }
+/* Outils toujours en place (invisibles hors focus) : aucun décalage pendant un clic */
+.ln-tools { display: flex; visibility: hidden; gap: 4px; flex: none; width: 88px; justify-content: flex-end; }
+.ln-row:focus-within .ln-tools, .ln-row:hover .ln-tools { visibility: visible; }
 .add-line { margin: 4px 0 2px 6px; font-size: 14px; font-weight: 700; color: var(--fg-dim); padding: 6px 8px; }
 
 /* Texte */
@@ -193,3 +194,23 @@ body {
 }
 .rep-btn:not(.on) { background: transparent; border: 1px dashed var(--bg-3); color: var(--fg-dim); opacity: .7; }
 @media (max-width: 1000px) { .ed-help { grid-template-columns: 1fr; } }
+
+/* Commentaire de ligne */
+.ln-note { font-family: var(--font); font-style: italic; font-weight: 500; font-size: .5em; letter-spacing: 0; text-transform: none; color: var(--fg-dim); margin-left: .7em; vertical-align: .25em; }
+.ln-note::before { content: '— '; }
+.note-btn { flex: none; width: 40px; height: 38px; border-radius: 999px; font-size: 16px; opacity: .35; filter: grayscale(1); border: 1px dashed var(--bg-3); }
+.note-btn.on, .note-btn[aria-pressed='true'] { opacity: 1; filter: none; border-color: var(--gold-dim); background: rgba(255, 192, 0, .1); }
+.ln-note-in { display: block; width: calc(100% - 20px); margin: 0 0 6px 20px; min-height: 38px; padding: 0 10px; border-radius: 8px; border: 1px dashed var(--gold-dim); background: rgba(255, 192, 0, .05); color: var(--fg); font-style: italic; font-size: 16px; }
+.ln-note-in:focus { outline: none; border-style: solid; }
+
+@media (max-width: 600px) {
+  /* Téléphone : ⏎ / ✕ remplacés par les gestes clavier (Entrée sur ligne vide = nouveau paragraphe, Retour arrière = fusion) */
+  .ln-tools { display: none; }
+  .ln-row { gap: 4px; }
+  .rep-btn { min-width: 38px; }
+  .note-btn { width: 34px; }
+  .ln-note-in { margin-left: 8px; width: calc(100% - 8px); }
+  .lbl-wide { display: none; }
+  .ctl-comment .add-comment { display: none; }
+}
+@media (max-width: 600px) { .ed-head .sheet-title .t { font-size: 22px; } }

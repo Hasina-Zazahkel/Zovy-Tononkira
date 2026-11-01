@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseChordPro, serializeChordPro } from '../src/model/chordpro';
 import { cleanupSong } from '../src/model/cleanup';
-import { splitLineRepeat, trailingMarker, wholeLineMarker } from '../src/model/repeat';
+import { splitLineRepeat, trailingMarker, wholeLineMarker, withLineRepeat } from '../src/model/repeat';
 
 describe('marqueurs de fin de ligne', () => {
   it.each([
@@ -33,5 +33,23 @@ describe('conversion et format', () => {
     expect(s.sections[0].repeats).toEqual([3, 1]);
     expect(splitLineRepeat(s.sections[0].stanzas[0][0])).toEqual({ text: 'l1', times: 2 });
     expect(serializeChordPro(s)).toBe(src);
+  });
+});
+
+import { formatLine, parseLine } from '../src/model/repeat';
+describe('commentaire de ligne', () => {
+  it.each([
+    ['AU ZOMA OUI [×4] // Misa seule', { text: 'AU ZOMA OUI', times: 4, note: 'Misa seule' }],
+    ['AU ZOMA // piano', { text: 'AU ZOMA', times: 1, note: 'piano' }],
+    ['AU ZOMA [×2]', { text: 'AU ZOMA', times: 2, note: '' }],
+    ['JE NE SUIS / PAS UN RICHISSIME', { text: 'JE NE SUIS / PAS UN RICHISSIME', times: 1, note: '' }],
+  ])('%s', (raw, parts) => {
+    expect(parseLine(raw)).toEqual(parts);
+    expect(formatLine(parts)).toBe(raw);
+  });
+  it('withLineRepeat conserve le commentaire', () => expect(withLineRepeat('A [×2] // x', 3)).toBe('A [×3] // x'));
+  it('ligne avec commentaire : aller-retour .cho', () => {
+    const src = '{title: T}\n{artist: A}\n\nl1 [×2] // Misa seule\nl2 // piano\n';
+    expect(serializeChordPro(parseChordPro('t', src).song)).toBe(src);
   });
 });

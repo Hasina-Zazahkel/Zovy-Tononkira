@@ -63,6 +63,7 @@ export function withItems(song: Song, items: Item[]): { song: Song; warnings: st
 export const TEXT_HELP = [
   ['Ligne vide', 'nouveau paragraphe'],
   ['… [×4]', 'en fin de ligne : ligne répétée'],
+  ['… // commentaire', 'en fin de ligne : commentaire discret pour cette ligne'],
   ['[×2]', 'seul, avant un paragraphe : paragraphe répété'],
   ['[intro: …] [interlude: …] [outro: …]', 'repère instrumental + commentaire'],
   ['[section: NOM]', 'nouvelle section'],
@@ -103,8 +104,13 @@ export function textToBody(text: string): { body: string; warnings: string[] } {
       m = /^\[\s*voix\s*:\s*(.*?)\s*\]$/i.exec(l);
       if (m) return `{voices: ${m[1]}}`;
       if (/^\[[^\]]*\]$/.test(l)) warnings.push(`ligne ${i + 1} : « ${l} » non reconnu (gardé comme parole)`);
-      // « [x4] » / « [X 4] » en fin de ligne → forme canonique « [×4] » ; accolades interdites dans les paroles
-      return raw.replace(/[{}]/g, '').replace(/\s*\[\s*[x×]\s*(\d+)\s*\]\s*$/i, ' [×$1]');
+      // « [x4] » / « [X 4] » en fin de ligne → forme canonique « [×4] » ; « // » sépare le commentaire ;
+      // accolades interdites dans les paroles
+      const clean = raw.replace(/[{}]/g, '');
+      const cut = clean.search(/\s*\/\//);
+      const main = (cut >= 0 ? clean.slice(0, cut) : clean).replace(/\s*\[\s*[x×]\s*(\d+)\s*\]\s*$/i, ' [×$1]');
+      const note = cut >= 0 ? clean.slice(cut).replace(/^\s*\/\/\s*/, '').trim() : '';
+      return note ? `${main.replace(/\s+$/, '')} // ${note}` : main;
     })
     .join('\n');
   return { body, warnings };
