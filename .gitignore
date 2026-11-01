@@ -1,5 +1,5 @@
-node_modules/
-dist/
-public/data/
 .DS_Store
 __pycache__/
+dist/
+node_modules/
+public/data/

@@ -16,8 +16,12 @@ legacy/                   Ancien site (référence, ne plus éditer)
 
 ## Commandes
 
+App en ligne : https://hasina-zazahkel.github.io/Zovy-Tononkira/ (déployée à chaque merge sur `main`).
+
 | Commande | Effet |
 |---|---|
+| `npm run dev` | Serveur local (http://localhost:5173/Zovy-Tononkira/) |
+| `npm run build` | Build de production dans `dist/` (PWA + données) |
 | `npm run data:build` | Valide + compile le catalogue dans `public/data/` |
 | `npm run data:format` | Réécrit les `.cho` au format canonique |
 | `npm run data:check` | Validation seule (CI) |
