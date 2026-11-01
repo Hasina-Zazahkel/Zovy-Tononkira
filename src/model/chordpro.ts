@@ -7,6 +7,8 @@
  *                        {intro[: note]} {interlude[: note]} {outro[: note]}  repère instrumental
  *                        ({instrumental: LIBELLÉ} : ancien format, classé automatiquement)
  *                        {voices: Hasina=lead, *=choeur}  voix de la section courante
+ *                        {repeat: N}             la strophe qui suit est répétée N fois
+ *                        « … [×N] » en fin de ligne : ligne répétée N fois
  *                        (si la section a déjà des paroles, en ouvre une nouvelle)
  * Ligne vide = fin de strophe.
  */
@@ -62,6 +64,7 @@ export function parseChordPro(id: string, text: string): ParseResult {
   };
   let current: Section | null = null;
   let stanza: string[] | null = null;
+  let pendingRepeat = 1;
   let n = 0;
 
   const newSection = (kind: Section['kind'], label?: string, cue?: CueType): Section => {
@@ -108,6 +111,12 @@ export function parseChordPro(id: string, text: string): ParseResult {
           for (const c of classifyCue(val)) newSection('instrumental', c.note, c.cue);
           current = null;
           break;
+        case 'repeat': {
+          const r = Number.parseInt(val, 10);
+          if (Number.isFinite(r) && r > 1) pendingRepeat = r; else warnings.push(`l.${idx + 1} répétition invalide "${val}"`);
+          stanza = null;
+          break;
+        }
         case 'voices': {
           if (!current || current.kind !== 'lyrics' || hasContent(current)) current = newSection('lyrics');
           current.voices = parseAssignments(val);
@@ -119,10 +128,22 @@ export function parseChordPro(id: string, text: string): ParseResult {
     }
     if (!line.trim()) { stanza = null; return; }
     const sec = lyricsSection();
-    if (!stanza) { stanza = []; sec.stanzas.push(stanza); }
+    if (!stanza) {
+      stanza = [];
+      sec.stanzas.push(stanza);
+      if (pendingRepeat > 1) {
+        sec.repeats ??= [];
+        sec.repeats[sec.stanzas.length - 1] = pendingRepeat;
+        pendingRepeat = 1;
+      }
+    }
     stanza.push(line.replace(/\s+$/, ''));
   });
 
+  // Répétitions : tableau dense (1 par défaut)
+  for (const s of song.sections) {
+    if (s.repeats) s.repeats = s.stanzas.map((_, i) => s.repeats![i] ?? 1);
+  }
   // Sections de paroles vides sans label ni voix = bruit
   song.sections = song.sections.filter((s) => s.kind === 'instrumental' || s.label || s.voices || hasContent(s));
   song.sections.forEach((s, i) => { s.id = `s${i}`; });
@@ -156,6 +177,8 @@ export function serializeChordPro(song: Song): string {
       if (s.voices) out.push(`{voices: ${formatAssignments(s.voices)}}`);
       s.stanzas.forEach((st, j) => {
         if (j > 0) out.push('');
+        const r = s.repeats?.[j] ?? 1;
+        if (r > 1) out.push(`{repeat: ${r}}`);
         out.push(...st);
       });
     }

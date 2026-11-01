@@ -14,6 +14,7 @@ import type { Assignment } from '../../src/model/types';
 
 const DIR = join(new URL('../..', import.meta.url).pathname, 'data/songs');
 const dropped: string[] = [];
+const repeatNotes: string[] = [];
 let changed = 0;
 
 function convert(list: Assignment[], map: (r: string) => string | undefined, where: string): Assignment[] {
@@ -32,7 +33,7 @@ function convert(list: Assignment[], map: (r: string) => string | undefined, whe
 
 for (const f of readdirSync(DIR).filter((x) => x.endsWith('.cho')).sort()) {
   const raw = readFileSync(join(DIR, f), 'utf8');
-  const song = cleanupSong(parseChordPro(f.slice(0, -4), raw).song);
+  const song = cleanupSong(parseChordPro(f.slice(0, -4), raw).song, (m) => repeatNotes.push(m));
   song.singers = convert(song.singers, mapLegacyVoice, song.id);
   song.musicians = convert(song.musicians, mapLegacyInstrument, song.id);
   for (const s of song.sections) if (s.voices) s.voices = convert(s.voices, mapLegacyVoice, `${song.id} § ${s.label ?? s.id}`);
@@ -44,4 +45,5 @@ for (const f of readdirSync(DIR).filter((x) => x.endsWith('.cho')).sort()) {
   if (out !== raw) { writeFileSync(join(DIR, f), out); changed++; }
 }
 console.log(`${changed} fichier(s) reclassé(s)`);
+if (repeatNotes.length) console.log(`Répétitions à vérifier (${repeatNotes.length}) :\n- ${repeatNotes.join('\n- ')}`);
 if (dropped.length) console.log(`Rôles sans équivalent (${dropped.length}) :\n- ${dropped.join('\n- ')}`);

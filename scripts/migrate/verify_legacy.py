@@ -16,6 +16,20 @@ from legacy_html import (CUE_RE, MANUAL_LINKS, NAMED_SECTION_RE, PAREN_LINE_RE, 
                          Report, parse_voices, slugify)
 from bs4 import BeautifulSoup  # noqa: E402
 
+# Mêmes règles que src/model/repeat.ts (marqueurs de répétition retirés des deux côtés)
+REP_WORD = r"(?:[x×]\s*\d+|\d+\s*[x×*]|bis|indroa|in-2|intelo|in-3)"
+def is_rep_only(l: str) -> bool:
+    t = l.strip().rstrip(".!…").upper()
+    parts = t.split()
+    if len(parts) == 2 and all(is_rep_only(p) for p in parts):  # « BIS X4 »
+        return True
+    return bool(re.fullmatch(r"\(?\s*(?:[X×]\s*\d+|\d+\s*[X×*]|BIS|INDROA|IN-2|INTELO|IN-3)\s*\)?|\(\d\)", t))
+def strip_rep(l: str) -> str:
+    m = re.match(r"^(.*\S)\s+(\(?\s*" + REP_WORD + r"\s*\)?|\(\d\))\s*[.!…]*$", l, re.I) or re.match(r"^(.*\S)(\((?:[x×]\s*\d+|\d|bis|indroa|in-2|intelo|in-3)\))\s*[.!…]*$", l, re.I)
+    if not m or (m.group(1).startswith("(") and ")" not in m.group(1)):
+        return l
+    return re.sub(r"[\s,;:–-]+$", "", m.group(1))
+
 src, root = sys.argv[1], Path(sys.argv[2])
 soup = BeautifulSoup(Path(src).read_text(encoding="utf-8"), "html.parser")
 catalog = {s["id"]: s for s in json.loads((root / "public/data/songs.json").read_text())["songs"]}
@@ -49,7 +63,10 @@ for sec in soup.select("div.lyrics-section"):
             exp_voices += 1
         else:
             exp_lines.append(line)
-    got_lines = [l for s in song["sections"] for st in s["stanzas"] for l in st]
+    # Répétitions converties en données : on compare le texte sans les marqueurs
+    got_lines = [re.sub(r"\s*\[×\d+\]$", "", l) for s in song["sections"] for st in s["stanzas"] for l in st]
+    exp_lines = [strip_rep(l) for l in exp_lines if not is_rep_only(l)]
+    got_lines = [l for l in got_lines if not is_rep_only(l)]
     got_cues = [s for s in song["sections"] if s["kind"] == "instrumental"]
     got_named = [s["label"] for s in song["sections"] if s["kind"] == "lyrics" and s.get("label")]
     got_voices = sum(1 for s in song["sections"] if s.get("voices"))

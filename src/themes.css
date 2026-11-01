@@ -104,3 +104,9 @@ body {
 .cue-type { font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
 .cue-note { font-family: var(--font); font-weight: 500; font-style: italic; font-size: .82em; letter-spacing: 0; text-transform: none; color: var(--fg-dim); }
 .cue-unit.intro, .cue-unit.outro { border-style: solid; border-color: rgba(255, 192, 0, .45); background: rgba(255, 192, 0, .06); }
+
+/* Répétitions (option A) : pastille pour une ligne, barre + pastille pour un paragraphe */
+.rep-pill { display: inline-block; margin-left: .35em; padding: 0 .38em; border-radius: 999px; background: var(--gold); color: #111; font-family: var(--display); font-weight: 700; font-size: .7em; line-height: 1.4; letter-spacing: .03em; vertical-align: .12em; text-transform: none; }
+.unit.rep { position: relative; padding-left: .45em; border-left: .14em solid var(--gold); }
+.unit.rep-end .ln:last-of-type { padding-right: 2.2em; }
+.rep-pill.para { position: absolute; right: 0; bottom: .15em; margin: 0; font-size: .72em; }

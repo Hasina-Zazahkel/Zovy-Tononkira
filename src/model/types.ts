@@ -37,8 +37,11 @@ export interface Section {
   cue?: CueType;
   /** Voix pour cette section (priment sur Song.singers pendant la section). */
   voices?: Assignment[];
-  /** Strophes : tableau de lignes. Une strophe = un bloc insécable pour la pagination. */
+  /** Strophes : tableau de lignes. Une strophe = un bloc insécable pour la pagination.
+   *  Une ligne répétée porte le suffixe « [×N] » (voir model/repeat.ts). */
   stanzas: string[][];
+  /** Répétition de chaque strophe (même index que stanzas ; 1 = jouée une fois). Absent si aucune. */
+  repeats?: number[];
 }
 
 export interface Song {

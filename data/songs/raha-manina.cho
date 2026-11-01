@@ -3,22 +3,22 @@
 {key: MI}
 
 {voices: Hasina=Alto, Misa, Ke=Lead}
+{repeat: 2}
 Raha manina anay ianareo o
 Ataovy tetezam-bý re ny rano a
 Fa raha mitady saova ianareo o
 Ataovy malaladalaka ny trano a
-X2
 
+{repeat: 2}
 Raha toa ka mangoro-vitsika ny Any e
 Fa zakany mamay ny aty e
 Aza maivava raha toa manavao o
 Fa raha vonon-kiady
 Raha vonon-kiady dia mifanao a
-x2
 
 {interlude: Intro}
 
-Ooiai e raha manina anay e x2
+Ooiai e raha manina anay e [×2]
 Ataovy tetezamby re ny trano o
 O raha manina anay e
 Ataovy malaladalaka ny Trano
@@ -27,22 +27,22 @@ raha manina anay e
 
 {interlude}
 
+{repeat: 2}
 raha te ho havanay ianareo o
 tsy ranon'ikopa ny aty e
 raha te ho namanay ianareo o
 raisina an-tanan-droa ka avy a
-x2
 
+{repeat: 2}
 fa raha te hifandrava ianareo o
 sakay kely rano ny aty e
 raha te hitsanga-ko fahavalo o
 ny aty tsy mitamby
 ny aty tsy mitambitamby lety e
-x2
 
 {interlude: Folaka (mitehaka)}
 
-Ooiai e raha manina anay e x8
+Ooiai e raha manina anay e [×8]
 Ataovy tetezamby re ny trano o
 O raha manina anay e
 Ataovy malaladalaka ny Trano

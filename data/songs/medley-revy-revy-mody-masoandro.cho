@@ -14,20 +14,20 @@ sendra nandalo tanananay sipa o
 ny ranomasony
 nipatrapatraka toy ny orana
 
-teo anilanao any aho x2
+teo anilanao any aho [×2]
 teo anilanao aho rasipa
 no natositosikao a
-efa lasan'olona ny foko x2
+efa lasan'olona ny foko [×2]
 efa lasan'olona ny foko
 vao hoe voro-manganao any aho
-voro-manganao any aho x2
+voro-manganao any aho [×2]
 
+{repeat: 2}
 oooh darling e
 misy zavatra tiako hambara e
 x2
 tsy dia zavatra ratsy hoatrin'inona e
 nefa otran'ny manalasala e
-x2
 
 resaka tsy azo lazaina
 fa masosotra sady mandrangitra e
@@ -54,9 +54,9 @@ ambarako madio tsara
 je t'aime be darling e
 faisons l'amour ce soir
 
+{repeat: 4}
 ooh darling e
 faisons l'amour ce soir
-x4
 
 fa fitavako anao iny e
 zistoire hoa zistoire
@@ -90,9 +90,9 @@ malaina mifangaro o
 irery mandeha any lanin'ny mamba e
 miaraka aminay tsy lanin'ny voay
 
-very hanina e x2
+{repeat: 2}
+very hanina e [×2]
 very any iny e
-x2
 
 ho adinonao daholo ary ireo sorisory
 sorisory mandreraka anao
@@ -107,4 +107,4 @@ dia lanonana
 lanonana miarakaamin'ireo akama
 izay ao an-tanana
 
-tongava re x2
+tongava re [×2]

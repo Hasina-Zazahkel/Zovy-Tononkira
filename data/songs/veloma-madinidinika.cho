@@ -4,6 +4,7 @@
 {singers: Misa, Toky}
 {musicians: Haja=Guitare, Toky=Guitare basse}
 
+{repeat: 2}
 Hisaraka vetivety,
 zahay nefa manantena
 Fa tsy maintsy mbola hihaona
@@ -14,8 +15,8 @@ hifanatritava
 ny diavolan-ko lava
 Veloma madinidinika ianareo
 Masina ka samy tsara
-X2
 
+{repeat: 2}
 Hasampiko miankavia re ny lamba
 Ny tongotra hamikavika
 Fa lalàna tsy efa mora ny anay
@@ -28,7 +29,6 @@ ny any an-tanàna
 ny diavolan-ko lava
 Veloma madinidinika ianareo
 Masina ka samy tsara
-X2
 
 {interlude}
 

@@ -5,8 +5,9 @@ import { cleanupSong } from '../src/model/cleanup';
 const clean = (body: string) => serializeChordPro(cleanupSong(parseChordPro('t', `{title: T}\n{artist: A}\n\n${body}`).song)).split('\n').slice(3).join('\n');
 
 describe('cleanupSong', () => {
-  it('rattache un repère isolé à la strophe précédente', () => expect(clean('l1\nl2\n\n(BIS)\n\nl3\n')).toBe('l1\nl2\n(BIS)\n\nl3\n'));
-  it('ou à la suivante s\'il ouvre la section', () => expect(clean('(X2)\n\nl1\n')).toBe('(X2)\nl1\n'));
+  it('repère isolé sous un paragraphe → paragraphe répété', () => expect(clean('l1\nl2\n\n(BIS)\n\nl3\n')).toBe('{repeat: 2}\nl1\nl2\n\nl3\n'));
+  it('repère isolé non répétitif → rattaché à la strophe précédente', () => expect(clean('l1\nl2\n\n(pas d\'interlude)\n\nl3\n')).toBe('l1\nl2\n(pas d\'interlude)\n\nl3\n'));
+  it('en tête de section, il vise la strophe suivante', () => expect(clean('(X2)\n\nl1\n')).toBe('{repeat: 2}\nl1\n'));
   it('...MUSIQUE... devient un repère instrumental', () => expect(clean('l1\n\n...MUSIQUE...\n\nl2\n')).toBe('l1\n\n{interlude}\n\nl2\n'));
   it('voix posées avant une intro → section suivante', () =>
     expect(clean('{voices: Toky=Lead}\n\n{instrumental: INTRO}\n\nl1\n')).toBe('{intro}\n\n{voices: Toky=Lead}\nl1\n'));

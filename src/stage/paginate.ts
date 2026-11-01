@@ -14,6 +14,8 @@ export interface Unit {
   lines?: string[];
   /** Vrai pour une strophe découpée qui continue sur la page suivante. */
   continued?: boolean;
+  /** Paragraphe répété N fois (barre + pastille). */
+  repeat?: number;
 }
 
 export function buildUnits(song: Song): Unit[] {
@@ -28,7 +30,10 @@ export function buildUnits(song: Song): Unit[] {
       units.push({ key: `${s.id}`, section: s, header: true, lines: [] });
       continue;
     }
-    s.stanzas.forEach((st, j) => units.push({ key: `${s.id}.${j}`, section: s, header: hasHeader && j === 0, lines: st }));
+    s.stanzas.forEach((st, j) => {
+      const repeat = s.repeats?.[j] ?? 1;
+      units.push({ key: `${s.id}.${j}`, section: s, header: hasHeader && j === 0, lines: st, ...(repeat > 1 ? { repeat } : {}) });
+    });
   }
   return units;
 }
