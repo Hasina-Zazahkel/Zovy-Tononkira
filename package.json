@@ -12,7 +12,8 @@
     "data:check": "tsx scripts/build-data.ts --check",
     "migrate:legacy": "python3 -I scripts/migrate/legacy_html.py legacy/Tononkira_Zovy.html . && tsx scripts/migrate/normalize.ts && npm run data:format",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "demo:build": "npm run data:build && VITE_DEMO=1 BASE_PATH=./ vite build --outDir dist-demo --emptyOutDir && mv dist-demo/index.html dist-demo/app.html && cp scripts/demo/shell.html dist-demo/index.html && tsx scripts/demo-members.ts dist-demo/data/members.json"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.6",
