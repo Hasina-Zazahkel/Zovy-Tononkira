@@ -12,10 +12,15 @@ export interface Key {
   accidental?: Accidental;
 }
 
-/** member = prénom ("Hasina") ou "*" pour "le reste / chœur". part = valeur libre normalisée en minuscules. */
-export interface VoiceAssignment {
+/**
+ * Affectation d'un membre à un rôle : voix ("lead", "1ère voix", "ténor")
+ * ou instrument ("guitare basse", "guitare classique").
+ * member = prénom ("Hasina") ou "*" pour "tous / le reste". role = texte libre, affiché tel quel.
+ * Format .cho : "Hasina=lead, Misa=1ère voix, *=chœur"
+ */
+export interface Assignment {
   member: string;
-  part?: string;
+  role?: string;
 }
 
 export type SectionKind = 'lyrics' | 'instrumental';
@@ -26,8 +31,8 @@ export interface Section {
   kind: SectionKind;
   /** "ZOMA", "INTERLUDE GUITARE"… */
   label?: string;
-  /** Voix actives pour cette section (remplace Song.singers à l'affichage). */
-  voices?: VoiceAssignment[];
+  /** Voix pour cette section (priment sur Song.singers pendant la section). */
+  voices?: Assignment[];
   /** Strophes : tableau de lignes. Une strophe = un bloc insécable pour la pagination. */
   stanzas: string[][];
 }
@@ -41,10 +46,10 @@ export interface Song {
   tags: string[];
   /** Sous-titres d'un medley, ex. "O DARLING (RE)". */
   medley: string[];
-  /** Répartition vocale globale, texte d'affichage. Ex. "Lead Toky", "Choeur 3 voix". */
-  singers: string[];
-  /** Ex. "Guitare Haja", "Basse Toky". */
-  musicians: string[];
+  /** Répartition vocale du morceau. */
+  singers: Assignment[];
+  /** Instruments du morceau. Un membre peut apparaître plusieurs fois. */
+  musicians: Assignment[];
   notes?: string;
   sections: Section[];
 }

@@ -5,7 +5,7 @@ import { bumpFont, FONT_MAX, FONT_MIN, settings, update } from '../lib/settings'
 import { isCueLine } from '../lib/text';
 import { wakeState } from '../lib/wakeLock';
 import { displayKey } from '../model/chordpro';
-import type { Section, Song } from '../model/types';
+import type { Assignment, Section, Song } from '../model/types';
 import { buildUnits, paginate, type Measure, type Unit } from '../stage/paginate';
 import { IconBack, IconMoon, IconNext, IconPrev, IconSun } from '../ui/icons';
 
@@ -186,26 +186,40 @@ function StageView({ song, nav, fallback }: { song: Song; nav: Nav; fallback: st
 }
 
 function Meta({ song }: { song: Song }) {
-  const items: preact.ComponentChildren[] = [];
-  if (song.singers.length) items.push(<span key="s"><b>Voix</b> {song.singers.join(' · ')}</span>);
-  if (song.musicians.length) items.push(<span key="m"><b>Musiciens</b> {song.musicians.join(' · ')}</span>);
-  if (song.capo != null) items.push(<span key="c" class="g">Capo {song.capo}</span>);
-  if (song.medley.length) items.push(<span key="md"><b>Medley</b> {song.medley.join(' → ')}</span>);
-  if (song.notes) items.push(<span key="n" class="g">{song.notes}</span>);
-  return items.length ? <div class="meta">{items}</div> : null;
+  const extra: preact.ComponentChildren[] = [];
+  if (song.capo != null) extra.push(<span key="c" class="g">Capo {song.capo}</span>);
+  if (song.medley.length) extra.push(<span key="md"><b>Medley</b> {song.medley.join(' → ')}</span>);
+  if (song.notes) extra.push(<span key="n" class="g">{song.notes}</span>);
+  if (!song.singers.length && !song.musicians.length && !extra.length) return null;
+  return (
+    <div class="meta">
+      {song.singers.length > 0 && <div class="meta-row"><span class="meta-lbl">Voix</span><Chips list={song.singers} kind="voice" /></div>}
+      {song.musicians.length > 0 && <div class="meta-row"><span class="meta-lbl">Musique</span><Chips list={song.musicians} kind="inst" /></div>}
+      {extra.length > 0 && <div class="meta-row">{extra}</div>}
+    </div>
+  );
+}
+
+/** Pastilles "Nom rôle" — même composant pour les voix (doré) et les instruments (neutre). */
+export function Chips({ list, kind }: { list: Assignment[]; kind: 'voice' | 'inst' }) {
+  // "*" = "Reste" s'il y a des membres nommés à côté, sinon "Tous"
+  const star = list.some((a) => a.member !== '*') ? 'Reste' : 'Tous';
+  return (
+    <span class="chips">
+      {list.map((a, i) => (
+        <span class={`chip ${kind}`} key={i}>
+          <b>{a.member === '*' ? star : a.member}</b>{a.role && <i>{a.role}</i>}
+        </span>
+      ))}
+    </span>
+  );
 }
 
 function SectionHead({ s }: { s: Section }) {
   return (
     <div class="sec-head">
       {s.label && <span class="sec-label">{s.label}</span>}
-      {s.voices?.length ? (
-        <span class="voices">
-          {s.voices.map((v, i) => (
-            <span class="voice" key={i}>{v.member === '*' ? 'Reste' : v.member}{v.part && <i>{v.part}</i>}</span>
-          ))}
-        </span>
-      ) : null}
+      {s.voices?.length ? <span class="sec-voices"><Chips list={s.voices} kind="voice" /></span> : null}
     </div>
   );
 }

@@ -1,8 +1,8 @@
 {title: HAY HAY}
 {artist: MAHALEO}
 {key: SOL}
-{singers: 5 voix}
-{musicians: Guitare Haja | Basse Toky | Batterie Manitra}
+{singers: *=5 voix}
+{musicians: Haja=guitare, Toky=basse, Manitra=batterie}
 
 HAY (6), IZAO VAO TSAPANAO TOKOA
 FA MAFY NY FIAINANA

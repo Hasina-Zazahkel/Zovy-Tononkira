@@ -1,8 +1,8 @@
 {title: DOUDOU}
 {artist: BOLO}
 {key: DO}
-{singers: Lead toky | Choeur 3 voix}
-{musicians: Guitare Toky | Basse Haja | Batterie Manitra}
+{singers: Toky=lead, *=chœur 3 voix}
+{musicians: Toky=guitare, Haja=basse, Manitra=batterie}
 
 TSY HANDANIAKO FOTOANA TSONY LESY ITY
 NA VOLA HIVIDIANANA CREDIT

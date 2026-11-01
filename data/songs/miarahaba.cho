@@ -2,8 +2,8 @@
 {artist: ZANDRY GASY}
 {key: DO}
 {capo: 5}
-{singers: 5 voix}
-{musicians: Guitare Haja & Toky}
+{singers: *=5 voix}
+{musicians: Haja=guitare, Toky=guitare}
 
 MIARAHABA TOY NY MASOANDRO
 AVY ANY ANTSINANA

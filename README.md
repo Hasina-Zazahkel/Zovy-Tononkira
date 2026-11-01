@@ -38,8 +38,8 @@ Nom de fichier = ID du morceau (`a-z0-9-`).
 {capo: 5}
 {tags: medley}
 {medley: RAVORONDREO (SOL) | O DARLING (RE)}
-{singers: Lead Toky | Choeur 3 voix}
-{musicians: Guitare Haja | Basse Toky}
+{singers: Hasina=lead, Misa=1ère voix, Ke=2ème voix, Toky=ténor}
+{musicians: Haja=guitare basse, Toky=guitare classique}
 {notes: Bien marquer le break avant Zoma}
 
 {instrumental: Intro}                      repère instrumental (bloc dédié à l'écran)
@@ -48,11 +48,12 @@ O PAPA                                     paroles ; ligne vide = fin de strophe
 QUEL MALHEUR QUEL GRAND MALHEUR POUR MOI
 
 {section: ZOMA}                            nouvelle section nommée
-{voices: Hasina=lead, Misa=haut, Ke=bas}   voix de la section (* = le reste / chœur)
+{voices: Hasina=lead, Misa=haut, Ke=bas}   voix de la section (priment sur {singers})
 LA LA LA
 ```
 
 Règles :
 - `{voices}` placé après des paroles ouvre une nouvelle section.
 - `{section}` sans label ouvre une section anonyme.
+- Affectations `Nom=rôle` séparées par des virgules ; rôle libre, affiché tel quel ; `*` = tous ; un membre peut avoir plusieurs instruments (`Toky=basse, Toky=chœurs`).
 - Les paroles sont stockées telles quelles ; l'affichage en majuscules se fait au rendu (réglable).

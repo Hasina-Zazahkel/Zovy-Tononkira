@@ -1,8 +1,8 @@
 {title: FAMINDRA TANORA}
 {artist: MBOLA TALENTA}
 {key: SOL}
-{singers: 5 voix}
-{musicians: Guitare Haja | Basse Toky}
+{singers: *=5 voix}
+{musicians: Haja=guitare, Toky=basse}
 
 Ny famindran-tanora miraika:
 Toy izao, toy izao

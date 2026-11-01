@@ -16,12 +16,65 @@ from pathlib import Path
 
 from bs4 import BeautifulSoup, Tag
 
-MEMBERS = {"HASINA", "MISA", "KE", "KETAKA", "HAJA", "TOKY"}
+MEMBERS = {"HASINA", "MISA", "KE", "KETAKA", "KETA", "HAJA", "TOKY", "TOFA", "MANITRA"}
+MEMBER_CANON = {"KETA": "Ketaka"}
 PART_ALIASES = {
-    "LEAD": "lead", "HAUT": "haut", "BAS": "bas", "TENOR": "tenor", "TÉNOR": "tenor",
-    "ALTO": "alto", "CHOEUR": "choeur", "CHŒUR": "choeur", "SOPRA": "soprano",
+    "LEAD": "lead", "HAUT": "haut", "BAS": "bas", "TENOR": "ténor", "TÉNOR": "ténor",
+    "ALTO": "alto", "CHOEUR": "chœur", "CHŒUR": "chœur", "SOPRA": "soprano",
     "SOPRANO": "soprano",
 }
+# Cas que la règle générique ne sait pas lire (segment legacy -> affectations)
+ROLE_OVERRIDES = {
+    "Guitare Toky & Haja Clavier (piano accordéon)": ["Toky=guitare", "Haja=clavier (piano accordéon)"],
+}
+FILLER = {"&", "ET", ",", "+"}
+
+
+def canon_member(w: str) -> str:
+    u = w.upper().strip("&,")
+    return MEMBER_CANON.get(u, u.capitalize())
+
+
+def norm_role(text: str) -> str:
+    words = text.split()
+    out = [PART_ALIASES.get(w.upper(), w.lower()) for w in words]
+    return " ".join(out)
+
+
+def split_slash(seg: str) -> list[str]:
+    """Découpe sur '/' hors parenthèses : 'Clavier Haja +6 (fa/re) / Guitare Toky' -> 2 segments."""
+    parts, depth, cur = [], 0, ""
+    for c in seg:
+        depth += (c == "(") - (c == ")")
+        if c == "/" and depth == 0:
+            parts.append(cur.strip()); cur = ""
+        else:
+            cur += c
+    parts.append(cur.strip())
+    return [x for x in parts if x]
+
+
+def to_assignments(segments: list[str]) -> list[str]:
+    """['Lead Ketaka & Toky', 'Choeur 3 voix'] -> ['Ketaka=lead', 'Toky=lead', '*=chœur 3 voix']"""
+    out: list[str] = []
+    for seg in segments:
+        if seg in ROLE_OVERRIDES:
+            out += ROLE_OVERRIDES[seg]
+            continue
+        words = re.findall(r"\([^)]*\)|[^\s,&]+|&|,", seg)
+        names = [canon_member(w) for w in words if w.upper().strip("&,") in MEMBERS]
+        rest = " ".join(w for w in words if w.upper().strip("&,") not in MEMBERS and w.upper() not in FILLER)
+        role = norm_role(rest)
+        if not names:
+            out.append(f"*={role}" if role else "*")
+        else:
+            out += [f"{n}={role}" if role else n for n in names]
+    # dédoublonnage en conservant l'ordre
+    seen, uniq = set(), []
+    for a in out:
+        if a not in seen:
+            seen.add(a); uniq.append(a)
+    return uniq
 NOTE_RE = re.compile(r"^(DO|R[EÉ]|MI|FA|SOL|LA|SI)\s*(B|B[EÉ]MOL|#|D|DI[EÈ]SE)?$", re.I)
 CUE_RE = re.compile(r"^\s*(INTRO|INTERLUDE|OUTRO|FIN INTRO)\b", re.I)
 NAMED_SECTION_RE = re.compile(r"^\s*--\s*(.+?)\s*--\s*$")
@@ -87,14 +140,16 @@ def parse_header(text: str) -> dict:
     for seg in segs:
         up = seg.upper()
         words = set(re.findall(r"[A-ZÀ-Ÿ]+", up))
-        if any(i in up for i in INSTRUMENTS):
+        if any(i in up for i in INSTRUMENTS) and not (words & MEMBERS):
+            out["notes"].append(seg)  # ex. "Intro SAX" : consigne, pas une affectation
+        elif any(i in up for i in INSTRUMENTS):
             cm = re.search(r"\(\s*capot\s*(\d+)\s*\)", seg, re.I)
             if cm:
                 out["capo"] = int(cm.group(1))
                 seg = (seg[:cm.start()] + seg[cm.end():]).strip()
-            out["musicians"] += [x.strip() for x in seg.split("/") if x.strip()]
+            out["musicians"] += split_slash(seg)
         elif words & SINGER_WORDS:
-            out["singers"] += [x.strip() for x in seg.split("/") if x.strip()]
+            out["singers"] += split_slash(seg)
         elif is_medley:
             t, k, _ = split_title_key(seg)
             out["medley"].append(f"{t.upper()} ({k})" if k else t.upper())
@@ -137,7 +192,7 @@ def parse_voices(inner: str, report: Report, song_id: str) -> str | None:
         if part_raw and part_raw.upper() not in PART_ALIASES and names != ["*"]:
             report.add("voix_non_standard", f"`{song_id}` : `{chunk}` → partie libre `{part}`")
         for n in names:
-            n = n if n == "*" else n.capitalize()
+            n = n if n == "*" else canon_member(n)
             out.append(f"{n}={part}" if part else n)
     return ", ".join(out)
 
@@ -300,9 +355,9 @@ def main(src: str, root: str) -> None:
         if hd["medley"]:
             head.append(f"{{medley: {' | '.join(hd['medley'])}}}")
         if hd["singers"]:
-            head.append(f"{{singers: {' | '.join(hd['singers'])}}}")
+            head.append(f"{{singers: {', '.join(to_assignments(hd['singers']))}}}")
         if hd["musicians"]:
-            head.append(f"{{musicians: {' | '.join(hd['musicians'])}}}")
+            head.append(f"{{musicians: {', '.join(to_assignments(hd['musicians']))}}}")
         if hd["notes"]:
             head.append(f"{{notes: {' | '.join(hd['notes'])}}}")
         body = lyrics_to_cho(s["lines"], report, s["id"])

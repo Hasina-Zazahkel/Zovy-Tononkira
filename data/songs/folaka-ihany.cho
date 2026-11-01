@@ -1,8 +1,8 @@
 {title: FOLAKA IHANY}
 {artist: SAMOELA}
 {key: SOL}
-{singers: 4 voix}
-{musicians: Guitare Haja | Basse Toky | Batterie Tofa}
+{singers: *=4 voix}
+{musicians: Haja=guitare, Toky=basse, Tofa=batterie}
 
 {voices: Hasina=lead, Misa=haut, Ke=bas}
 FOLAKA IHANY NY ANAO Ô !

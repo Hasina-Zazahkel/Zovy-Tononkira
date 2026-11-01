@@ -1,8 +1,8 @@
 {title: MAGNAHIRANA}
 {artist: LOLA}
 {key: FA}
-{singers: Lead Toky | Choeur 4 voix}
-{musicians: Clavier Haja | Basse Toky | Batterie Manitra}
+{singers: Toky=lead, *=chœur 4 voix}
+{musicians: Haja=clavier, Toky=basse, Manitra=batterie}
 
 MALAHELO ANAO MARO
 NY MAHATONGA ANAHY MANDEHA

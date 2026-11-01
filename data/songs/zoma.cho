@@ -1,8 +1,8 @@
 {title: ZOMA}
 {artist: TOVO J'HAY}
 {key: DO}
-{singers: lead toky | choeur 4 voix}
-{musicians: Guitare Haja | Basse Toky | Sax Tofa}
+{singers: Toky=lead, *=chœur 4 voix}
+{musicians: Haja=guitare, Toky=basse, Tofa=sax}
 
 Tiako raha mba ianao androany
 No iriko mba ho namanay
