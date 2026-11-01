@@ -4,8 +4,9 @@ import type { Section, Song } from './types';
  * Nettoyage structurel d'un morceau (idempotent), appliqué aux données sources :
  * 1. Sections de paroles vides (voix/label posés avant une intro) → reportées sur la section suivante.
  * 2. Repère isolé en strophe d'une ligne « (BIS) », « (pas d'interlude) » → rattaché à la strophe voisine.
- * 3. Strophe « ...MUSIQUE... » → repère instrumental.
- * 4. Repères instrumentaux consécutifs → fusionnés (« INTERLUDE BASSE · FIN INTRO »).
+ * 3. Strophe « ...MUSIQUE... » → repère instrumental (interlude).
+ * 4. Repères consécutifs de même catégorie → fusionnés (commentaires joints par « · »).
+ * 5. Position : un interlude avant toute parole est une intro ; après la dernière parole, une outro.
  */
 const CUE_LINE = /^\s*\(.*\)\s*$/;
 const MUSIC_LINE = /^\s*\.{2,}\s*MUSIQUE\s*\.{2,}\s*$/i;
@@ -21,7 +22,7 @@ export function cleanupSong(song: Song): Song {
     for (const st of s.stanzas) {
       if (st.length === 1 && MUSIC_LINE.test(st[0])) {
         if (cur.stanzas.length || cur.label || cur.voices) out.push(cur);
-        out.push({ id: '', kind: 'instrumental', label: 'MUSIQUE', stanzas: [] });
+        out.push({ id: '', kind: 'instrumental', cue: 'interlude', stanzas: [] });
         cur = { id: '', kind: 'lyrics', stanzas: [] };
       } else cur.stanzas.push(st);
     }
@@ -60,12 +61,23 @@ export function cleanupSong(song: Song): Song {
     kept.push(s);
   }
 
-  // 4. Instrumentaux consécutifs fusionnés
+  // 5. Catégorie selon la position
+  const firstLyrics = kept.findIndex((s) => s.kind === 'lyrics');
+  const lastLyrics = kept.map((s) => s.kind).lastIndexOf('lyrics');
+  kept.forEach((s, i) => {
+    if (s.kind !== 'instrumental') return;
+    s.cue ??= 'interlude';
+    if (s.cue === 'interlude' && firstLyrics >= 0 && i < firstLyrics) s.cue = 'intro';
+    if (s.cue === 'interlude' && lastLyrics >= 0 && i > lastLyrics) s.cue = 'outro';
+  });
+
+  // 4. Repères consécutifs de même catégorie fusionnés
   const final: Section[] = [];
   for (const s of kept) {
     const prev = final[final.length - 1];
-    if (s.kind === 'instrumental' && prev?.kind === 'instrumental') {
-      prev.label = [prev.label, s.label].filter(Boolean).join(' · ');
+    if (s.kind === 'instrumental' && prev?.kind === 'instrumental' && prev.cue === s.cue) {
+      const label = [prev.label, s.label].filter(Boolean).join(' · ');
+      if (label) prev.label = label;
       continue;
     }
     final.push(s);

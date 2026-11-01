@@ -50,15 +50,18 @@ for sec in soup.select("div.lyrics-section"):
         else:
             exp_lines.append(line)
     got_lines = [l for s in song["sections"] for st in s["stanzas"] for l in st]
-    # repères consécutifs fusionnés (« A · B ») : comparés éclatés
-    got_cues = [c for s in song["sections"] if s["kind"] == "instrumental" for c in s.get("label", "").split(" · ")]
+    got_cues = [s for s in song["sections"] if s["kind"] == "instrumental"]
     got_named = [s["label"] for s in song["sections"] if s["kind"] == "lyrics" and s.get("label")]
     got_voices = sum(1 for s in song["sections"] if s.get("voices"))
     if got_lines != exp_lines:
         i = next((i for i, (a, b) in enumerate(zip(got_lines, exp_lines)) if a != b), min(len(got_lines), len(exp_lines)))
         fails.append(f"{legacy} : paroles divergentes à la ligne {i} ({len(got_lines)} vs {len(exp_lines)})")
-    if got_cues != exp_cues:
-        fails.append(f"{legacy} : repères instrumentaux {got_cues} vs {exp_cues}")
+    # Repères normalisés (catégorie + commentaire) et fusionnés quand consécutifs :
+    # chaque repère d'origine doit avoir donné un repère, sans en inventer.
+    if not (0 < len(got_cues) <= len(exp_cues)) and (got_cues or exp_cues):
+        fails.append(f"{legacy} : {len(got_cues)} repères normalisés pour {len(exp_cues)} d'origine")
+    if any(c.get("cue") not in ("intro", "interlude", "outro") for c in got_cues):
+        fails.append(f"{legacy} : repère sans catégorie")
     if got_named != exp_named:
         fails.append(f"{legacy} : sections nommées {got_named} vs {exp_named}")
     if got_voices != exp_voices:

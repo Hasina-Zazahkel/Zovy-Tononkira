@@ -1,5 +1,5 @@
 import { serializeChordPro } from './chordpro';
-import type { Assignment, Song } from './types';
+import type { Assignment, CueType, Song } from './types';
 
 /**
  * Modification locale d'un morceau (faite sur une tablette, pas encore publiée).
@@ -15,6 +15,10 @@ export interface SongOverride {
   sectionVoices?: Record<string, Assignment[]>;
   /** Label de la section au moment de l'édition : garde-fou si les paroles ont été restructurées. */
   sectionLabels?: Record<string, string | null>;
+  /** Repères instrumentaux modifiés : catégorie + commentaire (chaîne vide = sans commentaire). */
+  cues?: Record<string, { cue: CueType; note: string }>;
+  /** État d'origine « catégorie|commentaire » : garde-fou si le repère a changé entre-temps. */
+  cueGuards?: Record<string, string>;
   updatedAt: number;
   /** Date du dernier envoi sur GitHub (la modif reste affichée jusqu'à réception de la nouvelle version). */
   publishedAt?: number;
@@ -34,6 +38,12 @@ export function applyOverride(base: Song, ov: SongOverride | undefined): ApplyRe
     singers: ov.singers ?? base.singers,
     musicians: ov.musicians ?? base.musicians,
     sections: base.sections.map((s) => {
+      if (s.kind === 'instrumental' && ov.cues && s.id in ov.cues) {
+        if (ov.cueGuards?.[s.id] !== undefined && ov.cueGuards[s.id] !== cueKey(s.cue, s.label)) { skipped.push(s.id); return s; }
+        const { label: _l, ...rest } = s;
+        const c = ov.cues[s.id];
+        return c.note.trim() ? { ...rest, cue: c.cue, label: c.note.trim() } : { ...rest, cue: c.cue };
+      }
       if (!ov.sectionVoices || !(s.id in ov.sectionVoices)) return s;
       const expected = ov.sectionLabels?.[s.id];
       if (expected !== undefined && (s.label ?? null) !== expected) { skipped.push(s.id); return s; }
@@ -51,6 +61,8 @@ export function applyOverride(base: Song, ov: SongOverride | undefined): ApplyRe
   }
   return { song, skipped };
 }
+
+export const cueKey = (cue: CueType | undefined, label: string | undefined) => `${cue ?? 'interlude'}|${label ?? ''}`;
 
 /** Vrai si la modification n'apporte plus rien (déjà publiée, ou annulée à la main). */
 export function isNoop(base: Song, ov: SongOverride): boolean {

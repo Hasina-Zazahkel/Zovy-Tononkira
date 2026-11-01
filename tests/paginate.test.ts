@@ -5,7 +5,7 @@ import { buildUnits, paginate, type Measure } from '../src/stage/paginate';
 const song = parseChordPro('t', `{title: T}
 {artist: A}
 
-{instrumental: Intro}
+{intro}
 
 a1
 a2
@@ -23,8 +23,8 @@ const keys = (cols: ReturnType<typeof paginate>) => cols.map((c) => c.units.map(
 describe('buildUnits', () => {
   it('une unité par strophe, en-tête sur la première strophe de section', () => {
     const u = buildUnits(song);
-    expect(u.map((x) => [x.key, x.header, x.cue ?? x.lines?.length])).toEqual([
-      ['s0', false, 'Intro'], ['s1.0', false, 2], ['s2.0', true, 3]]);
+    expect(u.map((x) => [x.key, x.header, x.cue?.type ?? x.lines?.length])).toEqual([
+      ['s0', false, 'intro'], ['s1.0', false, 2], ['s2.0', true, 3]]);
   });
 });
 
@@ -37,7 +37,7 @@ describe('paginate', () => {
     expect(keys(paginate(units, ms, 40, 5))).toEqual([['s0', 's1.0'], ['s2.0']]);
   });
   it('un repère instrumental ne reste jamais seul en bas de colonne', () => {
-    const u = buildUnits(parseChordPro('x', '{title: a}\n{artist: b}\nl1\nl2\n\n{instrumental: INTERLUDE}\n\nl3\nl4\n').song);
+    const u = buildUnits(parseChordPro('x', '{title: a}\n{artist: b}\nl1\nl2\n\n{interlude}\n\nl3\nl4\n').song);
     // colonne de 35 : [l1 l2]=20 + cue 10 tiendraient, mais la strophe suivante non → le repère part avec elle
     expect(keys(paginate(u, [m(2), cue, m(2)], 35, 0))).toEqual([['s0.0'], ['s1', 's2.0']]);
   });

@@ -9,6 +9,7 @@ import { bumpFont, FONT_MAX, FONT_MIN, settings, update } from '../lib/settings'
 import { isCueLine } from '../lib/text';
 import { wakeState } from '../lib/wakeLock';
 import { displayKey } from '../model/chordpro';
+import { CUE_LABEL } from '../model/cues';
 import type { Assignment, Section, Song } from '../model/types';
 import { buildUnits, paginate, type Column, type Measure, type Unit } from '../stage/paginate';
 import { IconBack, IconCollapse, IconEdit, IconExpand, IconInfo, IconMoon, IconNext, IconPrev, IconSun } from '../ui/icons';
@@ -290,7 +291,14 @@ function SectionHead({ s }: { s: Section }) {
 }
 
 function UnitView({ u }: { u: Unit }) {
-  if (u.cue != null) return <div class="unit cue-unit">♪ {u.cue}</div>;
+  if (u.cue != null) {
+    return (
+      <div class={`unit cue-unit ${u.cue.type}`}>
+        <span class="cue-type">♪ {CUE_LABEL[u.cue.type]}</span>
+        {u.cue.note && <span class="cue-note">{u.cue.note}</span>}
+      </div>
+    );
+  }
   return (
     <div class="unit">
       {u.header && <SectionHead s={u.section} />}

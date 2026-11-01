@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'preact/hooks';
 import { catalog } from '../lib/catalog';
 import { dropOverride, effectiveSong, overrides, saveOverride } from '../lib/overrides';
-import { cleanAssignments, type SongOverride } from '../model/overrides';
+import { cleanAssignments, cueKey, type SongOverride } from '../model/overrides';
+import { CUE_LABEL, CUE_TYPES, cleanNote } from '../model/cues';
 import { displayKey } from '../model/chordpro';
 import { rolesFor, type RoleKind } from '../model/roles';
-import type { Assignment, Song } from '../model/types';
+import type { Assignment, CueType, Song } from '../model/types';
 import { IconClose } from '../ui/icons';
 
 type Row = { member: string; role: string };
@@ -33,6 +34,10 @@ export function EditPanel({ base, onClose }: { base: Song; onClose: () => void }
     Object.fromEntries(lyricSections.map((s) => [s.id, toRows(s.voices)])),
   );
   const [notes, setNotes] = useState(current.notes ?? '');
+  const cueSections = current.sections.filter((s) => s.kind === 'instrumental');
+  const [cues, setCues] = useState<Record<string, { cue: CueType; note: string }>>(
+    Object.fromEntries(cueSections.map((s) => [s.id, { cue: s.cue ?? 'interlude', note: s.label ?? '' }])),
+  );
   const [openSec, setOpenSec] = useState<string | null>(null);
   const members = useMembers();
   const hasLocal = !!overrides.value[base.id];
@@ -51,6 +56,15 @@ export function EditPanel({ base, onClose }: { base: Song; onClose: () => void }
       if (!same(v, sec.voices)) {
         (ov.sectionVoices ??= {})[sec.id] = v;
         (ov.sectionLabels ??= {})[sec.id] = sec.label ?? null;
+      }
+    }
+    for (const sec of base.sections) {
+      if (sec.kind !== 'instrumental' || !cues[sec.id]) continue;
+      const c = cues[sec.id];
+      const note = c.note.trim() ? (cleanNote(c.note) ?? '') : '';
+      if (cueKey(c.cue, note || undefined) !== cueKey(sec.cue, sec.label)) {
+        (ov.cues ??= {})[sec.id] = { cue: c.cue, note };
+        (ov.cueGuards ??= {})[sec.id] = cueKey(sec.cue, sec.label);
       }
     }
     await saveOverride(ov);
@@ -111,6 +125,28 @@ export function EditPanel({ base, onClose }: { base: Song; onClose: () => void }
             </div>
           );
         })}
+
+        {cueSections.length > 0 && (
+        <div class="cues-block">
+          <h3 class="sheet-h">Intro · Interludes · Outro</h3>
+          {cueSections.map((s) => {
+            const idx = current.sections.indexOf(s);
+            const before = current.sections.slice(0, idx).reverse().find((x) => x.kind === 'lyrics')?.stanzas.at(-1)?.at(-1);
+            const c = cues[s.id];
+            return (
+              <div class="cue-row" key={s.id}>
+                <select class="in sel" value={c.cue} aria-label="Catégorie"
+                  onChange={(e) => setCues((p) => ({ ...p, [s.id]: { ...c, cue: (e.target as HTMLSelectElement).value as CueType } }))}>
+                  {CUE_TYPES.map((t) => <option value={t} key={t}>{CUE_LABEL[t]}</option>)}
+                </select>
+                <input class="in" type="text" placeholder="Commentaire (ex. guitare, ×4)" maxLength={60} value={c.note}
+                  onInput={(e) => setCues((p) => ({ ...p, [s.id]: { ...c, note: (e.target as HTMLInputElement).value } }))} aria-label="Commentaire du repère" />
+                <span class="cue-where">{before ? `après « ${before} »` : 'avant les paroles'}</span>
+              </div>
+            );
+          })}
+        </div>
+        )}
       </div>
 
       <footer class="sheet-foot">

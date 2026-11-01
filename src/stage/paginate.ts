@@ -1,4 +1,4 @@
-import type { Section, Song } from '../model/types';
+import type { CueType, Section, Song } from '../model/types';
 
 /**
  * Unité de mise en page : une strophe (avec l'en-tête de sa section si c'est la première)
@@ -9,7 +9,8 @@ export interface Unit {
   section: Section;
   /** Afficher l'en-tête de section (label / voix) au-dessus. */
   header: boolean;
-  cue?: string;
+  /** Repère instrumental : catégorie + commentaire discret. */
+  cue?: { type: CueType; note?: string };
   lines?: string[];
   /** Vrai pour une strophe découpée qui continue sur la page suivante. */
   continued?: boolean;
@@ -19,7 +20,7 @@ export function buildUnits(song: Song): Unit[] {
   const units: Unit[] = [];
   for (const s of song.sections) {
     if (s.kind === 'instrumental') {
-      units.push({ key: `${s.id}`, section: s, header: false, cue: s.label ?? 'INSTRUMENTAL' });
+      units.push({ key: `${s.id}`, section: s, header: false, cue: { type: s.cue ?? 'interlude', note: s.label } });
       continue;
     }
     const hasHeader = !!(s.label || s.voices?.length);

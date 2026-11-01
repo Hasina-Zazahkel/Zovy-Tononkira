@@ -19,7 +19,7 @@ describe('parseChordPro', () => {
 {singers: Hasina=lead, Misa=1ère voix, Ke=2ème voix, Toky=ténor}
 {musicians: Haja=guitare basse, Toky=guitare classique}
 
-{instrumental: Intro}
+{intro}
 
 l1
 l2
@@ -44,7 +44,7 @@ l5
   });
   it('sections et strophes', () => {
     expect(song.sections.map((s) => [s.id, s.kind, s.label ?? null])).toEqual([
-      ['s0', 'instrumental', 'Intro'], ['s1', 'lyrics', null], ['s2', 'lyrics', null], ['s3', 'lyrics', 'ZOMA']]);
+      ['s0', 'instrumental', null], ['s1', 'lyrics', null], ['s2', 'lyrics', null], ['s3', 'lyrics', 'ZOMA']]);
     expect(song.sections[1].stanzas).toEqual([['l1', 'l2'], ['l3']]);
     expect(song.sections[2].voices).toEqual([{ member: 'Hasina', role: 'lead' }, { member: '*', role: 'choeur' }]);
   });

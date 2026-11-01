@@ -2,12 +2,12 @@
 {artist: FENOAMBY}
 {key: MI}
 
-{instrumental: INTRO Choeur}
+{intro: Choeur}
 
 {voices: Toky=Lead, *=Chœur}
 HALAKO O x8
 
-{instrumental: INTERLUDE}
+{interlude}
 
 TIA ZAHO MBA TIAKO
 FA FATAONDRA TSY MAHATEKY E X2
@@ -23,7 +23,7 @@ ALAKO MAGNARY JERY E X2
 
 ALAKO O! X4
 
-{instrumental: INTERLUDE}
+{interlude}
 
 NA TSARA TAREHINAO VIAVY
 TSY IO NO ITIAVAKO ANAO O X2
@@ -34,7 +34,7 @@ VIAVY E
 MIHERITRERETA, MIHERITRERETA
 ANAO VAIAVY E AOIRA!
 
-{instrumental: INTERLUDE}
+{interlude}
 
 VIAVY TSY HAGNANO TSY MAINTSY MAHITA
 TAMBINY TSY HAVIANY E X2
@@ -45,7 +45,7 @@ MANAFO
 MIHERITRERETA, MIHERITRERETA
 ATSIKA MANAFO AOIRA!
 
-{instrumental: INTERLUDE}
+{interlude}
 
 ALAKO O! X4
 

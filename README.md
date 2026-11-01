@@ -42,7 +42,7 @@ Nom de fichier = ID du morceau (`a-z0-9-`).
 {musicians: Haja=guitare basse, Toky=guitare classique}
 {notes: Bien marquer le break avant Zoma}
 
-{instrumental: Intro}                      repère instrumental (bloc dédié à l'écran)
+{intro}                                    repère : {intro|interlude|outro[: commentaire]}
 
 O PAPA                                     paroles ; ligne vide = fin de strophe
 QUEL MALHEUR QUEL GRAND MALHEUR POUR MOI

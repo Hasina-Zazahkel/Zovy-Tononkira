@@ -24,13 +24,17 @@ export interface Assignment {
 }
 
 export type SectionKind = 'lyrics' | 'instrumental';
+/** Catégorie d'un repère instrumental. */
+export type CueType = 'intro' | 'interlude' | 'outro';
 
 export interface Section {
   /** Stable dans un morceau : "s0", "s1"… (référencé par les annotations). */
   id: string;
   kind: SectionKind;
-  /** "ZOMA", "INTERLUDE GUITARE"… */
+  /** Paroles : nom de section (« ZOMA »). Repère instrumental : commentaire discret (« Guitare », « ×4 »). */
   label?: string;
+  /** Repère instrumental uniquement : catégorie. */
+  cue?: CueType;
   /** Voix pour cette section (priment sur Song.singers pendant la section). */
   voices?: Assignment[];
   /** Strophes : tableau de lignes. Une strophe = un bloc insécable pour la pagination. */

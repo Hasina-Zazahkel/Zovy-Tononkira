@@ -72,3 +72,20 @@ describe('listes fermées', () => {
   it.each([['basse', 'Guitare basse'], ['batterie', 'Percussion'], ['clavier +6 (fa/re)', 'Clavier'], ['sax', 'Sax'], ['guitare', 'Guitare']])(
     'instrument %s → %s', (a, b) => expect(mapLegacyInstrument(a)).toBe(b));
 });
+
+describe('repères instrumentaux', () => {
+  const s = parseChordPro('t', '{title: T}\n{artist: A}\n\nl1\n\n{interlude: guitare}\n\nl2\n').song;
+  it('change catégorie et commentaire', () => {
+    const r = applyOverride(s, { songId: 't', updatedAt: 1, cues: { s1: { cue: 'outro', note: '×2' } }, cueGuards: { s1: 'interlude|guitare' } });
+    expect(r.song.sections[1]).toMatchObject({ cue: 'outro', label: '×2' });
+    expect(serializeChordPro(r.song)).toContain('{outro: ×2}');
+  });
+  it('commentaire vidé', () => {
+    const r = applyOverride(s, { songId: 't', updatedAt: 1, cues: { s1: { cue: 'interlude', note: '' } }, cueGuards: { s1: 'interlude|guitare' } });
+    expect(r.song.sections[1].label).toBeUndefined();
+  });
+  it('ignoré si le repère a changé entre-temps', () => {
+    const r = applyOverride(s, { songId: 't', updatedAt: 1, cues: { s1: { cue: 'outro', note: '' } }, cueGuards: { s1: 'intro|' } });
+    expect(r.skipped).toEqual(['s1']);
+  });
+});

@@ -4,12 +4,14 @@
  * Directives d'en-tête : {title} {artist} {key} {capo} {tags: a, b} {medley: a | b}
  *                        {singers: Hasina=lead, Misa=1ère voix} {musicians: Haja=guitare basse} {notes}
  * Directives de corps  : {section[: LABEL]}      nouvelle section de paroles
- *                        {instrumental: LABEL}   repère instrumental (intro, interlude…)
+ *                        {intro[: note]} {interlude[: note]} {outro[: note]}  repère instrumental
+ *                        ({instrumental: LIBELLÉ} : ancien format, classé automatiquement)
  *                        {voices: Hasina=lead, *=choeur}  voix de la section courante
  *                        (si la section a déjà des paroles, en ouvre une nouvelle)
  * Ligne vide = fin de strophe.
  */
-import type { Assignment, Key, NoteRoot, Section, Song } from './types';
+import { classifyCue } from './cues';
+import type { Assignment, CueType, Key, NoteRoot, Section, Song } from './types';
 
 const DIRECTIVE_RE = /^\s*\{\s*([a-z_]+)\s*(?::\s*(.*?))?\s*\}\s*$/i;
 const KEY_RE = /^(DO|RE|MI|FA|SOL|LA|SI)(b|#)?$/;
@@ -62,8 +64,9 @@ export function parseChordPro(id: string, text: string): ParseResult {
   let stanza: string[] | null = null;
   let n = 0;
 
-  const newSection = (kind: Section['kind'], label?: string): Section => {
+  const newSection = (kind: Section['kind'], label?: string, cue?: CueType): Section => {
     const s: Section = { id: `s${n++}`, kind, stanzas: [] };
+    if (cue) s.cue = cue;
     if (label) s.label = label;
     song.sections.push(s);
     stanza = null;
@@ -99,7 +102,12 @@ export function parseChordPro(id: string, text: string): ParseResult {
         case 'musicians': song.musicians = parseAssignments(val); break;
         case 'notes': song.notes = val; break;
         case 'section': current = newSection('lyrics', val || undefined); break;
-        case 'instrumental': newSection('instrumental', val || undefined); current = null; break;
+        case 'intro': case 'interlude': case 'outro':
+          newSection('instrumental', val || undefined, name); current = null; break;
+        case 'instrumental':
+          for (const c of classifyCue(val)) newSection('instrumental', c.note, c.cue);
+          current = null;
+          break;
         case 'voices': {
           if (!current || current.kind !== 'lyrics' || hasContent(current)) current = newSection('lyrics');
           current.voices = parseAssignments(val);
@@ -138,7 +146,8 @@ export function serializeChordPro(song: Song): string {
   song.sections.forEach((s, i) => {
     out.push('');
     if (s.kind === 'instrumental') {
-      out.push(`{instrumental: ${s.label ?? ''}}`);
+      const cue = s.cue ?? 'interlude';
+      out.push(s.label ? `{${cue}: ${s.label}}` : `{${cue}}`);
     } else {
       // Une section de paroles qui suit une autre section de paroles est ouverte explicitement.
       // Après un {instrumental} ou en début de morceau, l'ouverture est implicite.
