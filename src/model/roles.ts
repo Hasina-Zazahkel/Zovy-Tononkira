@@ -30,8 +30,8 @@ export function mapLegacyInstrument(raw: string): string | undefined {
   if (r === 'basse') return 'Guitare basse';
   if (r.startsWith('guitare basse')) return 'Guitare basse';
   if (r.startsWith('guitare')) return 'Guitare';
-  if (r.startsWith('batterie') || r.startsWith('percu')) return 'Percussion';
-  if (r.startsWith('clavier')) return 'Clavier';
+  if (/^(batterie|percu|djemb|conga|cajon|bongo|tambour|darbouka|kayamb)/.test(r)) return 'Percussion';
+  if (/^(clavier|piano|synth|orgue|keyboard|keys)/.test(r)) return 'Clavier';
   if (r.startsWith('sax')) return 'Sax';
   if (r.startsWith('korintsana')) return 'Korintsana';
   return undefined;

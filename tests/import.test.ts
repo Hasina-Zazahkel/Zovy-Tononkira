@@ -36,7 +36,7 @@ describe('format numéroté (celui de Hasina)', () => {
     expect(r.song.key).toEqual({ root: 'RE' });
     expect(r.song.notes).toBe('Capo 5');
     expect(r.song.singers).toEqual([{ member: 'Misa', role: 'Soprano' }, { member: 'Hasina', role: 'Lead' }, { member: 'Toky', role: 'Ténor' }, { member: 'Ke', role: 'Soprano' }]);
-    expect(r.song.musicians).toEqual([{ member: 'Haja', role: 'Guitare' }, { member: 'Toky', role: 'Guitare' }, { member: 'Manitra' }]);
+    expect(r.song.musicians).toEqual([{ member: 'Haja', role: 'Guitare' }, { member: 'Toky', role: 'Guitare' }, { member: 'Manitra', role: 'Percussion' }]);
   });
   it('corps', () => {
     expect(cho.split('\n\n').slice(1).join('\n\n')).toBe(`{intro: Guitare seule}
@@ -65,7 +65,7 @@ ligne 9
     expect(r.warnings).toEqual([
       '« haut » (Ke) compris comme « Soprano »',
       '« Guitare classique » (Toky) compris comme « Guitare »',
-      'Instrument « Djembé » (Manitra) non reconnu : à choisir dans l\'éditeur',
+      '« Djembé » (Manitra) compris comme « Percussion »',
     ]);
     expect(r.found).toContain('2 paragraphes répétés');
     expect(r.found).toContain('3 intro / interlude / outro');

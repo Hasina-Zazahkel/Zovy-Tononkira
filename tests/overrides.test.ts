@@ -106,3 +106,9 @@ describe('prune : morceaux créés / supprimés', () => {
     expect(Object.keys(prune({ a: { songId: 'a', deleted: true, updatedAt: 3 } }, new Map()))).toEqual(['a']);
   });
 });
+
+describe('synonymes d\'instruments', () => {
+  it.each([['Djembé', 'Percussion'], ['cajón', 'Percussion'], ['Conga', 'Percussion'], ['Piano', 'Clavier'], ['synthé', 'Clavier'], ['Clavier', 'Clavier']])('%s', (raw, role) => {
+    expect(mapLegacyInstrument(raw)).toBe(role);
+  });
+});
