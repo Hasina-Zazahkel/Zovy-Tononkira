@@ -1,0 +1,20 @@
+{
+  "name": "zovy-tononkira",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "data:build": "tsx scripts/build-data.ts",
+    "data:format": "tsx scripts/build-data.ts --format",
+    "data:check": "tsx scripts/build-data.ts --check",
+    "migrate:legacy": "python3 -I scripts/migrate/legacy_html.py legacy/Tononkira_Zovy.html . && npm run data:format",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}

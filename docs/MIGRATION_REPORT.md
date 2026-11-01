@@ -1,0 +1,178 @@
+# Rapport de migration legacy → ChordPro
+
+- Morceaux : **236**
+- Artistes : **76**
+- Setlist : Première partie 16 / Deuxième partie 15 / Réserve 4
+
+## Morceaux absents de l'index artistes (3)
+
+- `tiana-ve` (TIANA VE) → artiste `INCONNU`
+- `sahondra` (SAHONDRA) → artiste `INCONNU`
+- `iantrao` (IANTRAO) → artiste `INCONNU`
+
+## Morceaux sans tonalité (à compléter) (129)
+
+- `medley-basesa-soley` (MEDLEY BASESA SOLEY)
+- `sarah` (SARAH)
+- `tao-anatinny-tolona` (TAO ANATIN'NY TOLONA)
+- `anilanny-tiana` (ANILAN'NY TIANA)
+- `o-rila-re` (O RILA RE)
+- `ino-tiano` (INO TIANO)
+- `navadiko` (NAVADIKO)
+- `zana-drazana` (ZANA-DRAZANA)
+- `zanakiarivo` (ZANAK'IARIVO)
+- `mpivaro-kena-sy-mpivaro-damba` (MPIVARO-KENA SY MPIVARO-DAMBA)
+- `la-bamba` (LA BAMBA)
+- `biche-ma-biche` (BICHE MA BICHE)
+- `a-present-tu-peux-ten-aller` (A PRESENT TU PEUX T'EN ALLER)
+- `nankaiza-kosa-ireo-hira-fahiny` (NANKAIZA KOSA IREO HIRA FAHINY)
+- `andro-marary` (ANDRO MARARY)
+- `bakobako-roa` (BAKOBAKO ROA)
+- `baoejy` (BAOEJY)
+- `raoky` (RAOKY)
+- `vady-vao` (VADY VAO)
+- `andao-raha-sahy` (ANDAO RAHA SAHY)
+- `bitika` (BITIKA)
+- `malokila` (MALOK'ILA)
+- `tanilanila-ilay-masoandro` (TANILANILA ILAY MASOANDRO)
+- `arotsahy-dieny-izao` (AROTSAHY DIENY IZAO)
+- `mananjary` (MANANJARY)
+- `fihavanana-malagasy` (FIHAVANANA MALAGASY)
+- `andrasako` (ANDRASAKO)
+- `tsy-mila-vandivandy` (TSY MILA VANDIVANDY)
+- `amboara-sosy` (AMBOARA SOSY)
+- `te-ho-soa` (TE HO SOA)
+- `trio` (TRIO)
+- `ampitapitao` (AMPITAPITAO)
+- `hiera-aminao` (HIERA AMINAO)
+- `tsy-miala-aminazy` (TSY MIALA AMINAZY)
+- `tady-vita-fatomaty` (TADY VITA FATOMATY)
+- `raha-mankany-ialahy` (RAHA MANKANY IALAHY)
+- `maninona` (MANINONA)
+- `ianao-mitady` (IANAO MITADY)
+- `lekaoma` (LEKAOMA)
+- `marovoay` (MAROVOAY)
+- `floara` (FLOARA)
+- `lendrema` (LENDREMA)
+- `hakamoana` (HAKAMOANA)
+- `ny-lasantsika` (NY LASANTSIKA)
+- `ditra` (DITRA)
+- `hiaraka-isika` (HIRAKA ISIKA)
+- `mozambika` (MOZAMBIKA)
+- `mihodikodina` (MIHODIKODINA)
+- `tanalahy` (TANALAHY)
+- `somambisamby` (SOMAMBISAMBY)
+- `raha-mba-manana-elatra` (RAHA MBA MANANA ELATRA)
+- `ry-tompo` (RY TOMPO)
+- `vavaka` (VAVAKA)
+- `tiana-ve` (TIANA VE)
+- `karaborosy` (KARABOROSY)
+- `faribolana` (FARIBOLANA)
+- `ao-izy-e` (AO IZY E)
+- `mandehana-makany` (MANDEHANA MAKANY)
+- `solfezy` (SOLFEZY)
+- `valio-anie-aho` (VALIO ANIE AHO)
+- `tsisy-tsiny` (TSISY TSINY)
+- `fahazazana` (FAHAZAZANA)
+- `andriamanitra-avo` (ANDRIAMANITRA AVO)
+- `omaly-aky` (OMALY AKY)
+- `sambo-de-gera` (SAMBO DE GERA)
+- `tsy-misy-ny-doria` (TSY MISY NY DORIA)
+- `vacances-a-nosy-be` (VACANCES A NOSY BE)
+- `masoandro-mody` (MASOANDRO MODY)
+- `marary-anie-izany` (MARARY ANIE IZANY)
+- `sahondra` (SAHONDRA)
+- `adolan-tsento` (ADOLAN-TSENTO)
+- `mahatsiaro` (MAHATSIARO)
+- `gasikara` (GASIKARA)
+- `ravaomaria` (RAVAOMARIA)
+- `tsara-petrapetraka` (TSARA PETRAPETRAKA)
+- `tsy-ho-any-aho-e` (TSY HO ANY AHO E)
+- `pangalana` (PANGALANA)
+- `ny-fifaliana-ry-lahy` (NY FIFALIANA RY LAHY)
+- `eny-ambanivohitra` (ENY AMBANIVOHITRA)
+- `voahirana` (VOAHIRANA)
+- `namana-zo-panage` (NAMANA ZO PANAGE)
+- `fanja` (FANJA)
+- `vololona` (VOLOLONA)
+- `zanako-o-io-izy-e` (ZANAKO O IO IZY E)
+- `zovy` (ZOVY)
+- `iantrao` (IANTRAO)
+- `rano-sy-vary` (RANO SY VARY)
+- `ry-zanako` (RY ZANAKO)
+- `kalonny-antitra` (KALON'NY ANTITRA)
+- `nofy-mahaleo` (NOFY MAHALEO)
+- `manembona` (MANEMBONA)
+- `sao-dia-tezitra` (SAO DIA TEZITRA)
+- `kalonny-mahantra` (KALON'NY MAHANTRA)
+- `ianao-ilay-tsy-manan-tsahala` (IANAO ILAY TSY MANAN-TSAHALA)
+- `ekena-re` (EKENA RE)
+- `ramiaramila` (RAMIARAMILA)
+- `tonga-ny-alina` (TONGA NY ALINA)
+- `manahy-aho` (MANAHY AHO)
+- `tafaray-samy-tia-mahaleo` (TAFARAY SAMY TIA MAHALEO)
+- `tia-dia-tia` (TIA DIA TIA)
+- `ray-sy-zanaka` (RAY SY ZANAKA)
+- `tanani-mama` (TANAN'I MAMA)
+- `nenina` (NENINA)
+- `fitia-vao-mitsiry` (FITIA VAO MITSIRY)
+- `fitia-antsokosoko` (FITIA ANTSOKOSOKO)
+- `rafahafahana` (RAFAHAFAHANA)
+- `rivotra` (RIVOTRA)
+- `zanako-vavy` (ZANAKO VAVY)
+- `tao-antsekoly` (TAO ANTSEKOLY)
+- `jamba` (JAMBA)
+- `mimoza` (MIMOZA)
+- `hanaraka-anao` (HANARAKA ANAO)
+- `embona-sy-hanina` (EMBONA SY HANINA)
+- `iny-masoandro-iny` (INY MASOANDRO INY)
+- `veloma-madinidinika` (VELOMA MADINIDINIKA (DO D))
+- `goa-naho-kepeke` (GOA NAHO KEPEKE)
+- `tafaray-samy-tia-randrantelo` (TAFARAY SAMY TIA RANDRANTELO)
+- `ampindramo` (AMPINDRAMO)
+- `vanona` (VANONA)
+- `teny-mamy` (TENY MAMY)
+- `mbola-ho-avy-dede-fenerive` (MBOLA HO AVY DEDE FENERIVE)
+- `kotro-baratra-bruno-raisner` (KOTRO-BARATRA BRUNO RAISNER)
+- `mainty-aho-zeze-mahanori` (MAINTY AHO ZEZE MAHANORI)
+- `tambitamby-lava-jean-fredy` (TAMBITAMBY LAVA JEAN FREDY)
+- `tanala-very-sampy-club-306` (TANALA VERY SAMPY CLUB 306)
+- `losogno-john-betoto` (LOSOGNO JOHN BETOTO)
+- `namana-jean-rigo` (NAMANA JEAN RIGO)
+- `manantena` (MANANTENA)
+- `malakilaky` (MALAKILAKY)
+
+## Parenthèse finale non reconnue comme tonalité (1)
+
+- `VELOMA-MADINIDINIKA` : `(do d)` dans `VELOMA MADINIDINIKA (do d) - Misa & Toky - Guitare Haja / Basse Toky`
+
+## Doublons supprimés (1)
+
+- `HANARAKA-ANAO` : section dupliquée à l'identique, une seule conservée
+
+## Titres suspects (1)
+
+- `T` : titre `T` (contenu : ANTSOY AHO HOE RAHA……)
+
+## Liens réparés manuellement (1)
+
+- index `SAKELIDALANA` : `#TAO-ANATIN'NY-TOLOLA` → `#TAO-ANATIN'NY-TOLONA`
+
+## Voix non standard (à valider) (12)
+
+- `medley-chachacha` : `Haja lead-bas` → partie libre `lead-bas`
+- `toriny` : `Hasina Taraisy` → partie libre `taraisy`
+- `medley-reggae` : `Hasina Miventy` → partie libre `miventy`
+- `medley-reggae` : `Hasina Tenor Refrain` → partie libre `tenor refrain`
+- `tsaiky-joby` : `Choeur 3 voix` → `*=choeur 3 voix`
+- `mandry-ve` : `Choeur 4 voix` → `*=choeur 4 voix`
+- `itondray` : `Misa & Ke Choeur unisson` → partie libre `choeur unisson`
+- `itondray` : `Haja Refrain Ambany` → partie libre `refrain ambany`
+- `miolakolaka` : `Hasina lead 2eme` → partie libre `lead 2eme`
+- `miolakolaka` : `Misa Lead 1ere` → partie libre `lead 1ere`
+- `miolakolaka` : `Ke Lead haut` → partie libre `lead haut`
+- `raha-manina` : `Misa oiaie` → partie libre `oiaie`
+
+## Liens réparés (normalisation) (1)
+
+- index `MAHALEO` : `#LENDREMA`
