@@ -24,19 +24,20 @@ export interface CatalogState {
   setlists: Setlist[];
 }
 
+/** Catalogue publié (tel que reçu). L'affichage utilise `liveCatalog` (publié + modifs locales). */
 export const catalog = signal<CatalogState | null>(null);
 export const catalogError = signal<string | null>(null);
 
 const collator = new Intl.Collator('fr', { sensitivity: 'base', numeric: true });
 
-function build(cat: Catalog, setlists: Setlist[]): CatalogState {
-  const songs = new Map(cat.songs.map((s) => [s.id, s]));
-  const index = cat.songs.map((song) => {
+export function buildState(list: Song[], setlists: Setlist[]): CatalogState {
+  const songs = new Map(list.map((s) => [s.id, s]));
+  const index = list.map((song) => {
     const lines = song.sections.flatMap((s) => s.stanzas.flat()).map((l) => splitLineRepeat(l).text);
     return { song, nTitle: normalize(song.title), nArtist: normalize(song.artist), lines, nLines: lines.map(normalize) };
   });
   const byArtist = new Map<string, Song[]>();
-  for (const s of cat.songs) {
+  for (const s of list) {
     const list = byArtist.get(s.artist) ?? [];
     list.push(s);
     byArtist.set(s.artist, list);
@@ -54,7 +55,7 @@ export async function loadCatalog(): Promise<void> {
       fetch(`${base}data/songs.json`).then((r) => r.json() as Promise<Catalog>),
       fetch(`${base}data/setlists.json`).then((r) => r.json() as Promise<Setlist[]>),
     ]);
-    catalog.value = build(c, s);
+    catalog.value = buildState(c.songs, s);
   } catch (e) {
     catalogError.value = e instanceof Error ? e.message : String(e);
   }

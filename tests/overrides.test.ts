@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseChordPro, serializeChordPro } from '../src/model/chordpro';
-import { applyOverride, cleanAssignments, isNoop } from '../src/model/overrides';
+import { applyOverride, cleanAssignments, isNoop, prune } from '../src/model/overrides';
 import { mapLegacyInstrument, mapLegacyVoice } from '../src/model/roles';
 
 const base = parseChordPro('t', `{title: T}
@@ -87,5 +87,22 @@ describe('repères instrumentaux', () => {
   it('ignoré si le repère a changé entre-temps', () => {
     const r = applyOverride(s, { songId: 't', updatedAt: 1, cues: { s1: { cue: 'outro', note: '' } }, cueGuards: { s1: 'intro|' } });
     expect(r.skipped).toEqual(['s1']);
+  });
+});
+
+describe('prune : morceaux créés / supprimés', () => {
+  const song = (id: string) => ({ id, title: id.toUpperCase(), artist: 'X', tags: [], medley: [], singers: [], musicians: [], sections: [{ id: 's1', kind: 'lyrics' as const, stanzas: [['la']] }] });
+  const cho = '{title: N}\n{artist: X}\n\nla\n';
+  it('créé absent du catalogue : gardé ; arrivé à l\'identique : retiré', () => {
+    const ov = { n: { songId: 'n', cho, created: true, updatedAt: 1, publishedAt: 2 } };
+    expect(Object.keys(prune(ov, new Map()))).toEqual(['n']);
+    const arrived = new Map([['n', parseChordPro('n', cho).song]]);
+    expect(prune(ov, arrived)).toEqual({});
+  });
+  it('supprimé : gardé tant que le fichier existe ou non envoyé', () => {
+    const del = { a: { songId: 'a', deleted: true, updatedAt: 1, publishedAt: 2 } };
+    expect(Object.keys(prune(del, new Map([['a', song('a')]])))).toEqual(['a']);
+    expect(prune(del, new Map())).toEqual({});
+    expect(Object.keys(prune({ a: { songId: 'a', deleted: true, updatedAt: 3 } }, new Map()))).toEqual(['a']);
   });
 });

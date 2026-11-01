@@ -4,12 +4,14 @@ import { signal } from '@preact/signals';
  * Routeur par hash (compatible GitHub Pages, aucun rewrite serveur).
  *   #/                       accueil (artistes)
  *   #/repertoire             répertoire
+ *   #/nouveau                nouveau morceau (collage / page vide, mode éditeur)
  *   #/song/<id>              vue scène
  *   #/song/<id>?sl=<id>&pos=<n>  vue scène dans le contexte d'une setlist
  */
 export type Route =
   | { name: 'home' }
   | { name: 'setlist' }
+  | { name: 'new' }
   | { name: 'song'; id: string; setlistId?: string; pos?: number };
 
 function parse(hash: string): Route {
@@ -26,6 +28,7 @@ function parse(hash: string): Route {
     };
   }
   if (parts[0] === 'repertoire') return { name: 'setlist' };
+  if (parts[0] === 'nouveau') return { name: 'new' };
   return { name: 'home' };
 }
 

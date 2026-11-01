@@ -1,6 +1,7 @@
 import { signal } from '@preact/signals';
 import { useMemo, useState } from 'preact/hooks';
-import { catalog, search } from '../lib/catalog';
+import { search } from '../lib/catalog';
+import { liveCatalog } from '../lib/overrides';
 import { canEdit } from '../lib/publish';
 import { songHref } from '../lib/router';
 import { currentSetlist } from '../lib/setlistEdit';
@@ -45,7 +46,7 @@ export const initial = (name: string) => name.normalize('NFD').replace(/[\u0300-
 export function Home() {
   const q = homeQuery;
   const open = openArtist;
-  const state = catalog.value;
+  const state = liveCatalog.value;
   const hits = useMemo(() => (state ? search(state, q.value) : []), [state, q.value]);
 
   if (!state) return null;
@@ -86,11 +87,14 @@ function SearchResults({ hits }: { hits: ReturnType<typeof search> }) {
 }
 
 function ArtistList({ open, onToggle }: { open: string | null; onToggle: (name: string) => void }) {
-  const state = catalog.value!;
+  const state = liveCatalog.value!;
   const seen = new Set<string>();
   return (
     <div>
-      <div class="count">{state.artists.length} artistes · {state.songs.size} morceaux</div>
+      <div class="count-row">
+        <div class="count">{state.artists.length} artistes · {state.songs.size} morceaux</div>
+        {canEdit.value && <a class="btn small primary" href="#/nouveau">+ Nouveau morceau</a>}
+      </div>
       <div class="artists-grid">
         {state.artists.flatMap((a) => {
           const l = initial(a.name);

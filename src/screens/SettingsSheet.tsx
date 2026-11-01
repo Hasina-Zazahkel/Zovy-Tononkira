@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
+import { dropOverride, liveCatalog, markPublished, overrides, unpublished } from '../lib/overrides';
 import { catalog } from '../lib/catalog';
-import { dropOverride, markPublished, overrides, unpublished } from '../lib/overrides';
 import { canEdit, checkToken, getToken, publish, PublishError, REPO, setToken } from '../lib/publish';
 import { dropSetlistOverride, markSetlistPublished, setlistOverride, setlistUnpublished } from '../lib/setlistEdit';
 import { bumpFont, FONT_MAX, FONT_MIN, settings, update } from '../lib/settings';
@@ -39,7 +39,8 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
   const hasToken = canEdit.value;
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string; url?: string } | null>(null);
-  const songs = catalog.value!.songs;
+  const songs = liveCatalog.value!.songs;
+  const published = catalog.value!.songs;
   const all = Object.values(overrides.value);
   const pending = unpublished.value;
   const slOv = setlistOverride.value;
@@ -119,12 +120,19 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
         )}
         {hasToken && all.map((o) => {
           const sent = o.publishedAt && o.updatedAt <= o.publishedAt;
+          const title = songs.get(o.songId)?.title ?? published.get(o.songId)?.title ?? o.songId;
+          const kind = o.deleted ? 'supprimé' : o.created ? 'nouveau' : '';
+          const undo = o.deleted ? `Annuler la suppression de « ${title} » ?` : o.created
+            ? `Retirer « ${title} » de cet appareil ?${sent ? ' (déjà envoyé : il reviendra à la prochaine mise à jour)' : ''}`
+            : 'Annuler cette modification sur cet appareil ?';
           return (
             <div class="mod" key={o.songId}>
-              <a href={`#/song/${o.songId}`} onClick={onClose} class="mod-t">{songs.get(o.songId)?.title ?? o.songId}</a>
-              <span class={`mod-s${sent ? ' sent' : ''}`}>{sent ? 'envoyé' : 'à publier'}</span>
-              <button class="icon-btn del" aria-label="Annuler cette modification"
-                onClick={() => { if (confirm('Annuler cette modification sur cet appareil ?')) void dropOverride(o.songId); }}>
+              {o.deleted
+                ? <span class="mod-t del">{title}</span>
+                : <a href={`#/song/${o.songId}`} onClick={onClose} class="mod-t">{title}</a>}
+              <span class={`mod-s${sent ? ' sent' : ''}`}>{kind ? `${kind} · ` : ''}{sent ? 'envoyé' : 'à publier'}</span>
+              <button class="icon-btn del" aria-label={`Annuler : ${title}`}
+                onClick={() => { if (confirm(undo)) void dropOverride(o.songId); }}>
                 <IconClose size={24} />
               </button>
             </div>

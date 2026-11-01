@@ -214,3 +214,31 @@ body {
   .ctl-comment .add-comment { display: none; }
 }
 @media (max-width: 600px) { .ed-head .sheet-title .t { font-size: 22px; } }
+
+/* ---------- Nouveau morceau ---------- */
+.count-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-right: 6px; }
+a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; color: inherit; }
+.btn.primary.small { color: #111; }
+.ns-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 10px; }
+.ns-actions .btn.ghost { color: var(--gold); border: 2px solid var(--bg-3); padding: 0 14px; }
+.ns-ta { min-height: 42vh; margin-bottom: 12px; }
+.ns-results { display: grid; gap: 12px; margin-top: 16px; }
+.ns-card { border: 2px solid var(--bg-3); border-radius: 14px; padding: 12px 14px; background: var(--bg-2); }
+.ns-card.bad { border-color: #7a2a24; }
+.ns-title b { font-family: var(--display); font-size: 24px; letter-spacing: .02em; }
+.ns-title span { color: var(--fg-dim); margin-left: 6px; }
+.ns-card ul { margin: 8px 0 0; padding-left: 20px; font-size: 16px; line-height: 1.45; }
+.ns-found { color: var(--fg-dim); }
+.ns-warn { color: var(--gold); }
+.ns-err { color: #ffb4ab; font-weight: 700; }
+.ns-card-foot { display: flex; justify-content: flex-end; margin-top: 10px; }
+.ns-all { display: grid; gap: 10px; margin-top: 6px; }
+.part-pick { display: flex; align-items: center; gap: 10px; font-size: 17px; color: var(--fg-dim); }
+.part-pick select { flex: 1; min-height: 48px; }
+.ed-sl { margin: 8px 14px 0; }
+.btn.danger { background: #3a1414; color: #ffb4ab; margin-top: 24px; width: 100%; }
+.mod-t.del { text-decoration: line-through; opacity: .6; }
+@media (max-width: 600px) {
+  .part-pick { flex-wrap: wrap; gap: 6px; }
+  .part-pick select { flex-basis: 100%; }
+}

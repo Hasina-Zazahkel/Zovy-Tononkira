@@ -1,7 +1,7 @@
 import { useState } from 'preact/hooks';
 import { useRegisterSW } from 'virtual:pwa-register/preact';
 import { catalog, catalogError } from './lib/catalog';
-import { overridesReady } from './lib/overrides';
+import { liveCatalog, overridesReady } from './lib/overrides';
 import { canEdit } from './lib/publish';
 import { route } from './lib/router';
 import { useMemo } from 'preact/hooks';
@@ -10,6 +10,7 @@ import { AZBar } from './ui/AZBar';
 import { SetlistView } from './screens/SetlistView';
 import { PendingBar, SettingsSheet } from './screens/SettingsSheet';
 import { Stage } from './screens/Stage';
+import { NewSong } from './screens/NewSong';
 import { IconGear } from './ui/icons';
 
 const logo = `${import.meta.env.BASE_URL}img/logo-zovy-crop.png`;
@@ -21,7 +22,7 @@ export function App() {
   const r = route.value;
   const tab = r.name === 'setlist' ? 'setlist' : 'home';
 
-  const letters = useMemo(() => new Set((catalog.value?.artists ?? []).map((a) => initial(a.name))), [catalog.value]);
+  const letters = useMemo(() => new Set((liveCatalog.value?.artists ?? []).map((a) => initial(a.name))), [liveCatalog.value]);
 
   if (catalogError.value) return <div class="state">Impossible de charger le catalogue : {catalogError.value}</div>;
   if (!catalog.value || !overridesReady.value) return <div class="state">Chargement…</div>;
@@ -52,9 +53,11 @@ export function App() {
 
       {r.name === 'song' && <Stage key={`${r.id}-${r.pos ?? ''}`} id={r.id} setlistId={r.setlistId} pos={r.pos} />}
 
+      {r.name === 'new' && canEdit.value && <NewSong />}
+
       {sheet && r.name !== 'song' && <SettingsSheet onClose={() => setSheet(false)} />}
 
-      {r.name !== 'song' && needRefresh && (
+      {r.name !== 'song' && r.name !== 'new' && needRefresh && (
         <div class="update" role="status">
           Nouvelle version disponible
           <button onClick={() => updateServiceWorker(true)}>METTRE À JOUR</button>

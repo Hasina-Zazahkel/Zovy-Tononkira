@@ -1,5 +1,5 @@
+import { liveCatalog } from '../lib/overrides';
 import { useState } from 'preact/hooks';
-import { catalog } from '../lib/catalog';
 import { canEdit } from '../lib/publish';
 import { songHref } from '../lib/router';
 import { currentSetlist, saveSetlist, setlistUnpublished } from '../lib/setlistEdit';
@@ -9,7 +9,7 @@ import { AddSongSheet } from './AddSheets';
 import { KeyBadge } from './Home';
 
 export function SetlistView() {
-  const state = catalog.value;
+  const state = liveCatalog.value;
   const sl = currentSetlist.value;
   const [editing, setEditing] = useState(false);
   const [adding, setAdding] = useState<number | null>(null);

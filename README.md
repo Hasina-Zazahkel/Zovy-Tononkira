@@ -59,3 +59,25 @@ Règles :
 - `{section}` sans label ouvre une section anonyme.
 - Affectations `Nom=rôle` séparées par des virgules ; rôle libre, affiché tel quel ; `*` = tous ; un membre peut avoir plusieurs instruments (`Toky=basse, Toky=chœurs`).
 - Les paroles sont stockées telles quelles ; l'affichage en majuscules se fait au rendu (réglable).
+
+## Nouveau morceau (import par copier-coller)
+
+Mode éditeur → accueil → **+ Nouveau morceau**. Coller, **Analyser**, vérifier le compte rendu, **Ouvrir dans l'éditeur** (ou « Enregistrer tels quels » si plusieurs morceaux). Rien n'est envoyé au groupe avant **PUBLIER**.
+
+```
+Titre : …            (ou « 1 - … »)
+Artiste : …          (ou « 2 - … »)
+Voix : Misa - Soprano / Hasina - Lead      (ou « 3 - … »)
+Musique : Haja - Guitare basse              (ou « 4 - … »)
+Ton : Ré / Capo 5    (ou « 5 - … » ; après « / » = commentaire)
+
+Intro - commentaire
+ligne - commentaire x2        → ligne répétée
+ligne<TAB>x2                  → paragraphe répété (ou « x2 » seul sous le paragraphe)
+[REFRAIN]                     → section, suivie éventuellement de « Voix : Tous - Chœur »
+Interlude - commentaire
+Outro
+---                           → morceau suivant
+```
+
+Suppression : éditeur → En-tête → **Supprimer le morceau** (retiré du répertoire, suppression publiée avec PUBLIER).

@@ -1,3 +1,4 @@
+import { liveCatalog } from '../../lib/overrides';
 import { rolesFor, type RoleKind } from '../../model/roles';
 import type { Assignment } from '../../model/types';
 import { IconClose } from '../../ui/icons';
@@ -34,11 +35,10 @@ export function RoleRows({ rows, kind, onChange, addLabel }: { rows: Row[]; kind
 }
 
 import { useMemo } from 'preact/hooks';
-import { catalog } from '../../lib/catalog';
 
 /** Noms déjà utilisés dans le catalogue, proposés à la saisie (datalist #zovy-members). */
 export function MembersDatalist() {
-  const state = catalog.value;
+  const state = liveCatalog.value;
   const members = useMemo(() => {
     const set = new Set<string>();
     state?.songs.forEach((s) => {

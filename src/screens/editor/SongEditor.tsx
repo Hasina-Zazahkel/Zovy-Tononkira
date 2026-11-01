@@ -1,5 +1,10 @@
 import { useMemo, useState } from 'preact/hooks';
-import { dropOverride, effectiveSong, overrides, saveOverride } from '../../lib/overrides';
+import { catalog } from '../../lib/catalog';
+import { deleteSong, dropOverride, effectiveSong, liveCatalog, overrides, saveCreated, saveOverride } from '../../lib/overrides';
+import { replaceHash } from '../../lib/router';
+import { addToSetlist, removeFromSetlist } from '../../lib/setlistEdit';
+import { slugify } from '../../model/importText';
+import { PartSelect } from '../AddSheets';
 import { parseChordPro, serializeChordPro } from '../../model/chordpro';
 import {
   bodyToText, itemsToBody, keyed, TEXT_HELP, textToItems, toItems, withItems, type Item, type Keyed,
@@ -21,8 +26,13 @@ const wide = () => typeof window !== 'undefined' && window.innerWidth >= 1100;
  * Éditeur complet d'un morceau (mode éditeur uniquement) : en-tête, paroles (blocs ou texte), aperçu.
  * Enregistre le morceau entier sur l'appareil ; « Publier » l'envoie au groupe.
  */
-export function SongEditor({ base, onClose, tab: initialTab = 'lyrics' }: { base: Song; onClose: () => void; tab?: Tab }) {
-  const current = useMemo(() => effectiveSong(base), [base, overrides.value[base.id]]);
+export function SongEditor({ base, onClose, tab: initialTab = 'lyrics', create = false, onCreated }: {
+  base: Song; onClose: () => void; tab?: Tab;
+  /** Nouveau morceau (import ou page vide) : l'identifiant est fixé à l'enregistrement. */
+  create?: boolean; onCreated?: (id: string) => void;
+}) {
+  const current = useMemo(() => (create ? base : effectiveSong(base)), [base, overrides.value[base.id]]);
+  const [part, setPart] = useState(-1);
   const [tab, setTab] = useState<Tab>(initialTab);
   const [mode, setMode] = useState<Mode>(wide() ? 'text' : 'blocks');
   const [head, setHead] = useState<HeaderDraft>({
@@ -32,7 +42,8 @@ export function SongEditor({ base, onClose, tab: initialTab = 'lyrics' }: { base
   const [items, setItems] = useState<Keyed<Item>[]>(() => toItems(current.sections).map(keyed));
   const [text, setText] = useState(() => bodyToText(itemsToBody(toItems(current.sections))));
   const [warnings, setWarnings] = useState<string[]>([]);
-  const hasLocal = !!overrides.value[base.id];
+  const hasLocal = !create && !!overrides.value[base.id];
+  const isNew = create || !!overrides.value[base.id]?.created;
 
   /** Paroles actuelles, quel que soit le mode. */
   const currentItems = (): { items: Item[]; warnings: string[] } =>
@@ -83,13 +94,35 @@ export function SongEditor({ base, onClose, tab: initialTab = 'lyrics' }: { base
     const cho = serializeChordPro(song);
     // Contrôle : ce qui est enregistré se relit à l'identique
     if (serializeChordPro(parseChordPro(base.id, cho).song) !== cho) { setWarnings(['Erreur interne de format : enregistrement annulé.']); return; }
-    await saveOverride({ songId: base.id, cho, updatedAt: Date.now() });
+    if (create) {
+      const live = liveCatalog.value!.songs;
+      const fold = (x: string) => slugify(x);
+      const dup = [...live.values()].find((s) => fold(s.title) === fold(song.title) && fold(s.artist) === fold(song.artist));
+      if (dup && !confirm(`« ${dup.title} » (${dup.artist}) existe déjà. Créer quand même un second morceau ?`)) return;
+      const taken = (id: string) => live.has(id) || !!catalog.value?.songs.has(id) || !!overrides.value[id];
+      const stem = slugify(song.title);
+      let id = stem;
+      for (let n = 2; taken(id); n++) id = `${stem}-${n}`;
+      await saveCreated([{ id, cho }]);
+      await addToSetlist(part, [id]);
+      onCreated?.(id);
+      return;
+    }
+    await saveOverride({ songId: base.id, cho, updatedAt: Date.now(), ...(overrides.value[base.id]?.created ? { created: true } : {}) });
     onClose();
   };
 
   const close = () => {
     if (dirty() && !confirm('Abandonner les modifications non enregistrées ?')) return;
     onClose();
+  };
+
+  const remove = async () => {
+    if (!confirm(`Supprimer « ${current.title} » ?\n\nIl sera aussi retiré du répertoire. ${isNew && !overrides.value[base.id]?.publishedAt ? 'Il n\'a jamais été publié : il disparaît de cet appareil.' : 'La suppression sera envoyée au groupe avec PUBLIER.'}`)) return;
+    await removeFromSetlist(base.id);
+    await deleteSong(base.id);
+    onClose();
+    replaceHash('#/');
   };
 
   const revert = async () => {
@@ -101,13 +134,13 @@ export function SongEditor({ base, onClose, tab: initialTab = 'lyrics' }: { base
   const preview = useMemo(() => (tab === 'preview' ? build() : null), [tab]);
 
   return (
-    <div class="sheet editor" role="dialog" aria-modal="true" aria-label="Modifier le morceau">
+    <div class="sheet editor" role="dialog" aria-modal="true" aria-label={create ? 'Nouveau morceau' : 'Modifier le morceau'}>
       <MembersDatalist />
       <header class="sheet-head ed-head">
         <button class="icon-btn" onClick={close} aria-label="Fermer"><IconClose /></button>
         <div class="sheet-title">
-          <div class="t">Modifier le morceau</div>
-          <div class="a">{head.title || 'Sans titre'}{hasLocal ? ' · non publié' : ''}</div>
+          <div class="t">{create ? 'Nouveau morceau' : 'Modifier le morceau'}</div>
+          <div class="a">{head.title || 'Sans titre'}{create ? '' : isNew ? ' · nouveau, non publié' : hasLocal ? ' · non publié' : ''}</div>
         </div>
         <button class="btn primary" onClick={save}>Enregistrer</button>
       </header>
@@ -123,6 +156,7 @@ export function SongEditor({ base, onClose, tab: initialTab = 'lyrics' }: { base
           <button class={`mini${mode === 'text' ? ' on' : ''}`} onClick={() => switchMode('text')}>Texte</button>
         </div>
       )}
+      {create && <div class="ed-sl"><PartSelect value={part} onChange={setPart} /></div>}
       {warnings.length > 0 && <div class="msg err ed-msg">{warnings.map((w) => <div key={w}>{w}</div>)}</div>}
 
       <div class="sheet-body ed-body">
@@ -145,7 +179,8 @@ export function SongEditor({ base, onClose, tab: initialTab = 'lyrics' }: { base
             {buildUnits(preview.song).map((u) => <UnitView u={u} key={u.key} />)}
           </div>
         )}
-        {hasLocal && <button class="btn ghost ed-revert" onClick={revert}>Rétablir la version publiée</button>}
+        {hasLocal && !isNew && <button class="btn ghost ed-revert" onClick={revert}>Rétablir la version publiée</button>}
+        {!create && tab === 'header' && <button class="btn danger ed-delete" onClick={remove}>Supprimer le morceau</button>}
       </div>
     </div>
   );

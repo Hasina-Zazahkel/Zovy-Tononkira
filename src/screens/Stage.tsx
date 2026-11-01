@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { catalog, flattenSetlist } from '../lib/catalog';
-import { effectiveSong, overrides } from '../lib/overrides';
+import { liveCatalog, overrides } from '../lib/overrides';
 import { canEdit } from '../lib/publish';
 import { currentSetlist } from '../lib/setlistEdit';
 import { SongEditor } from './editor/SongEditor';
@@ -18,11 +18,12 @@ import { IconBack, IconCollapse, IconEdit, IconExpand, IconInfo, IconMoon, IconN
 interface Props { id: string; setlistId?: string; pos?: number }
 
 export function Stage({ id, setlistId, pos }: Props) {
-  const state = catalog.value!;
-  const base = state.songs.get(id);
+  const state = liveCatalog.value!;
+  // Version affichée (publiée + modifs locales) ; objet stable tant que les modifs ne changent pas
+  const song = state.songs.get(id);
   const ov = overrides.value[id];
-  // Mémoïsé : un nouvel objet à chaque rendu relancerait la pagination en boucle
-  const song = useMemo(() => (base ? effectiveSong(base) : undefined), [base, ov]);
+  // Base de l'éditeur : version publiée, ou le morceau lui-même s'il a été créé ici
+  const base = catalog.value!.songs.get(id) ?? song;
   const fallback = setlistId ? '#/repertoire' : '#/';
 
   // Contexte setlist : morceau précédent / suivant

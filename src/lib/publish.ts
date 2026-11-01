@@ -32,7 +32,7 @@ export async function initEditor() {
 
 export class PublishError extends Error {}
 
-async function gh<T>(token: string, path: string, init?: RequestInit): Promise<T> {
+async function gh<T>(token: string, path: string, init?: RequestInit, allow404 = false): Promise<T> {
   const res = await fetch(`${API}/repos/${REPO.owner}/${REPO.repo}${path}`, {
     ...init,
     headers: {
@@ -42,6 +42,7 @@ async function gh<T>(token: string, path: string, init?: RequestInit): Promise<T
       ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
     },
   });
+  if (allow404 && res.status === 404) return null as T;
   if (!res.ok) {
     const msg = res.status === 401 ? 'jeton invalide ou expiré'
       : res.status === 403 || res.status === 404 ? 'le jeton n\'a pas le droit d\'écrire sur le dépôt'
@@ -77,17 +78,29 @@ export async function publish(token: string, list: SongOverride[], setlist?: Set
   const commit = await gh<{ tree: { sha: string } }>(token, `/git/commits/${head}`);
 
   const warnings: string[] = [];
-  const tree: { path: string; mode: '100644'; type: 'blob'; content: string }[] = [];
+  const tree: { path: string; mode: '100644'; type: 'blob'; content?: string; sha?: null }[] = [];
+  const labels: string[] = [];
   for (const ov of list) {
     const path = `data/songs/${ov.songId}.cho`;
-    const file = await gh<{ content: string }>(token, `/contents/${path}?ref=${head}`);
-    const remote = decodeBase64Utf8(file.content);
+    const file = await gh<{ content: string } | null>(token, `/contents/${path}?ref=${head}`, undefined, true);
+    const remote = file ? decodeBase64Utf8(file.content) : null;
+    if (ov.deleted) {
+      if (remote !== null) { tree.push({ path, mode: '100644', type: 'blob', sha: null }); labels.push(`− ${ov.songId}`); }
+      continue;
+    }
+    if (remote === null) {
+      // Nouveau morceau
+      if (!ov.cho) { warnings.push(`${ov.songId} : introuvable sur le dépôt, modification ignorée`); continue; }
+      tree.push({ path, mode: '100644', type: 'blob', content: serializeChordPro(parseChordPro(ov.songId, ov.cho).song) });
+      labels.push(`+ ${ov.songId}`);
+      continue;
+    }
     const { song } = parseChordPro(ov.songId, remote);
     // Éditeur complet : la version de l'éditeur (seul à modifier) remplace le fichier
     const { song: next, skipped } = applyOverride(song, ov);
     skipped.forEach((s) => warnings.push(`${song.title} : section ${s} restructurée, voix non publiées`));
     const content = serializeChordPro(next);
-    if (content !== remote) tree.push({ path, mode: '100644', type: 'blob', content });
+    if (content !== remote) { tree.push({ path, mode: '100644', type: 'blob', content }); labels.push(ov.songId); }
   }
   if (setlist) {
     // Éditeur unique : le répertoire local remplace le fichier distant.
@@ -98,7 +111,7 @@ export async function publish(token: string, list: SongOverride[], setlist?: Set
   const newTree = await gh<{ sha: string }>(token, '/git/trees', {
     method: 'POST', body: JSON.stringify({ base_tree: commit.tree.sha, tree }),
   });
-  const titles = [...list.map((o) => o.songId), ...(setlist ? ['répertoire'] : [])].join(', ');
+  const titles = [...labels, ...(setlist ? ['répertoire'] : [])].join(', ');
   const newCommit = await gh<{ sha: string; html_url: string }>(token, '/git/commits', {
     method: 'POST',
     body: JSON.stringify({

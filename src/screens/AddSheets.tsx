@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'preact/hooks';
-import { catalog, search } from '../lib/catalog';
+import { search } from '../lib/catalog';
+import { liveCatalog } from '../lib/overrides';
 import { currentSetlist, saveSetlist } from '../lib/setlistEdit';
 import { addSong, findSong } from '../model/setlist';
 import type { Song } from '../model/types';
@@ -8,7 +9,7 @@ import { KeyBadge } from './Home';
 
 /** Depuis le répertoire : chercher un morceau et l'ajouter à une partie donnée. */
 export function AddSongSheet({ part, onClose }: { part: number; onClose: () => void }) {
-  const state = catalog.value!;
+  const state = liveCatalog.value!;
   const sl = currentSetlist.value!;
   const [q, setQ] = useState('');
   const [added, setAdded] = useState<string[]>([]);
@@ -73,5 +74,19 @@ export function PickPartSheet({ song, onClose }: { song: Song; onClose: () => vo
         )}
       </div>
     </div>
+  );
+}
+
+/** Choix de la partie du répertoire où ranger le(s) nouveau(x) morceau(x). */
+export function PartSelect({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const sl = currentSetlist.value;
+  return (
+    <label class="part-pick">
+      <span>Ajouter au répertoire</span>
+      <select class="in" value={value} onChange={(e) => onChange(Number((e.target as HTMLSelectElement).value))} aria-label="Ajouter au répertoire">
+        <option value={-1}>Non</option>
+        {sl?.parts.map((p, i) => <option value={i} key={i}>{p.name}</option>)}
+      </select>
+    </label>
   );
 }

@@ -7,6 +7,10 @@ import type { Assignment, CueType, Song } from './types';
  */
 export interface SongOverride {
   songId: string;
+  /** Morceau créé sur cet appareil (absent du catalogue publié) : `cho` contient le morceau entier. */
+  created?: boolean;
+  /** Morceau supprimé sur cet appareil (fichier retiré à la publication). */
+  deleted?: boolean;
   /** Morceau complet édité (éditeur complet) : remplace entièrement la version publiée. */
   cho?: string;
   singers?: Assignment[];
@@ -69,6 +73,7 @@ export const cueKey = (cue: CueType | undefined, label: string | undefined) => `
 
 /** Vrai si la modification n'apporte plus rien (déjà publiée, ou annulée à la main). */
 export function isNoop(base: Song, ov: SongOverride): boolean {
+  if (ov.deleted) return false;
   return serializeChordPro(applyOverride(base, ov).song) === serializeChordPro(base);
 }
 
@@ -84,4 +89,24 @@ export function cleanAssignments(list: Assignment[]): Assignment[] {
     if (!out.some((x) => x.member === member && x.role === role)) out.push(role ? { member, role } : { member });
   }
   return out;
+}
+
+export const isPending = (o: SongOverride) => !o.publishedAt || o.updatedAt > o.publishedAt;
+
+/** Modifs encore utiles au regard du catalogue publié reçu. */
+export function prune(stored: Record<string, SongOverride>, songs: Map<string, Song>): Record<string, SongOverride> {
+  const kept: Record<string, SongOverride> = {};
+  for (const [id, ov] of Object.entries(stored)) {
+    const base = songs.get(id);
+    if (ov.deleted) {
+      // Suppression : gardée tant que le fichier existe encore ou qu'elle n'est pas envoyée
+      if (base || isPending(ov)) kept[id] = ov;
+    } else if (!base) {
+      if (ov.created && ov.cho) kept[id] = ov;
+    } else if (!isNoop(base, ov)) {
+      const { created: _c, ...rest } = ov;
+      kept[id] = rest;
+    }
+  }
+  return kept;
 }
