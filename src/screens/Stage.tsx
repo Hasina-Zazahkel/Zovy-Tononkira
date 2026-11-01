@@ -3,7 +3,7 @@ import { catalog, flattenSetlist } from '../lib/catalog';
 import { effectiveSong, overrides } from '../lib/overrides';
 import { canEdit } from '../lib/publish';
 import { currentSetlist } from '../lib/setlistEdit';
-import { EditPanel } from './EditPanel';
+import { SongEditor } from './editor/SongEditor';
 import { goBack, replaceHash, songHref } from '../lib/router';
 import { bumpFont, FONT_MAX, FONT_MIN, settings, update } from '../lib/settings';
 import { isCueLine } from '../lib/text';
@@ -60,7 +60,8 @@ type Nav = {
 
 function StageView({ song, base, local, nav, fallback }: { song: Song; base: Song; local: boolean; nav: Nav; fallback: string }) {
   const { fontSize, uppercase, keepAwake, headerCollapsed } = settings.value;
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState<false | 'header' | 'lyrics'>(false);
+  const press = useRef<number | undefined>(undefined);
   const [infoOpen, setInfoOpen] = useState(false);
   const units = useMemo(() => buildUnits(song), [song]);
 
@@ -162,9 +163,9 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
   const keyBadge = song.key ? <span class="key" aria-label="Tonalité">{displayKey(song.key)}</span> : null;
   const commentEl = note
     ? (canEdit.value
-      ? <button class="comment" onClick={() => setEditing(true)} aria-label={`Commentaire : ${note}`}>{note}</button>
+      ? <button class="comment" onClick={() => setEditing('header')} aria-label={`Commentaire : ${note}`}>{note}</button>
       : <button class="comment" onClick={() => setInfoOpen(true)} aria-label={`Commentaire : ${note}`}>{note}</button>)
-    : canEdit.value ? <button class="comment add-comment" onClick={() => setEditing(true)}>+ Commentaire</button> : null;
+    : canEdit.value ? <button class="comment add-comment" onClick={() => setEditing('header')}>+ Commentaire</button> : null;
 
   return (
     <div class={`stage${headerCollapsed ? ' collapsed' : ''}`} style={style}>
@@ -180,7 +181,9 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
         <header class="stage-head">
           <div class="head-main">
             <button class="icon-btn" onClick={() => goBack(fallback)} aria-label="Retour"><IconBack /></button>
-            <div class="stage-title">
+            <div class="stage-title"
+              onPointerDown={() => { if (canEdit.value) press.current = window.setTimeout(() => setEditing('lyrics'), 600); }}
+              onPointerUp={() => clearTimeout(press.current)} onPointerLeave={() => clearTimeout(press.current)} onPointerCancel={() => clearTimeout(press.current)}>
               <div class="t">{song.title}</div>
               <div class="a">
                 {local && <span class="local" title="Modifié sur cet appareil, pas encore publié">● modifié ici · </span>}
@@ -207,7 +210,7 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
               {keepAwake ? <IconSun size={26} /> : <IconMoon size={26} />}
             </button>
             {canEdit.value && (
-              <button class="icon-btn" onClick={() => setEditing(true)} aria-label="Modifier les infos du morceau"><IconEdit size={26} /></button>
+              <button class="icon-btn" onClick={() => setEditing('lyrics')} aria-label="Modifier le morceau"><IconEdit size={26} /></button>
             )}
             <button class="icon-btn" onClick={() => { setInfoOpen(false); update({ headerCollapsed: true }); }} aria-label="Masquer l'en-tête"><IconCollapse size={26} /></button>
           </div>
@@ -244,7 +247,7 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
           <button class="nav-btn" onClick={next} disabled={atEnd} aria-label="Page suivante"><IconNext size={40} /></button>
         )}
       </footer>
-      {editing && canEdit.value && <EditPanel base={base} onClose={() => setEditing(false)} />}
+      {editing && canEdit.value && <SongEditor base={base} tab={editing} onClose={() => setEditing(false)} />}
     </div>
   );
 }
@@ -291,7 +294,7 @@ function SectionHead({ s }: { s: Section }) {
   );
 }
 
-function UnitView({ u }: { u: Unit }) {
+export function UnitView({ u }: { u: Unit }) {
   if (u.cue != null) {
     return (
       <div class={`unit cue-unit ${u.cue.type}`}>

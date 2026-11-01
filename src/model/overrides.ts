@@ -1,4 +1,4 @@
-import { serializeChordPro } from './chordpro';
+import { parseChordPro, serializeChordPro } from './chordpro';
 import type { Assignment, CueType, Song } from './types';
 
 /**
@@ -7,6 +7,8 @@ import type { Assignment, CueType, Song } from './types';
  */
 export interface SongOverride {
   songId: string;
+  /** Morceau complet édité (éditeur complet) : remplace entièrement la version publiée. */
+  cho?: string;
   singers?: Assignment[];
   musicians?: Assignment[];
   /** Commentaire affiché à côté de la tonalité (ex. « Capo 5 »). Chaîne vide = retiré. */
@@ -32,6 +34,7 @@ export interface ApplyResult {
 
 export function applyOverride(base: Song, ov: SongOverride | undefined): ApplyResult {
   if (!ov) return { song: base, skipped: [] };
+  if (ov.cho) return { song: parseChordPro(base.id, ov.cho).song, skipped: [] };
   const skipped: string[] = [];
   const song: Song = {
     ...base,

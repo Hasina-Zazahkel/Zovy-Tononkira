@@ -83,6 +83,7 @@ export async function publish(token: string, list: SongOverride[], setlist?: Set
     const file = await gh<{ content: string }>(token, `/contents/${path}?ref=${head}`);
     const remote = decodeBase64Utf8(file.content);
     const { song } = parseChordPro(ov.songId, remote);
+    // Éditeur complet : la version de l'éditeur (seul à modifier) remplace le fichier
     const { song: next, skipped } = applyOverride(song, ov);
     skipped.forEach((s) => warnings.push(`${song.title} : section ${s} restructurée, voix non publiées`));
     const content = serializeChordPro(next);
