@@ -11,7 +11,7 @@ import { wakeState } from '../lib/wakeLock';
 import { displayKey } from '../model/chordpro';
 import type { Assignment, Section, Song } from '../model/types';
 import { buildUnits, paginate, type Measure, type Unit } from '../stage/paginate';
-import { IconBack, IconEdit, IconMoon, IconNext, IconPrev, IconSun } from '../ui/icons';
+import { IconBack, IconCollapse, IconEdit, IconExpand, IconInfo, IconMoon, IconNext, IconPrev, IconSun } from '../ui/icons';
 
 interface Props { id: string; setlistId?: string; pos?: number }
 
@@ -57,17 +57,20 @@ type Nav = {
 } | null;
 
 function StageView({ song, base, local, nav, fallback }: { song: Song; base: Song; local: boolean; nav: Nav; fallback: string }) {
-  const { fontSize, uppercase, keepAwake } = settings.value;
+  const { fontSize, uppercase, keepAwake, headerCollapsed } = settings.value;
   const [editing, setEditing] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
   const units = useMemo(() => buildUnits(song), [song]);
 
   const bodyRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const pagesRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState({ w: 0, h: 0 });
-  const [pages, setPages] = useState<Unit[][]>([]);
+  /** Un écran = 1 colonne (smartphone, tablette portrait) ou 2 colonnes (PC). */
+  const [pages, setPages] = useState<Unit[][][]>([]);
   const [page, setPage] = useState(0);
   const target = useRef(0);
+  const cols = box.w >= 1100 ? 2 : 1;
 
   // Taille réelle de la zone de paroles
   useLayoutEffect(() => {
@@ -77,21 +80,32 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
     return () => ro.disconnect();
   }, []);
 
-  // Mesure puis pagination ; conserve la strophe affichée en haut de page lors d'un recalcul
+  // Largeur d'une colonne (la mesure se fait à cette largeur)
+  const geo = useMemo(() => {
+    const el = bodyRef.current;
+    if (!el || !box.w) return null;
+    const cs = getComputedStyle(el);
+    const padX = parseFloat(cs.getPropertyValue('--pad-x')) || 22;
+    const padY = parseFloat(cs.getPropertyValue('--pad-y')) || 14;
+    const colGap = parseFloat(cs.getPropertyValue('--col-gap')) || 56;
+    return { colW: (box.w - 2 * padX - (cols - 1) * colGap) / cols, colH: box.h - 2 * padY };
+  }, [box.w, box.h, cols]);
+
+  // Mesure puis pagination ; conserve la strophe affichée en haut d'écran lors d'un recalcul
   useLayoutEffect(() => {
     const root = measureRef.current;
-    if (!root || !box.h) return;
-    const cs = getComputedStyle(root);
-    const pageH = box.h - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-    const gap = parseFloat(cs.rowGap) || 0;
+    if (!root || !geo) return;
+    const gap = parseFloat(getComputedStyle(root).rowGap) || 0;
     const measures: Measure[] = [...root.children].map((el) => {
       const height = el.getBoundingClientRect().height;
       const lines = [...el.querySelectorAll<HTMLElement>('.ln')].map((l) => l.getBoundingClientRect().height);
       return { height, lines, header: Math.max(0, height - lines.reduce((a, b) => a + b, 0)) };
     });
-    const anchor = pages[target.current]?.[0]?.key.split('#')[0];
-    const next = paginate(units, measures, pageH, gap);
-    let idx = anchor ? next.findIndex((p) => p.some((u) => u.key.split('#')[0] === anchor)) : 0;
+    const anchor = pages[target.current]?.[0]?.[0]?.key.split('#')[0];
+    const columns = paginate(units, measures, geo.colH, gap);
+    const next: Unit[][][] = [];
+    for (let i = 0; i < columns.length; i += cols) next.push(columns.slice(i, i + cols));
+    let idx = anchor ? next.findIndex((p) => p.some((c) => c.some((u) => u.key.split('#')[0] === anchor))) : 0;
     if (idx < 0) idx = 0;
     setPages(next);
     target.current = idx;
@@ -100,7 +114,7 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
       const sc = pagesRef.current;
       if (sc) sc.scrollTo({ left: idx * sc.clientWidth, behavior: 'instant' as ScrollBehavior });
     });
-  }, [units, fontSize, uppercase, box.w, box.h]);
+  }, [units, fontSize, uppercase, geo, cols]);
 
   const count = pages.length;
   const goTo = useCallback((i: number) => {
@@ -129,7 +143,7 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
       if (editing || e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement || e.ctrlKey || e.metaKey || e.altKey) return;
       if (['ArrowRight', 'PageDown', ' ', 'ArrowDown'].includes(e.key)) { e.preventDefault(); next(); }
       else if (['ArrowLeft', 'PageUp', 'ArrowUp'].includes(e.key)) { e.preventDefault(); prev(); }
-      else if (e.key === 'Escape') goBack(fallback);
+      else if (e.key === 'Escape') { if (infoOpen) setInfoOpen(false); else goBack(fallback); }
       else if (e.key === '+' || e.key === '=') bumpFont(1);
       else if (e.key === '-') bumpFont(-1);
     };
@@ -137,57 +151,76 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  const style = { '--lyric-size': `${fontSize}px`, '--stanza-gap': `${Math.round(fontSize * 0.75)}px` };
+  const style = { '--lyric-size': `${fontSize}px`, '--stanza-gap': `${Math.round(fontSize * 0.7)}px` };
   const lyricsCls = `lyrics${uppercase ? ' upper' : ''}`;
+  const note = comment(song);
+  const hasInfo = song.singers.length + song.musicians.length + song.medley.length > 0 || !!note;
+  const sub = `${song.artist}${nav?.part ? ` · ${nav.part} · ${nav.pos + 1}/${nav.total}` : ''}`;
+
+  const keyBadge = song.key ? <span class="key" aria-label="Tonalité">{displayKey(song.key)}</span> : null;
+  const commentEl = note
+    ? (canEdit.value
+      ? <button class="comment" onClick={() => setEditing(true)} aria-label={`Commentaire : ${note}`}>{note}</button>
+      : <button class="comment" onClick={() => setInfoOpen(true)} aria-label={`Commentaire : ${note}`}>{note}</button>)
+    : canEdit.value ? <button class="comment add-comment" onClick={() => setEditing(true)}>+ Commentaire</button> : null;
 
   return (
-    <div class="stage" style={style}>
-      <header class="stage-head">
-        <div class="stage-row">
-          <button class="icon-btn" onClick={() => goBack(fallback)} aria-label="Retour"><IconBack /></button>
-          <div class="stage-title">
-            <div class="t">{song.title}</div>
-            <div class="a">
-              {local && <span class="local" title="Modifié sur cet appareil, pas encore publié">● modifié ici · </span>}
-              {song.artist}{nav?.part ? ` · ${nav.part} · ${nav.pos + 1}/${nav.total}` : ''}
+    <div class={`stage${headerCollapsed ? ' collapsed' : ''}`} style={style}>
+      {headerCollapsed ? (
+        <header class="stage-head mini">
+          <button class="icon-btn" onClick={() => goBack(fallback)} aria-label="Retour"><IconBack size={26} /></button>
+          <div class="mini-title">{song.title}</div>
+          {keyBadge}
+          {note && <span class="comment mini-comment">{note}</span>}
+          <button class="icon-btn" onClick={() => update({ headerCollapsed: false })} aria-label="Afficher l'en-tête"><IconExpand size={26} /></button>
+        </header>
+      ) : (
+        <header class="stage-head">
+          <div class="head-main">
+            <button class="icon-btn" onClick={() => goBack(fallback)} aria-label="Retour"><IconBack /></button>
+            <div class="stage-title">
+              <div class="t">{song.title}</div>
+              <div class="a">
+                {local && <span class="local" title="Modifié sur cet appareil, pas encore publié">● modifié ici · </span>}
+                {sub}
+              </div>
             </div>
+            {keyBadge}
+            <span class="head-comment">{commentEl}</span>
           </div>
-<div class="stage-ctl">
-          <button class="font-btn" onClick={() => bumpFont(-1)} disabled={fontSize <= FONT_MIN} aria-label="Réduire le texte"><small>A</small>−</button>
-          <button class="font-btn" onClick={() => bumpFont(1)} disabled={fontSize >= FONT_MAX} aria-label="Agrandir le texte">A+</button>
-          {canEdit.value && (
-            <button class="case-btn" onClick={() => update({ uppercase: !uppercase })} aria-label="Majuscules">{uppercase ? 'AA' : 'Aa'}</button>
-          )}
-          <button class={`icon-btn${wakeState.value === 'on' ? ' on' : ''}`} onClick={() => update({ keepAwake: !keepAwake })}
-            aria-label="Écran toujours allumé" title={`Écran allumé : ${wakeState.value}`}>
-            {keepAwake ? <IconSun size={28} /> : <IconMoon size={28} />}
-          </button>
-          {canEdit.value && (
-            <button class="icon-btn" onClick={() => setEditing(true)} aria-label="Modifier les infos du morceau"><IconEdit size={28} /></button>
-          )}
+          <div class="head-ctl">
+            {hasInfo && (
+              <button class={`pill-btn${infoOpen ? ' on' : ''}`} onClick={() => setInfoOpen(!infoOpen)} aria-expanded={infoOpen} aria-label="Infos du morceau">
+                <IconInfo size={22} /><span>Infos</span>
+              </button>
+            )}
+            <span class="spacer">{commentEl && <span class="ctl-comment">{commentEl}</span>}</span>
+            <button class="font-btn" onClick={() => bumpFont(-1)} disabled={fontSize <= FONT_MIN} aria-label="Réduire le texte"><small>A</small>−</button>
+            <button class="font-btn" onClick={() => bumpFont(1)} disabled={fontSize >= FONT_MAX} aria-label="Agrandir le texte">A+</button>
+            {canEdit.value && (
+              <button class="case-btn" onClick={() => update({ uppercase: !uppercase })} aria-label="Majuscules">{uppercase ? 'AA' : 'Aa'}</button>
+            )}
+            <button class={`icon-btn${wakeState.value === 'on' ? ' on' : ''}`} onClick={() => update({ keepAwake: !keepAwake })}
+              aria-label="Écran toujours allumé" title={`Écran allumé : ${wakeState.value}`}>
+              {keepAwake ? <IconSun size={26} /> : <IconMoon size={26} />}
+            </button>
+            {canEdit.value && (
+              <button class="icon-btn" onClick={() => setEditing(true)} aria-label="Modifier les infos du morceau"><IconEdit size={26} /></button>
+            )}
+            <button class="icon-btn" onClick={() => { setInfoOpen(false); update({ headerCollapsed: true }); }} aria-label="Masquer l'en-tête"><IconCollapse size={26} /></button>
           </div>
-        </div>
-        <div class="keyline">
-          {song.key ? <span class="key" aria-label="Tonalité">{displayKey(song.key)}</span> : <span class="key empty">–</span>}
-          {comment(song) ? (
-            canEdit.value
-              ? <button class="comment" onClick={() => setEditing(true)} aria-label={`Commentaire : ${comment(song)}`}>{comment(song)}</button>
-              : <span class="comment" aria-label={`Commentaire : ${comment(song)}`}>{comment(song)}</span>
-          ) : canEdit.value ? (
-            <button class="comment add-comment" onClick={() => setEditing(true)}>+ Commentaire</button>
-          ) : null}
-        </div>
-        <Meta song={song} />
-      </header>
+          {infoOpen && <InfoPanel song={song} note={note} onClose={() => setInfoOpen(false)} />}
+        </header>
+      )}
 
       <div class="stage-body" ref={bodyRef}>
-        <div class={`measure ${lyricsCls}`} ref={measureRef} aria-hidden="true">
+        <div class={`measure ${lyricsCls}`} ref={measureRef} aria-hidden="true" style={geo ? { width: `${geo.colW}px` } : undefined}>
           {units.map((u) => <UnitView u={u} key={u.key} />)}
         </div>
-        <div class="pages" ref={pagesRef} onScroll={onScroll}>
+        <div class="pages" ref={pagesRef} onScroll={onScroll} onClick={() => infoOpen && setInfoOpen(false)}>
           {pages.map((p, i) => (
-            <div class={`page ${lyricsCls}`} key={i} aria-hidden={i !== page}>
-              {p.map((u) => <UnitView u={u} key={u.key} />)}
+            <div class={`page ${lyricsCls}${cols > 1 ? ' two' : ''}`} key={i} aria-hidden={i !== page}>
+              {p.map((c, j) => <div class="col" key={j}>{c.map((u) => <UnitView u={u} key={u.key} />)}</div>)}
             </div>
           ))}
         </div>
@@ -219,15 +252,15 @@ function comment(song: Song): string {
   return [song.capo != null ? `Capo ${song.capo}` : '', song.notes ?? ''].filter(Boolean).join(' · ');
 }
 
-function Meta({ song }: { song: Song }) {
-  const extra: preact.ComponentChildren[] = [];
-  if (song.medley.length) extra.push(<span key="md"><b>Medley</b> {song.medley.join(' → ')}</span>);
-  if (!song.singers.length && !song.musicians.length && !extra.length) return null;
+/** Volet « Infos » : commentaire, chanteurs, musiciens, medley. Superposé : ne change pas la pagination. */
+function InfoPanel({ song, note, onClose }: { song: Song; note: string; onClose: () => void }) {
   return (
-    <div class="meta">
+    <div class="info-pop" role="dialog" aria-label="Infos du morceau">
+      {note && <div class="meta-row"><span class="meta-lbl">Note</span><span class="info-note">{note}</span></div>}
       {song.singers.length > 0 && <div class="meta-row"><span class="meta-lbl">Voix</span><Chips list={song.singers} kind="voice" /></div>}
       {song.musicians.length > 0 && <div class="meta-row"><span class="meta-lbl">Musique</span><Chips list={song.musicians} kind="inst" /></div>}
-      {extra.length > 0 && <div class="meta-row">{extra}</div>}
+      {song.medley.length > 0 && <div class="meta-row"><span class="meta-lbl">Medley</span><span class="info-note">{song.medley.join(' → ')}</span></div>}
+      <button class="btn small" onClick={onClose}>Fermer</button>
     </div>
   );
 }

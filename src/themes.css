@@ -34,3 +34,66 @@ body {
 .sel option { background: #1c1a16; }
 .update { background: #1c1a16; }
 .sheet.compact { background: #14120e; }
+
+/* =========================================================
+   Page de lecture (refonte 2026-11-01)
+   ========================================================= */
+.stage { background: #0b0a08; }
+.stage-head { position: relative; z-index: 12; padding: 8px 10px; background: rgba(11, 10, 8, .92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 192, 0, .15); }
+.head-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.stage-title { flex: 1 1 auto; min-width: 0; }
+.stage-title .t { font-family: var(--display); font-size: 30px; font-weight: 700; letter-spacing: .02em; line-height: 1.05; }
+.stage-title .a { font-size: 14px; }
+.stage .key { flex: none; height: 46px; min-width: 66px; font-size: 26px; }
+.head-comment { flex: 0 1 auto; max-width: 42%; min-width: 0; display: flex; }
+.head-comment:empty { display: none; }
+.stage .comment { min-height: 46px; max-width: 100%; font-family: var(--display); font-size: 21px; font-weight: 600; letter-spacing: .02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.head-ctl { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.head-ctl .spacer { flex: 1; min-width: 0; display: flex; }
+.ctl-comment { display: none; min-width: 0; max-width: 100%; }
+@media (min-width: 1100px) {
+  .stage-head:not(.mini) { display: flex; align-items: center; gap: 16px; }
+  .stage-head:not(.mini) .head-main { flex: 1; min-width: 0; }
+  .stage-head:not(.mini) .head-ctl { margin-top: 0; }
+  .stage-head:not(.mini) .head-ctl .spacer { display: none; }
+  .head-comment { max-width: 50%; }
+}
+.head-ctl .icon-btn, .head-ctl .font-btn, .head-ctl .case-btn { width: 52px; height: 48px; }
+.pill-btn { display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 18px 0 14px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); font-weight: 800; font-size: 17px; color: var(--gold); }
+.pill-btn.on { background: var(--gold); color: #111; }
+.info-pop { position: absolute; left: 10px; right: 10px; top: calc(100% + 6px); display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 18px; background: #17140d; border: 1px solid var(--gold-dim); box-shadow: 0 18px 50px rgba(0, 0, 0, .7); }
+.info-pop .meta-row { align-items: flex-start; }
+.info-pop .meta-lbl { padding-top: 6px; }
+.info-note { font-family: var(--display); font-size: 21px; font-weight: 600; color: var(--fg); letter-spacing: .02em; flex: 1; }
+.info-pop .btn { align-self: flex-end; }
+
+.stage-head.mini { display: flex; align-items: center; gap: 10px; padding: 4px 10px; }
+.mini-title { flex: 1; min-width: 0; font-family: var(--display); font-size: 22px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stage-head.mini .icon-btn { width: 46px; height: 44px; }
+.stage-head.mini .key { height: 38px; min-width: 56px; font-size: 22px; }
+.mini-comment { min-height: 38px !important; max-width: 38%; font-size: 18px !important; padding: 4px 10px; }
+
+/* Paroles : Barlow Condensed, colonnes */
+.stage-body { --pad-x: 22px; --pad-y: 14px; --col-gap: 56px; }
+.lyrics { font-family: var(--display); font-weight: 600; letter-spacing: .02em; line-height: 1.32; }
+.ln { min-height: 1.32em; }
+.page { flex-direction: row; gap: var(--col-gap); padding: var(--pad-y) var(--pad-x); }
+.col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: var(--stanza-gap); overflow: hidden; }
+.measure { padding: 0; left: var(--pad-x); right: auto; display: flex; flex-direction: column; gap: var(--stanza-gap); }
+.sec-label { font-size: .7em; }
+.cue-unit { font-family: var(--display); }
+.page.two { background: linear-gradient(var(--line), var(--line)) center / 1px calc(100% - 2 * var(--pad-y)) no-repeat; }
+
+@media (max-width: 600px) {
+  .stage-body { --pad-x: 14px; --pad-y: 10px; }
+  .stage-title .t { font-size: 25px; }
+  .head-comment { display: none; }
+  .ctl-comment { display: flex; }
+  .ctl-comment .comment { min-height: 44px; font-size: 18px; padding: 4px 10px; }
+  .stage .key { height: 42px; min-width: 58px; font-size: 23px; }
+  .head-ctl { gap: 6px; }
+  .head-ctl .icon-btn, .head-ctl .font-btn, .head-ctl .case-btn { width: 46px; height: 46px; }
+  .pill-btn { height: 46px; padding: 0 12px; font-size: 16px; }
+  .pill-btn span { display: none; }
+  .mini-comment { display: none; }
+}
