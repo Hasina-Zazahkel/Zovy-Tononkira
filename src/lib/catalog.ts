@@ -66,7 +66,7 @@ export interface SearchHit {
   score: number;
 }
 
-export function search(state: CatalogState, query: string, limit = 60): SearchHit[] {
+export function search(state: CatalogState, query: string): SearchHit[] {
   const q = normalize(query);
   if (!q) return [];
   const hits: SearchHit[] = [];
@@ -83,8 +83,7 @@ export function search(state: CatalogState, query: string, limit = 60): SearchHi
     if (score) hits.push({ song: it.song, excerpt, score });
   }
   return hits
-    .sort((a, b) => b.score - a.score || collator.compare(a.song.title, b.song.title))
-    .slice(0, limit);
+    .sort((a, b) => b.score - a.score || collator.compare(a.song.title, b.song.title));
 }
 
 /** Ordre de lecture d'une setlist, toutes parties confondues. */
