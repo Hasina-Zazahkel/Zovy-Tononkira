@@ -9,6 +9,8 @@ export interface SongOverride {
   songId: string;
   singers?: Assignment[];
   musicians?: Assignment[];
+  /** Commentaire affiché à côté de la tonalité (ex. « Capo 5 »). Chaîne vide = retiré. */
+  notes?: string;
   /** Voix par section, indexées par id de section. Liste vide = voix retirées. */
   sectionVoices?: Record<string, Assignment[]>;
   /** Label de la section au moment de l'édition : garde-fou si les paroles ont été restructurées. */
@@ -40,6 +42,10 @@ export function applyOverride(base: Song, ov: SongOverride | undefined): ApplyRe
       return v.length ? { ...rest, voices: v } : rest;
     }),
   };
+  if (ov.notes !== undefined) {
+    if (ov.notes.trim()) song.notes = ov.notes.trim();
+    else delete song.notes;
+  }
   if (ov.sectionVoices) {
     for (const id of Object.keys(ov.sectionVoices)) if (!base.sections.some((s) => s.id === id)) skipped.push(id);
   }

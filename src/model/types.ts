@@ -42,6 +42,7 @@ export interface Song {
   title: string;
   artist: string;
   key?: Key;
+  /** Hérité : fusionné dans notes par scripts/migrate/normalize.ts. */
   capo?: number;
   tags: string[];
   /** Sous-titres d'un medley, ex. "O DARLING (RE)". */
@@ -50,6 +51,7 @@ export interface Song {
   singers: Assignment[];
   /** Instruments du morceau. Un membre peut apparaître plusieurs fois. */
   musicians: Assignment[];
+  /** Commentaire court affiché à côté de la tonalité (ex. « Capo 5 · Intro sax »). */
   notes?: string;
   sections: Section[];
 }

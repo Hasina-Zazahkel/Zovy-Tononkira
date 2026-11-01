@@ -149,7 +149,6 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
               {song.artist}{nav?.part ? ` · ${nav.part} · ${nav.pos + 1}/${nav.total}` : ''}
             </div>
           </div>
-          {song.key && <span class="key" aria-label="Tonalité">{displayKey(song.key)}</span>}
           <button class="font-btn" onClick={() => bumpFont(-1)} disabled={fontSize <= FONT_MIN} aria-label="Réduire le texte"><small>A</small>−</button>
           <button class="font-btn" onClick={() => bumpFont(1)} disabled={fontSize >= FONT_MAX} aria-label="Agrandir le texte">A+</button>
           <button class="case-btn" onClick={() => update({ uppercase: !uppercase })} aria-label="Majuscules">{uppercase ? 'AA' : 'Aa'}</button>
@@ -157,7 +156,17 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
             aria-label="Écran toujours allumé" title={`Écran allumé : ${wakeState.value}`}>
             {keepAwake ? <IconSun size={28} /> : <IconMoon size={28} />}
           </button>
-          <button class="icon-btn" onClick={() => setEditing(true)} aria-label="Modifier voix et musiciens"><IconEdit size={28} /></button>
+          <button class="icon-btn" onClick={() => setEditing(true)} aria-label="Modifier les infos du morceau"><IconEdit size={28} /></button>
+        </div>
+        <div class="keyline">
+          {song.key ? <span class="key" aria-label="Tonalité">{displayKey(song.key)}</span> : <span class="key empty">–</span>}
+          {comment(song) ? (
+            <button class="comment" onClick={() => setEditing(true)} aria-label={`Commentaire : ${comment(song)}`}>
+              {comment(song)}
+            </button>
+          ) : (
+            <button class="comment add-comment" onClick={() => setEditing(true)}>+ Commentaire</button>
+          )}
         </div>
         <Meta song={song} />
       </header>
@@ -196,11 +205,14 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
   );
 }
 
+/** Commentaire affiché à côté de la tonalité (capo hérité inclus). */
+function comment(song: Song): string {
+  return [song.capo != null ? `Capo ${song.capo}` : '', song.notes ?? ''].filter(Boolean).join(' · ');
+}
+
 function Meta({ song }: { song: Song }) {
   const extra: preact.ComponentChildren[] = [];
-  if (song.capo != null) extra.push(<span key="c" class="g">Capo {song.capo}</span>);
   if (song.medley.length) extra.push(<span key="md"><b>Medley</b> {song.medley.join(' → ')}</span>);
-  if (song.notes) extra.push(<span key="n" class="g">{song.notes}</span>);
   if (!song.singers.length && !song.musicians.length && !extra.length) return null;
   return (
     <div class="meta">

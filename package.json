@@ -10,7 +10,7 @@
     "data:build": "tsx scripts/build-data.ts",
     "data:format": "tsx scripts/build-data.ts --format",
     "data:check": "tsx scripts/build-data.ts --check",
-    "migrate:legacy": "python3 -I scripts/migrate/legacy_html.py legacy/Tononkira_Zovy.html . && tsx scripts/migrate/strict-roles.ts && npm run data:format",
+    "migrate:legacy": "python3 -I scripts/migrate/legacy_html.py legacy/Tononkira_Zovy.html . && tsx scripts/migrate/normalize.ts && npm run data:format",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

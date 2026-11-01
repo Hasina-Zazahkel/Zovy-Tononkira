@@ -2,6 +2,7 @@ import { useMemo, useState } from 'preact/hooks';
 import { catalog } from '../lib/catalog';
 import { dropOverride, effectiveSong, overrides, saveOverride } from '../lib/overrides';
 import { cleanAssignments, type SongOverride } from '../model/overrides';
+import { displayKey } from '../model/chordpro';
 import { rolesFor, type RoleKind } from '../model/roles';
 import type { Assignment, Song } from '../model/types';
 import { IconClose } from '../ui/icons';
@@ -31,6 +32,7 @@ export function EditPanel({ base, onClose }: { base: Song; onClose: () => void }
   const [sections, setSections] = useState<Record<string, Row[]>>(
     Object.fromEntries(lyricSections.map((s) => [s.id, toRows(s.voices)])),
   );
+  const [notes, setNotes] = useState(current.notes ?? '');
   const [openSec, setOpenSec] = useState<string | null>(null);
   const members = useMembers();
   const hasLocal = !!overrides.value[base.id];
@@ -41,6 +43,8 @@ export function EditPanel({ base, onClose }: { base: Song; onClose: () => void }
     const m = fromRows(musicians);
     if (!same(s, base.singers)) ov.singers = s;
     if (!same(m, base.musicians)) ov.musicians = m;
+    const n = notes.trim().replace(/[{}]/g, '').replace(/\s+/g, ' ');
+    if (n !== (base.notes ?? '')) ov.notes = n;
     for (const sec of base.sections) {
       if (sec.kind !== 'lyrics') continue;
       const v = fromRows(sections[sec.id] ?? []);
@@ -60,10 +64,10 @@ export function EditPanel({ base, onClose }: { base: Song; onClose: () => void }
   };
 
   return (
-    <div class="sheet" role="dialog" aria-modal="true" aria-label="Modifier voix et musiciens">
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="Modifier les infos du morceau">
       <header class="sheet-head">
         <div class="sheet-title">
-          <div class="t">Voix & musiciens</div>
+          <div class="t">Infos du morceau</div>
           <div class="a">{base.title}</div>
         </div>
         <button class="icon-btn" onClick={onClose} aria-label="Fermer"><IconClose /></button>
@@ -72,6 +76,16 @@ export function EditPanel({ base, onClose }: { base: Song; onClose: () => void }
       <datalist id="zovy-members">{members.map((m) => <option value={m} key={m} />)}<option value="Tous" /></datalist>
 
       <div class="sheet-body">
+        <h3 class="sheet-h">Tonalité & commentaire</h3>
+        <div class="row note-row">
+          <span class={`key${base.key ? '' : ' empty'}`}>{base.key ? displayKey(base.key) : '–'}</span>
+          <input class="in" type="text" placeholder="Ex. Capo 5 · Intro sax · Tempo lent" autoFocus={!notes} value={notes} maxLength={80}
+            onInput={(e) => setNotes((e.target as HTMLInputElement).value)} aria-label="Commentaire" />
+          {notes ? (
+            <button class="icon-btn del" onClick={() => setNotes('')} aria-label="Effacer le commentaire"><IconClose size={26} /></button>
+          ) : <span />}
+        </div>
+
         <h3 class="sheet-h voice">Chanteurs du morceau</h3>
         <RoleRows rows={singers} kind="voice" onChange={setSingers} addLabel="Ajouter un chanteur" />
 

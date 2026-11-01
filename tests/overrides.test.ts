@@ -45,6 +45,12 @@ l2
     expect(skipped).toEqual(['s1']);
     expect(song.sections[1].voices).toBeUndefined();
   });
+  it('commentaire : ajout, remplacement, suppression', () => {
+    expect(applyOverride(base, { songId: 't', updatedAt: 1, notes: ' Capo 5 ' }).song.notes).toBe('Capo 5');
+    const withNote = { ...base, notes: 'Capo 7' };
+    expect(applyOverride(withNote, { songId: 't', updatedAt: 1, notes: '' }).song.notes).toBeUndefined();
+    expect(applyOverride(withNote, { songId: 't', updatedAt: 1 }).song.notes).toBe('Capo 7');
+  });
   it('isNoop détecte une modif déjà publiée', () => {
     expect(isNoop(base, { songId: 't', updatedAt: 1, singers: [{ member: 'Hasina', role: 'Lead' }] })).toBe(true);
     expect(isNoop(base, { songId: 't', updatedAt: 1, singers: [] })).toBe(false);
