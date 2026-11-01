@@ -1,0 +1,56 @@
+{
+  "id": "concert-legacy",
+  "name": "Répertoire (import legacy)",
+  "parts": [
+    {
+      "name": "Première partie",
+      "songIds": [
+        "itondray",
+        "ravoravo",
+        "vorombe-tsaradia",
+        "tsaiky-joby-baba",
+        "zakeliny-mama",
+        "hirandrozy",
+        "bakomanga",
+        "baokilitsy",
+        "ny-hakamoako",
+        "miavonavona-tokoa",
+        "folaka-ihany",
+        "ravorondreo",
+        "lekaoma",
+        "miolakolaka",
+        "ampazahoy",
+        "mavitazy"
+      ]
+    },
+    {
+      "name": "Deuxième partie",
+      "songIds": [
+        "izany-no-malaza",
+        "halako",
+        "rila",
+        "sesily",
+        "mandry-ve",
+        "nilefa-i-man",
+        "floara",
+        "hoy-aba",
+        "medley-chachacha",
+        "medley-reggae",
+        "tsaiky-joby",
+        "medley-raozy-mavokely",
+        "raha-manina",
+        "medley-sud",
+        "bal-kabosy"
+      ]
+    },
+    {
+      "name": "Réserve",
+      "songIds": [
+        "kivarivary",
+        "ramaloya",
+        "voasary",
+        "toriny"
+      ]
+    }
+  ]
+}
