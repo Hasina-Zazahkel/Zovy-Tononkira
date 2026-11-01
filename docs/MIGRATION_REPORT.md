@@ -1,16 +1,10 @@
 # Rapport de migration legacy → ChordPro
 
 - Morceaux : **236**
-- Artistes : **76**
+- Artistes : **75**
 - Setlist : Première partie 16 / Deuxième partie 15 / Réserve 4
 
-## Morceaux absents de l'index artistes (3)
-
-- `tiana-ve` (TIANA VE) → artiste `INCONNU`
-- `sahondra` (SAHONDRA) → artiste `INCONNU`
-- `iantrao` (IANTRAO) → artiste `INCONNU`
-
-## Morceaux sans tonalité (à compléter) (129)
+## Morceaux sans tonalité (à compléter) (128)
 
 - `medley-basesa-soley` (MEDLEY BASESA SOLEY)
 - `sarah` (SARAH)
@@ -126,7 +120,6 @@
 - `hanaraka-anao` (HANARAKA ANAO)
 - `embona-sy-hanina` (EMBONA SY HANINA)
 - `iny-masoandro-iny` (INY MASOANDRO INY)
-- `veloma-madinidinika` (VELOMA MADINIDINIKA (DO D))
 - `goa-naho-kepeke` (GOA NAHO KEPEKE)
 - `tafaray-samy-tia-randrantelo` (TAFARAY SAMY TIA RANDRANTELO)
 - `ampindramo` (AMPINDRAMO)
@@ -142,17 +135,9 @@
 - `manantena` (MANANTENA)
 - `malakilaky` (MALAKILAKY)
 
-## Parenthèse finale non reconnue comme tonalité (1)
-
-- `VELOMA-MADINIDINIKA` : `(do d)` dans `VELOMA MADINIDINIKA (do d) - Misa & Toky - Guitare Haja / Basse Toky`
-
 ## Doublons supprimés (1)
 
 - `HANARAKA-ANAO` : section dupliquée à l'identique, une seule conservée
-
-## Titres suspects (1)
-
-- `T` : titre `T` (contenu : ANTSOY AHO HOE RAHA……)
 
 ## Liens réparés manuellement (1)
 

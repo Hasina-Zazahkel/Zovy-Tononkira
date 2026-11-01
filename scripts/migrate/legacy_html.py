@@ -22,7 +22,7 @@ PART_ALIASES = {
     "ALTO": "alto", "CHOEUR": "choeur", "CHŒUR": "choeur", "SOPRA": "soprano",
     "SOPRANO": "soprano",
 }
-NOTE_RE = re.compile(r"^(DO|R[EÉ]|MI|FA|SOL|LA|SI)\s*(B|B[EÉ]MOL|#|DI[EÈ]SE)?$", re.I)
+NOTE_RE = re.compile(r"^(DO|R[EÉ]|MI|FA|SOL|LA|SI)\s*(B|B[EÉ]MOL|#|D|DI[EÈ]SE)?$", re.I)
 CUE_RE = re.compile(r"^\s*(INTRO|INTERLUDE|OUTRO|FIN INTRO)\b", re.I)
 NAMED_SECTION_RE = re.compile(r"^\s*--\s*(.+?)\s*--\s*$")
 PAREN_LINE_RE = re.compile(r"^\s*\((.*)\)\s*$")
@@ -61,6 +61,9 @@ def split_title_key(text: str) -> tuple[str, str | None, str | None]:
 
 INSTRUMENTS = ("GUITARE", "BASSE", "BATTERIE", "CLAVIER", "SAX", "KORINTSANA", "PERCUSSION")
 SINGER_WORDS = MEMBERS | {"KETA", "VOIX", "LEAD", "CHOEUR", "IMPRO"}
+# Validé par Hasina (2026-11-01) : morceaux absents de l'index legacy
+ARTIST_OVERRIDES = {"tiana-ve": "MAHALEO", "iantrao": "MAHALEO", "sahondra": "JOHARY"}
+TITLES_CONFIRMED = {"T"}
 MANUAL_LINKS = {"TAO-ANATIN'NY-TOLOLA": "TAO-ANATIN'NY-TOLONA"}  # coquille dans l'index
 
 
@@ -199,7 +202,7 @@ def main(src: str, root: str) -> None:
             report.add("tonalite_non_reconnue", f"`{legacy}` : `({hd['key_raw']})` dans `{title_raw}`")
         if hd["notes"]:
             report.add("notes_extraites", f"`{legacy}` : " + " | ".join(hd["notes"]))
-        if len(title) <= 2:
+        if len(title) <= 2 and title not in TITLES_CONFIRMED:
             report.add("titre_suspect", f"`{legacy}` : titre `{title}` (contenu : {(pre.get_text().strip().splitlines() or [''])[0][:40]}…)")
         text = pre.get_text() if pre else ""
         dup = next((x for x in songs.values() if x["legacy"] == legacy and "\n".join(x["lines"]) == text), None)
@@ -279,6 +282,8 @@ def main(src: str, root: str) -> None:
     for f in out_dir.glob("*.cho"):
         f.unlink()
     for s in songs.values():
+        if not s["artist"] and s["id"] in ARTIST_OVERRIDES:
+            s["artist"] = ARTIST_OVERRIDES[s["id"]]
         if not s["artist"]:
             report.add("sans_artiste", f"`{s['id']}` ({s['title']}) → artiste `INCONNU`")
             s["artist"] = "INCONNU"
