@@ -204,3 +204,25 @@ input[type=search]::-webkit-search-cancel-button { -webkit-appearance: none; dis
   .sheet-foot .btn.ghost { grid-column: 1 / -1; justify-self: center; }
   .sheet-foot > span:empty { display: none; }
 }
+
+/* ---------- Répertoire (édition) ---------- */
+.sl-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 4px 6px; }
+.btn.small { min-height: 48px; padding: 0 16px; font-size: 17px; }
+.part.editing { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; margin: 12px 0; }
+.part-edit { display: grid; grid-template-columns: 1fr 56px; gap: 8px; margin-bottom: 8px; }
+.part-name { color: var(--gold); font-weight: 800; }
+.edit-row { padding-left: 8px; }
+.mv { flex: none; width: 52px; height: 52px; border-radius: 12px; background: var(--bg-2); font-size: 24px; font-weight: 800; }
+.mv:disabled { opacity: .2; }
+.part.editing .add { width: 100%; margin-top: 8px; }
+.new-part { width: 100%; margin-top: 12px; }
+.in-sl { flex: none; font-size: 14px; color: var(--fg-dim); max-width: 120px; text-align: right; }
+.song-line { display: flex; align-items: center; gap: 6px; }
+.song-line .song-row { flex: 1; min-width: 0; }
+.plus { flex: none; width: 52px; height: 52px; border-radius: 12px; border: 2px dashed var(--gold-dim); color: var(--gold); font-size: 26px; font-weight: 800; }
+.plus.in { border-style: solid; border-color: transparent; background: #13321c; color: #7ee2a0; font-size: 22px; }
+.sheet.compact { inset: auto 0 0 0; max-height: 70%; border-top: 2px solid var(--gold-dim); border-radius: 18px 18px 0 0; }
+.part-pick { width: 100%; min-height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; margin-bottom: 8px; border-radius: 12px; background: var(--bg-2); font-size: 20px; font-weight: 800; }
+.part-pick .n { color: var(--fg-dim); font-size: 16px; font-weight: 500; }
+.sheet-foot.single { grid-template-columns: 1fr; }
+@media (max-width: 600px) { .mv { width: 44px; height: 48px; } .plus { width: 46px; height: 48px; } }

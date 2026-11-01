@@ -321,7 +321,7 @@ def main(src: str, root: str) -> None:
     # 3. Setlist
     parts_def = [("repertoire-part1", "Première partie"), ("repertoire-part2", "Deuxième partie"),
                  ("repertoire-part3", "Réserve")]
-    setlist = {"id": "concert-legacy", "name": "Répertoire (import legacy)", "parts": []}
+    setlist = {"id": "concert-legacy", "name": "Répertoire", "parts": []}
     for ul_id, name in parts_def:
         ul = soup.find("ul", id=ul_id)
         ids = []

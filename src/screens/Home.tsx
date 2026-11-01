@@ -1,13 +1,38 @@
 import { useSignal } from '@preact/signals';
-import { useMemo } from 'preact/hooks';
+import { useMemo, useState } from 'preact/hooks';
 import { catalog, search } from '../lib/catalog';
+import { canEdit } from '../lib/publish';
 import { songHref } from '../lib/router';
+import { currentSetlist } from '../lib/setlistEdit';
+import { findSong } from '../model/setlist';
+import { PickPartSheet } from './AddSheets';
 import { displayKey } from '../model/chordpro';
 import type { Song } from '../model/types';
 import { IconChevron, IconClose, IconSearch } from '../ui/icons';
 
 export function KeyBadge({ song }: { song: Song }) {
   return song.key ? <span class="key">{displayKey(song.key)}</span> : <span class="key empty">–</span>;
+}
+
+/** Ligne de morceau : lien vers la scène + (mode éditeur) bouton d'ajout au répertoire. */
+function SongLine({ song, sub }: { song: Song; sub?: string }) {
+  const [pick, setPick] = useState(false);
+  const inSl = canEdit.value && currentSetlist.value ? !!findSong(currentSetlist.value, song.id) : false;
+  return (
+    <div class="song-line">
+      <a class="song-row" href={songHref(song.id)}>
+        <span class="t">{song.title}{sub && <span class="sub">{sub}</span>}</span>
+        <KeyBadge song={song} />
+      </a>
+      {canEdit.value && (
+        <button class={`plus${inSl ? ' in' : ''}`} onClick={() => setPick(true)}
+          aria-label={inSl ? `${song.title} est dans le répertoire` : `Ajouter ${song.title} au répertoire`}>
+          {inSl ? '✓' : '+'}
+        </button>
+      )}
+      {pick && <PickPartSheet song={song} onClose={() => setPick(false)} />}
+    </div>
+  );
 }
 
 export function Home() {
@@ -45,10 +70,7 @@ function SearchResults({ hits }: { hits: ReturnType<typeof search> }) {
     <div>
       <div class="count">{hits.length} résultat{hits.length > 1 ? 's' : ''}</div>
       {hits.map((h) => (
-        <a class="song-row" href={songHref(h.song.id)} key={h.song.id}>
-          <span class="t">{h.song.title}<span class="sub">{h.excerpt ? `« ${h.excerpt} »` : h.song.artist}</span></span>
-          <KeyBadge song={h.song} />
-        </a>
+        <SongLine song={h.song} sub={h.excerpt ? `« ${h.excerpt} »` : h.song.artist} key={h.song.id} />
       ))}
     </div>
   );
@@ -66,12 +88,7 @@ function ArtistList({ open, onToggle }: { open: string | null; onToggle: (name: 
             <span>{a.name}</span>
             <span class="n">{a.songs.length}</span>
           </button>
-          {open === a.name && a.songs.map((s) => (
-            <a class="song-row" href={songHref(s.id)} key={s.id}>
-              <span class="t">{s.title}</span>
-              <KeyBadge song={s} />
-            </a>
-          ))}
+          {open === a.name && a.songs.map((s) => <SongLine song={s} key={s.id} />)}
         </div>
       ))}
     </div>

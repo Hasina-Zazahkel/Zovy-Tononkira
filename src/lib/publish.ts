@@ -5,6 +5,8 @@
  */
 import { parseChordPro, serializeChordPro } from '../model/chordpro';
 import { applyOverride, type SongOverride } from '../model/overrides';
+import { serializeSetlist } from '../model/setlist';
+import type { Setlist } from '../model/types';
 import { signal } from '@preact/signals';
 import { kvDel, kvGet, kvSet } from './store';
 
@@ -68,8 +70,8 @@ export interface PublishResult {
   warnings: string[];
 }
 
-export async function publish(token: string, list: SongOverride[]): Promise<PublishResult> {
-  if (!list.length) throw new PublishError('rien à publier');
+export async function publish(token: string, list: SongOverride[], setlist?: Setlist): Promise<PublishResult> {
+  if (!list.length && !setlist) throw new PublishError('rien à publier');
   const ref = await gh<{ object: { sha: string } }>(token, `/git/ref/heads/${REPO.branch}`);
   const head = ref.object.sha;
   const commit = await gh<{ tree: { sha: string } }>(token, `/git/commits/${head}`);
@@ -86,16 +88,20 @@ export async function publish(token: string, list: SongOverride[]): Promise<Publ
     const content = serializeChordPro(next);
     if (content !== remote) tree.push({ path, mode: '100644', type: 'blob', content });
   }
+  if (setlist) {
+    // Éditeur unique : le répertoire local remplace le fichier distant.
+    tree.push({ path: `data/setlists/${setlist.id}.json`, mode: '100644', type: 'blob', content: serializeSetlist(setlist) });
+  }
   if (!tree.length) return { commitUrl: '', files: 0, warnings };
 
   const newTree = await gh<{ sha: string }>(token, '/git/trees', {
     method: 'POST', body: JSON.stringify({ base_tree: commit.tree.sha, tree }),
   });
-  const titles = list.map((o) => o.songId).join(', ');
+  const titles = [...list.map((o) => o.songId), ...(setlist ? ['répertoire'] : [])].join(', ');
   const newCommit = await gh<{ sha: string; html_url: string }>(token, '/git/commits', {
     method: 'POST',
     body: JSON.stringify({
-      message: `Voix et musiciens mis à jour depuis l'app (${tree.length} morceau${tree.length > 1 ? 'x' : ''})\n\n${titles}`,
+      message: `Mise à jour depuis l'app (${tree.length} fichier${tree.length > 1 ? 's' : ''})\n\n${titles}`,
       tree: newTree.sha, parents: [head],
     }),
   });

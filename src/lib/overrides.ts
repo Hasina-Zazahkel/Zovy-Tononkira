@@ -28,7 +28,6 @@ export async function loadOverrides() {
     if (base && !isNoop(base, ov)) kept[id] = ov;
   }
   overrides.value = kept;
-  overridesReady.value = true;
   if (Object.keys(kept).length !== Object.keys(stored).length) await persist();
 }
 

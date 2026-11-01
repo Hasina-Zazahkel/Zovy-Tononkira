@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { catalog, flattenSetlist } from '../lib/catalog';
 import { effectiveSong, overrides } from '../lib/overrides';
 import { canEdit } from '../lib/publish';
+import { currentSetlist } from '../lib/setlistEdit';
 import { EditPanel } from './EditPanel';
 import { goBack, replaceHash, songHref } from '../lib/router';
 import { bumpFont, FONT_MAX, FONT_MIN, settings, update } from '../lib/settings';
@@ -24,7 +25,8 @@ export function Stage({ id, setlistId, pos }: Props) {
 
   // Contexte setlist : morceau précédent / suivant
   const nav = useMemo(() => {
-    const sl = setlistId ? state.setlists.find((s) => s.id === setlistId) : undefined;
+    const cur = currentSetlist.value;
+    const sl = setlistId && cur?.id === setlistId ? cur : undefined;
     if (!sl || pos == null) return null;
     const flat = flattenSetlist(sl);
     const at = (i: number) => {
@@ -33,7 +35,7 @@ export function Stage({ id, setlistId, pos }: Props) {
       return s ? { song: s, href: songHref(s.id, sl.id, i) } : null;
     };
     return { total: flat.length, pos, part: flat[pos]?.part, prev: at(pos - 1), next: at(pos + 1) };
-  }, [state, setlistId, pos]);
+  }, [state, setlistId, pos, currentSetlist.value]);
 
   if (!song) {
     return (

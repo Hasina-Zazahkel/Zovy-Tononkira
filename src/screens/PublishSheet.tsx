@@ -2,19 +2,20 @@ import { useState } from 'preact/hooks';
 import { catalog } from '../lib/catalog';
 import { dropOverride, markPublished, overrides, unpublished } from '../lib/overrides';
 import { canEdit, checkToken, getToken, publish, PublishError, REPO, setToken } from '../lib/publish';
+import { dropSetlistOverride, markSetlistPublished, setlistOverride, setlistUnpublished } from '../lib/setlistEdit';
 import { IconClose } from '../ui/icons';
 
 const TOKEN_URL = `https://github.com/settings/personal-access-tokens/new?name=Zovy+Tononkira&description=Publication+depuis+la+tablette&target_name=${REPO.owner}&contents=write`;
 
 /** Bandeau d'accueil : modifs locales en attente. */
 export function PendingBar({ onOpen }: { onOpen: () => void }) {
-  const n = unpublished.value.length;
-  const sent = Object.values(overrides.value).length - n;
+  const n = unpublished.value.length + (setlistUnpublished.value ? 1 : 0);
+  const sent = Object.values(overrides.value).length + (setlistOverride.value ? 1 : 0) - n;
   if (!n && !sent) return null;
   return (
     <button class="pending" onClick={onOpen}>
       {n > 0
-        ? <><b>{n}</b> morceau{n > 1 ? 'x' : ''} modifié{n > 1 ? 's' : ''} sur cet appareil<span class="go">PUBLIER</span></>
+        ? <><b>{n}</b> modification{n > 1 ? 's' : ''} sur cet appareil<span class="go">PUBLIER</span></>
         : <>Publié · mise en ligne en cours ({sent})<span class="go ghost">DÉTAILS</span></>}
     </button>
   );
@@ -28,6 +29,9 @@ export function PublishSheet({ onClose }: { onClose: () => void }) {
   const songs = catalog.value!.songs;
   const all = Object.values(overrides.value);
   const pending = unpublished.value;
+  const slOv = setlistOverride.value;
+  const slPending = setlistUnpublished.value;
+  const nPending = pending.length + (slPending ? 1 : 0);
 
   const saveToken = async () => {
     setBusy(true); setMsg(null);
@@ -42,7 +46,7 @@ export function PublishSheet({ onClose }: { onClose: () => void }) {
   };
 
   const forget = async () => {
-    if (all.some((o) => !o.publishedAt || o.updatedAt > o.publishedAt)
+    if (nPending > 0
       && !confirm('Des modifications ne sont pas publiées : elles resteront sur cet appareil sans pouvoir être envoyées. Continuer ?')) return;
     await setToken(''); setMsg(null);
   };
@@ -52,12 +56,13 @@ export function PublishSheet({ onClose }: { onClose: () => void }) {
     try {
       const t = await getToken();
       if (!t) throw new PublishError('aucun jeton configuré');
-      const r = await publish(t, pending);
+      const r = await publish(t, pending, slPending ? slOv!.setlist : undefined);
       await markPublished(pending.map((o) => o.songId));
+      if (slPending) await markSetlistPublished();
       setMsg({
         kind: 'ok',
         text: r.files
-          ? `Publié (${r.files} morceau${r.files > 1 ? 'x' : ''}). Les tablettes verront « Mettre à jour » d'ici 2 à 3 minutes.${r.warnings.length ? ` Attention : ${r.warnings.join(' ; ')}` : ''}`
+          ? `Publié (${r.files} fichier${r.files > 1 ? 's' : ''}). Les tablettes verront « Mettre à jour » d'ici 2 à 3 minutes.${r.warnings.length ? ` Attention : ${r.warnings.join(' ; ')}` : ''}`
           : 'Rien de nouveau : ces modifications sont déjà en ligne.',
         url: r.commitUrl || undefined,
       });
@@ -74,7 +79,17 @@ export function PublishSheet({ onClose }: { onClose: () => void }) {
       </header>
       <div class="sheet-body">
         {hasToken && <h3 class="sheet-h voice">Modifié sur cet appareil</h3>}
-        {hasToken && !all.length && <p class="hint">Aucune modification en attente.</p>}
+        {hasToken && !all.length && !slOv && <p class="hint">Aucune modification en attente.</p>}
+        {hasToken && slOv && (
+          <div class="mod">
+            <a href="#/repertoire" onClick={onClose} class="mod-t">Répertoire</a>
+            <span class={`mod-s${slPending ? '' : ' sent'}`}>{slPending ? 'à publier' : 'envoyé'}</span>
+            <button class="icon-btn del" aria-label="Annuler les modifications du répertoire"
+              onClick={() => { if (confirm('Annuler les modifications du répertoire sur cet appareil ?')) void dropSetlistOverride(); }}>
+              <IconClose size={24} />
+            </button>
+          </div>
+        )}
         {hasToken && all.map((o) => {
           const sent = o.publishedAt && o.updatedAt <= o.publishedAt;
           return (
@@ -91,8 +106,8 @@ export function PublishSheet({ onClose }: { onClose: () => void }) {
 
         {hasToken ? (
           <>
-            <button class="btn primary wide" disabled={busy || !pending.length} onClick={run}>
-              {busy ? 'Publication…' : pending.length ? `PUBLIER POUR TOUT LE GROUPE (${pending.length})` : 'Tout est publié'}
+            <button class="btn primary wide" disabled={busy || !nPending} onClick={run}>
+              {busy ? 'Publication…' : nPending ? `PUBLIER POUR TOUT LE GROUPE (${nPending})` : 'Tout est publié'}
             </button>
             {msg && <p class={`msg ${msg.kind}`}>{msg.text} {msg.url && <a href={msg.url} target="_blank" rel="noopener">Voir sur GitHub</a>}</p>}
             <h3 class="sheet-h">Mode éditeur</h3>
