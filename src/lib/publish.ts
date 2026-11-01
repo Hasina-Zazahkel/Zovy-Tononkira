@@ -7,7 +7,9 @@ import { parseChordPro, serializeChordPro } from '../model/chordpro';
 import { applyOverride, type SongOverride } from '../model/overrides';
 import { serializeSetlist } from '../model/setlist';
 import type { Setlist } from '../model/types';
-import { signal } from '@preact/signals';
+import { computed, signal } from '@preact/signals';
+import { hasAdmin, serializeMembers, type Member } from '../model/members';
+import { adminSession } from './members';
 import { kvDel, kvGet, kvSet } from './store';
 
 export const REPO = { owner: 'Hasina-Zazahkel', repo: 'Zovy-Tononkira', branch: 'main' };
@@ -18,16 +20,18 @@ const TOKEN_KEY = 'github.token';
  * Mode éditeur : seul un appareil qui détient le jeton GitHub (ceux de Hasina) peut modifier.
  * Tous les autres sont en lecture seule.
  */
-export const canEdit = signal(false);
+export const hasToken = signal(false);
+/** Mode éditeur = jeton sur l'appareil + session admin (ou aucune liste de membres publiée). */
+export const canEdit = computed(() => hasToken.value && adminSession.value);
 
 export const getToken = () => kvGet<string>(TOKEN_KEY);
 export async function setToken(t: string) {
   if (t.trim()) await kvSet(TOKEN_KEY, t.trim());
   else await kvDel(TOKEN_KEY);
-  canEdit.value = !!t.trim();
+  hasToken.value = !!t.trim();
 }
 export async function initEditor() {
-  canEdit.value = !!(await getToken());
+  hasToken.value = !!(await getToken());
 }
 
 export class PublishError extends Error {}
@@ -71,8 +75,9 @@ export interface PublishResult {
   warnings: string[];
 }
 
-export async function publish(token: string, list: SongOverride[], setlist?: Setlist): Promise<PublishResult> {
-  if (!list.length && !setlist) throw new PublishError('rien à publier');
+export async function publish(token: string, list: SongOverride[], setlist?: Setlist, members?: Member[]): Promise<PublishResult> {
+  if (!list.length && !setlist && !members) throw new PublishError('rien à publier');
+  if (members && !hasAdmin(members)) throw new PublishError('la liste des membres doit contenir au moins un admin');
   const ref = await gh<{ object: { sha: string } }>(token, `/git/ref/heads/${REPO.branch}`);
   const head = ref.object.sha;
   const commit = await gh<{ tree: { sha: string } }>(token, `/git/commits/${head}`);
@@ -105,6 +110,10 @@ export async function publish(token: string, list: SongOverride[], setlist?: Set
   if (setlist) {
     // Éditeur unique : le répertoire local remplace le fichier distant.
     tree.push({ path: `data/setlists/${setlist.id}.json`, mode: '100644', type: 'blob', content: serializeSetlist(setlist) });
+  }
+  if (members) {
+    tree.push({ path: 'data/members.json', mode: '100644', type: 'blob', content: serializeMembers(members) });
+    labels.push('membres');
   }
   if (!tree.length) return { commitUrl: '', files: 0, warnings };
 

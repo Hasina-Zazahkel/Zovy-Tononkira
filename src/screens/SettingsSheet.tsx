@@ -1,18 +1,21 @@
 import { useState } from 'preact/hooks';
 import { dropOverride, liveCatalog, markPublished, overrides, unpublished } from '../lib/overrides';
 import { catalog } from '../lib/catalog';
-import { canEdit, checkToken, getToken, publish, PublishError, REPO, setToken } from '../lib/publish';
+import { canEdit, hasToken as tokenSignal, checkToken, getToken, publish, PublishError, REPO, setToken } from '../lib/publish';
 import { dropSetlistOverride, markSetlistPublished, setlistOverride, setlistUnpublished } from '../lib/setlistEdit';
 import { bumpFont, FONT_MAX, FONT_MIN, settings, update } from '../lib/settings';
 import { wakeState } from '../lib/wakeLock';
+import { adminSession, currentMembers, loginRequired, logout, markMembersPublished, membersOverride, membersUnpublished, session } from '../lib/members';
+import { SESSION_DAYS } from '../model/members';
+import { MembersSection } from './MembersSection';
 import { IconClose } from '../ui/icons';
 
 const TOKEN_URL = `https://github.com/settings/personal-access-tokens/new?name=Zovy+Tononkira&description=Publication+depuis+la+tablette&target_name=${REPO.owner}&contents=write`;
 
 /** Bandeau d'accueil : modifs locales en attente. */
 export function PendingBar({ onOpen }: { onOpen: () => void }) {
-  const n = unpublished.value.length + (setlistUnpublished.value ? 1 : 0);
-  const sent = Object.values(overrides.value).length + (setlistOverride.value ? 1 : 0) - n;
+  const n = unpublished.value.length + (setlistUnpublished.value ? 1 : 0) + (membersUnpublished.value ? 1 : 0);
+  const sent = Object.values(overrides.value).length + (setlistOverride.value ? 1 : 0) + (membersOverride.value ? 1 : 0) - n;
   if (!n && !sent) return null;
   return (
     <button class="pending" onClick={onOpen}>
@@ -37,6 +40,9 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
   const st = settings.value;
   const [token, setTok] = useState('');
   const hasToken = canEdit.value;
+  const tokenHere = tokenSignal.value;
+  const mPending = membersUnpublished.value;
+  const sess = session.value;
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string; url?: string } | null>(null);
   const songs = liveCatalog.value!.songs;
@@ -45,7 +51,7 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
   const pending = unpublished.value;
   const slOv = setlistOverride.value;
   const slPending = setlistUnpublished.value;
-  const nPending = pending.length + (slPending ? 1 : 0);
+  const nPending = pending.length + (slPending ? 1 : 0) + (mPending ? 1 : 0);
 
   const saveToken = async () => {
     setBusy(true); setMsg(null);
@@ -70,9 +76,10 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
     try {
       const t = await getToken();
       if (!t) throw new PublishError('aucun jeton configuré');
-      const r = await publish(t, pending, slPending ? slOv!.setlist : undefined);
+      const r = await publish(t, pending, slPending ? slOv!.setlist : undefined, mPending ? currentMembers.value : undefined);
       await markPublished(pending.map((o) => o.songId));
       if (slPending) await markSetlistPublished();
+      if (mPending) await markMembersPublished();
       setMsg({
         kind: 'ok',
         text: r.files
@@ -88,7 +95,7 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
   return (
     <div class="sheet" role="dialog" aria-modal="true" aria-label="Réglages">
       <header class="sheet-head">
-        <div class="sheet-title"><div class="t">Réglages</div><div class="a">{hasToken ? 'Mode éditeur' : 'Lecture seule'}</div></div>
+        <div class="sheet-title"><div class="t">Réglages</div><div class="a">{hasToken ? 'Mode éditeur' : 'Lecture seule'}{sess ? ` · ${sess.id}` : ''}</div></div>
         <button class="icon-btn" onClick={onClose} aria-label="Fermer"><IconClose /></button>
       </header>
       <div class="sheet-body">
@@ -139,6 +146,8 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
           );
         })}
 
+        {hasToken && <MembersSection />}
+
         {hasToken ? (
           <>
             <button class="btn primary wide" disabled={busy || !nPending} onClick={run}>
@@ -148,6 +157,11 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
             <h3 class="sheet-h">Mode éditeur</h3>
             <p class="hint">Cet appareil peut modifier et publier (jeton GitHub enregistré).</p>
             <button class="btn ghost" onClick={forget}>Repasser cet appareil en lecture seule</button>
+          </>
+        ) : !adminSession.value ? (
+          <>
+            <h3 class="sheet-h">Mode éditeur</h3>
+            <p class="hint">Cet appareil est en <b>lecture seule</b>{tokenHere ? ' (compte non admin)' : ''}. La modification est réservée à un compte admin.</p>
           </>
         ) : (
           <>
@@ -163,6 +177,13 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
                 onInput={(e) => setTok((e.target as HTMLInputElement).value)} aria-label="Jeton GitHub" />
               <button class="btn primary" disabled={busy || !token.trim()} onClick={saveToken}>{busy ? '…' : 'Vérifier'}</button>
             </div>
+          </>
+        )}
+        {loginRequired.value && sess && (
+          <>
+            <h3 class="sheet-h">Compte</h3>
+            <p class="hint">Connecté : <b>{sess.id}</b> · jusqu'au {new Date(sess.at + SESSION_DAYS * 86_400_000).toLocaleDateString('fr-FR')}</p>
+            <button class="btn ghost" onClick={() => { if (confirm('Se déconnecter de cet appareil ?')) { onClose(); void logout(); } }}>Se déconnecter</button>
           </>
         )}
       </div>

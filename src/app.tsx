@@ -3,6 +3,8 @@ import { useRegisterSW } from 'virtual:pwa-register/preact';
 import { catalog, catalogError } from './lib/catalog';
 import { liveCatalog, overridesReady } from './lib/overrides';
 import { canEdit } from './lib/publish';
+import { authReady, loggedIn, loginRequired } from './lib/members';
+import { Login } from './screens/Login';
 import { route } from './lib/router';
 import { useMemo } from 'preact/hooks';
 import { Home, homeQuery, initial } from './screens/Home';
@@ -25,6 +27,8 @@ export function App() {
   const letters = useMemo(() => new Set((liveCatalog.value?.artists ?? []).map((a) => initial(a.name))), [liveCatalog.value]);
 
   if (catalogError.value) return <div class="state">Impossible de charger le catalogue : {catalogError.value}</div>;
+  if (!authReady.value) return <div class="state">Chargement…</div>;
+  if (loginRequired.value && !loggedIn.value) return <Login />;
   if (!catalog.value || !overridesReady.value) return <div class="state">Chargement…</div>;
 
   return (

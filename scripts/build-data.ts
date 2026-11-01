@@ -1,11 +1,12 @@
 /**
- * Compile data/songs/*.cho + data/setlists/*.json -> public/data/{songs,setlists}.json
+ * Compile data/songs/*.cho + data/setlists/*.json -> public/data/{songs,setlists,members}.json
  *   --format : réécrit les .cho au format canonique
  *   --check  : valide sans écrire (CI), code de sortie 1 si erreur
  */
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseChordPro, serializeChordPro } from '../src/model/chordpro';
+import { hasAdmin, parseMembers, type Member } from '../src/model/members';
 import { INSTRUMENT_ROLES, VOICE_ROLES } from '../src/model/roles';
 import type { Catalog, Setlist, Song } from '../src/model/types';
 
@@ -52,6 +53,16 @@ const setlists: Setlist[] = readdirSync(SETLISTS_DIR)
     return sl;
   });
 
+// Membres (connexion) : facultatif ; liste vide = pas de page de connexion
+let members: Member[] = [];
+const MEMBERS_FILE = join(ROOT, 'data/members.json');
+if (existsSync(MEMBERS_FILE)) {
+  try {
+    members = parseMembers(JSON.parse(readFileSync(MEMBERS_FILE, 'utf8')));
+    if (!hasAdmin(members)) errors.push('members.json : aucun admin');
+  } catch (e) { errors.push(String(e instanceof Error ? e.message : e)); }
+}
+
 warnings.forEach((w) => console.warn(`⚠ ${w}`));
 errors.forEach((e) => console.error(`✖ ${e}`));
 console.log(`${songs.length} morceaux, ${setlists.length} setlist(s), ${warnings.length} avertissement(s), ${errors.length} erreur(s)` +
@@ -63,5 +74,6 @@ if (!args.has('--check')) {
   const catalog: Catalog = { version: 1, builtAt: new Date().toISOString(), songs };
   writeFileSync(join(OUT_DIR, 'songs.json'), JSON.stringify(catalog));
   writeFileSync(join(OUT_DIR, 'setlists.json'), JSON.stringify(setlists));
+  writeFileSync(join(OUT_DIR, 'members.json'), JSON.stringify(members));
   console.log(`→ public/data/songs.json (${(JSON.stringify(catalog).length / 1024).toFixed(0)} Ko)`);
 }

@@ -81,3 +81,11 @@ Outro
 ```
 
 Suppression : éditeur → En-tête → **Supprimer le morceau** (retiré du répertoire, suppression publiée avec PUBLIER).
+
+## Connexion des membres
+
+- `data/members.json` : identifiants + empreintes PBKDF2-SHA256 salées (jamais de mot de passe en clair). Fichier absent ou vide = pas de page de connexion.
+- Gestion : Réglages → **Membres** (mode éditeur) → identifiant, mot de passe, case admin, **Ajouter** ; changer le mot de passe, retirer ; envoi avec **PUBLIER**. Il reste toujours au moins un admin.
+- Session : 30 jours par appareil, vérifiée au démarrage (expirée ou membre retiré → page de connexion). Fonctionne hors ligne.
+- Mode éditeur = **compte admin connecté + jeton GitHub sur l'appareil**.
+- Protection simple : le site et le dépôt restent publics.

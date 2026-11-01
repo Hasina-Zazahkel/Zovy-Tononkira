@@ -244,3 +244,29 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
   .part-pick select { flex-basis: 100%; }
   .ns-ta { font-size: 15px; min-height: calc(31 * 1.55em + 32px); }
 }
+
+/* ---------- Connexion / membres ---------- */
+.login { min-height: 100dvh; display: grid; place-items: center; padding: 24px 18px; background: radial-gradient(120% 80% at 50% 0%, #2a2008 0%, var(--bg) 60%); }
+.login-box { width: min(560px, 100%); display: grid; gap: 16px; }
+.login-logo { width: min(380px, 80%); height: auto; justify-self: center; margin-bottom: 18px; }
+.login-f { display: grid; gap: 6px; }
+.login-f > span:first-child { font-family: var(--display); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 15px; color: var(--fg-dim); }
+.login-f .in { min-height: 58px; font-size: 20px; }
+.login-pw { display: flex; gap: 8px; align-items: center; }
+.login-pw .in { flex: 1; min-width: 0; }
+.login-hint { text-align: center; color: var(--fg-dim); font-size: 15px; margin: 4px 0 0; }
+.chip-btn { min-height: 44px; padding: 0 14px; border-radius: 999px; border: 2px solid var(--bg-3); color: var(--fg-dim); font-weight: 700; font-size: 15px; background: none; }
+.chip-btn.on { background: var(--gold); border-color: var(--gold); color: #111; }
+.msg.warn { background: #2e2408; color: var(--gold); }
+.members .member { border-bottom: 1px solid var(--bg-3); padding: 6px 0; }
+.member-row { display: flex; align-items: center; gap: 8px; }
+.member-id { flex: 1; min-width: 0; font-size: 20px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+.member-id small { color: var(--fg-dim); font-weight: 400; }
+.member-reset { margin: 8px 0 4px; display: flex; gap: 8px; }
+.member-reset .in { flex: 1; min-width: 0; }
+.member-add { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0 6px; }
+.member-add .btn, .member-admin { grid-column: 1 / -1; }
+.member-admin { display: flex; align-items: center; gap: 10px; font-size: 18px; }
+.member-admin input { width: 24px; height: 24px; accent-color: var(--gold); }
+.member-admin small { color: var(--fg-dim); }
+@media (max-width: 600px) { .member-add { grid-template-columns: 1fr; } }
