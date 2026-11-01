@@ -4,7 +4,7 @@
 {tags: medley}
 
 {section: TAZANA KELY}
-{voices: Hasina=miventy, Misa=haut, Ke=lead}
+{voices: Hasina, Misa=Soprano, Ke=Lead}
 TAZANA KELY AO ANDREFANA AO
 TANÀNA FILALAOVANA
 TAZANA KELY AO ANDREFANA AO
@@ -13,7 +13,7 @@ TANÀNA FILALAOVANA
 (pas d'interlude)
 
 {section: E RANO A}
-{voices: Hasina=ténor, Misa=soprano, Ke=alto}
+{voices: Hasina=Ténor, Misa=Soprano, Ke=Alto}
 E RANO A
 RANO AN’ALA
 RANO MADIO
@@ -29,7 +29,7 @@ TANÀNA FILALAOVANA
 (pas d'interlude)
 
 {section: OMBIN-TSARETY}
-{voices: Hasina=tenor refrain, Misa=soprano, Ke=alto}
+{voices: Hasina=Ténor, Misa=Soprano, Ke=Alto}
 O O O, OMBIN-TSARETIN-DRALEVA INY O
 O O O, MANDALO MAMAKY TANÀNA IZY O
 
@@ -49,7 +49,7 @@ TAZANA KELY AO ANDREFANA AO
 TANÀNA FILALAOVANA
 
 {section: MIANGALY}
-{voices: Hasina=lead, Haja=ténor}
+{voices: Hasina=Lead, Haja=Ténor}
 MIANGALY NY MANINA RE RY ZAREO
 FA MAHATSIARO,MAHATSIARO T'AKAIKINAREO
 MARARY NY FO TSY MBA METY MANGIANA

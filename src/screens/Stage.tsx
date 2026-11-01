@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { catalog, flattenSetlist } from '../lib/catalog';
+import { effectiveSong, overrides } from '../lib/overrides';
+import { EditPanel } from './EditPanel';
 import { goBack, replaceHash, songHref } from '../lib/router';
 import { bumpFont, FONT_MAX, FONT_MIN, settings, update } from '../lib/settings';
 import { isCueLine } from '../lib/text';
@@ -7,13 +9,16 @@ import { wakeState } from '../lib/wakeLock';
 import { displayKey } from '../model/chordpro';
 import type { Assignment, Section, Song } from '../model/types';
 import { buildUnits, paginate, type Measure, type Unit } from '../stage/paginate';
-import { IconBack, IconMoon, IconNext, IconPrev, IconSun } from '../ui/icons';
+import { IconBack, IconEdit, IconMoon, IconNext, IconPrev, IconSun } from '../ui/icons';
 
 interface Props { id: string; setlistId?: string; pos?: number }
 
 export function Stage({ id, setlistId, pos }: Props) {
   const state = catalog.value!;
-  const song = state.songs.get(id);
+  const base = state.songs.get(id);
+  const ov = overrides.value[id];
+  // Mémoïsé : un nouvel objet à chaque rendu relancerait la pagination en boucle
+  const song = useMemo(() => (base ? effectiveSong(base) : undefined), [base, ov]);
   const fallback = setlistId ? '#/repertoire' : '#/';
 
   // Contexte setlist : morceau précédent / suivant
@@ -39,7 +44,7 @@ export function Stage({ id, setlistId, pos }: Props) {
       </div>
     );
   }
-  return <StageView song={song} nav={nav} fallback={fallback} />;
+  return <StageView song={song} base={base!} local={!!ov} nav={nav} fallback={fallback} />;
 }
 
 type Nav = {
@@ -48,8 +53,9 @@ type Nav = {
   next: { song: Song; href: string } | null;
 } | null;
 
-function StageView({ song, nav, fallback }: { song: Song; nav: Nav; fallback: string }) {
+function StageView({ song, base, local, nav, fallback }: { song: Song; base: Song; local: boolean; nav: Nav; fallback: string }) {
   const { fontSize, uppercase, keepAwake } = settings.value;
+  const [editing, setEditing] = useState(false);
   const units = useMemo(() => buildUnits(song), [song]);
 
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -117,7 +123,7 @@ function StageView({ song, nav, fallback }: { song: Song; nav: Nav; fallback: st
   // Clavier (et pédaliers type clavier Bluetooth)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (editing || e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement || e.ctrlKey || e.metaKey || e.altKey) return;
       if (['ArrowRight', 'PageDown', ' ', 'ArrowDown'].includes(e.key)) { e.preventDefault(); next(); }
       else if (['ArrowLeft', 'PageUp', 'ArrowUp'].includes(e.key)) { e.preventDefault(); prev(); }
       else if (e.key === 'Escape') goBack(fallback);
@@ -138,7 +144,10 @@ function StageView({ song, nav, fallback }: { song: Song; nav: Nav; fallback: st
           <button class="icon-btn" onClick={() => goBack(fallback)} aria-label="Retour"><IconBack /></button>
           <div class="stage-title">
             <div class="t">{song.title}</div>
-            <div class="a">{song.artist}{nav?.part ? ` · ${nav.part} · ${nav.pos + 1}/${nav.total}` : ''}</div>
+            <div class="a">
+              {local && <span class="local" title="Modifié sur cette tablette, pas encore publié">● modifié ici · </span>}
+              {song.artist}{nav?.part ? ` · ${nav.part} · ${nav.pos + 1}/${nav.total}` : ''}
+            </div>
           </div>
           {song.key && <span class="key" aria-label="Tonalité">{displayKey(song.key)}</span>}
           <button class="font-btn" onClick={() => bumpFont(-1)} disabled={fontSize <= FONT_MIN} aria-label="Réduire le texte"><small>A</small>−</button>
@@ -148,6 +157,7 @@ function StageView({ song, nav, fallback }: { song: Song; nav: Nav; fallback: st
             aria-label="Écran toujours allumé" title={`Écran allumé : ${wakeState.value}`}>
             {keepAwake ? <IconSun size={28} /> : <IconMoon size={28} />}
           </button>
+          <button class="icon-btn" onClick={() => setEditing(true)} aria-label="Modifier voix et musiciens"><IconEdit size={28} /></button>
         </div>
         <Meta song={song} />
       </header>
@@ -181,6 +191,7 @@ function StageView({ song, nav, fallback }: { song: Song; nav: Nav; fallback: st
           <button class="nav-btn" onClick={next} disabled={atEnd} aria-label="Page suivante"><IconNext size={40} /></button>
         )}
       </footer>
+      {editing && <EditPanel base={base} onClose={() => setEditing(false)} />}
     </div>
   );
 }

@@ -6,6 +6,7 @@
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseChordPro, serializeChordPro } from '../src/model/chordpro';
+import { INSTRUMENT_ROLES, VOICE_ROLES } from '../src/model/roles';
 import type { Catalog, Setlist, Song } from '../src/model/types';
 
 const ROOT = new URL('..', import.meta.url).pathname;
@@ -27,6 +28,11 @@ for (const file of readdirSync(SONGS_DIR).filter((f) => f.endsWith('.cho')).sort
   const { song, warnings: w } = parseChordPro(id, raw);
   w.forEach((m) => (m.includes('manquant') || m.includes('invalide') ? errors : warnings).push(`${file} : ${m}`));
   if (!song.sections.some((s) => s.stanzas.length)) warnings.push(`${file} : aucune parole`);
+  const badRole = (list: { role?: string }[], allowed: readonly string[], what: string) =>
+    list.filter((a) => a.role && !allowed.includes(a.role)).forEach((a) => errors.push(`${file} : ${what} « ${a.role} » hors liste`));
+  badRole(song.singers, VOICE_ROLES, 'voix');
+  badRole(song.musicians, INSTRUMENT_ROLES, 'instrument');
+  song.sections.forEach((s) => s.voices && badRole(s.voices, VOICE_ROLES, 'voix de section'));
   songs.push(song);
   if (args.has('--format')) {
     const canon = serializeChordPro(song);

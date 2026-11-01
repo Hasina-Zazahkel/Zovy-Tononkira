@@ -1,10 +1,10 @@
 {title: FOLAKA IHANY}
 {artist: SAMOELA}
 {key: SOL}
-{singers: *=4 voix}
-{musicians: Haja=guitare, Toky=basse, Tofa=batterie}
+{singers: *=Chœur}
+{musicians: Haja=Guitare, Toky=Guitare basse, Tofa=Percussion}
 
-{voices: Hasina=lead, Misa=haut, Ke=bas}
+{voices: Hasina=Lead, Misa=Soprano, Ke=Alto}
 FOLAKA IHANY NY ANAO Ô !
 TSY MANDATSA AHO, ARY TSY MIKAFARA À!
 MBA NANARINA IHANY TALOHA,
