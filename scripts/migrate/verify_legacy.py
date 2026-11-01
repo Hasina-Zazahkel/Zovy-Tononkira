@@ -7,6 +7,7 @@ Vérifie public/data/songs.json contre le HTML legacy :
 Usage : python3 -I scripts/migrate/verify_legacy.py legacy/Tononkira_Zovy.html .
 """
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -42,12 +43,15 @@ for sec in soup.select("div.lyrics-section"):
             exp_named.append(m.group(1))
         elif CUE_RE.match(line):
             exp_cues.append(line.strip())
+        elif re.match(r"^\s*\.{2,}\s*MUSIQUE\s*\.{2,}\s*$", line, re.I):
+            exp_cues.append("MUSIQUE")  # converti en repère instrumental
         elif (pm := PAREN_LINE_RE.match(line)) and parse_voices(pm.group(1), Report(), legacy) is not None:
             exp_voices += 1
         else:
             exp_lines.append(line)
     got_lines = [l for s in song["sections"] for st in s["stanzas"] for l in st]
-    got_cues = [s.get("label", "") for s in song["sections"] if s["kind"] == "instrumental"]
+    # repères consécutifs fusionnés (« A · B ») : comparés éclatés
+    got_cues = [c for s in song["sections"] if s["kind"] == "instrumental" for c in s.get("label", "").split(" · ")]
     got_named = [s["label"] for s in song["sections"] if s["kind"] == "lyrics" and s.get("label")]
     got_voices = sum(1 for s in song["sections"] if s.get("voices"))
     if got_lines != exp_lines:

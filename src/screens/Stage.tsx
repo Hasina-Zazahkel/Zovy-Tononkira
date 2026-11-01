@@ -10,7 +10,7 @@ import { isCueLine } from '../lib/text';
 import { wakeState } from '../lib/wakeLock';
 import { displayKey } from '../model/chordpro';
 import type { Assignment, Section, Song } from '../model/types';
-import { buildUnits, paginate, type Measure, type Unit } from '../stage/paginate';
+import { buildUnits, paginate, type Column, type Measure, type Unit } from '../stage/paginate';
 import { IconBack, IconCollapse, IconEdit, IconExpand, IconInfo, IconMoon, IconNext, IconPrev, IconSun } from '../ui/icons';
 
 interface Props { id: string; setlistId?: string; pos?: number }
@@ -67,7 +67,7 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
   const pagesRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState({ w: 0, h: 0 });
   /** Un écran = 1 colonne (smartphone, tablette portrait) ou 2 colonnes (PC). */
-  const [pages, setPages] = useState<Unit[][][]>([]);
+  const [pages, setPages] = useState<Column[][]>([]);
   const [page, setPage] = useState(0);
   const target = useRef(0);
   const cols = box.w >= 1100 ? 2 : 1;
@@ -101,11 +101,11 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
       const lines = [...el.querySelectorAll<HTMLElement>('.ln')].map((l) => l.getBoundingClientRect().height);
       return { height, lines, header: Math.max(0, height - lines.reduce((a, b) => a + b, 0)) };
     });
-    const anchor = pages[target.current]?.[0]?.[0]?.key.split('#')[0];
-    const columns = paginate(units, measures, geo.colH, gap);
-    const next: Unit[][][] = [];
+    const anchor = pages[target.current]?.[0]?.units[0]?.key.split('#')[0];
+    const columns = paginate(units, measures, geo.colH, gap, { minGap: gap * 0.4, minScale: 0.92 });
+    const next: Column[][] = [];
     for (let i = 0; i < columns.length; i += cols) next.push(columns.slice(i, i + cols));
-    let idx = anchor ? next.findIndex((p) => p.some((c) => c.some((u) => u.key.split('#')[0] === anchor))) : 0;
+    let idx = anchor ? next.findIndex((p) => p.some((c) => c.units.some((u) => u.key.split('#')[0] === anchor))) : 0;
     if (idx < 0) idx = 0;
     setPages(next);
     target.current = idx;
@@ -220,7 +220,7 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
         <div class="pages" ref={pagesRef} onScroll={onScroll} onClick={() => infoOpen && setInfoOpen(false)}>
           {pages.map((p, i) => (
             <div class={`page ${lyricsCls}${cols > 1 ? ' two' : ''}`} key={i} aria-hidden={i !== page}>
-              {p.map((c, j) => <div class="col" key={j}>{c.map((u) => <UnitView u={u} key={u.key} />)}</div>)}
+              {p.map((c, j) => <div class="col" key={j} style={{ gap: `${c.gap}px`, '--lh': c.scale }}>{c.units.map((u) => <UnitView u={u} key={u.key} />)}</div>)}
             </div>
           ))}
         </div>

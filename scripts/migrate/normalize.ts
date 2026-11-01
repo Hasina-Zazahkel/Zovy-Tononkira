@@ -2,11 +2,13 @@
  * Normalisation idempotente de tous les .cho :
  * - rôles reclassés vers les listes fermées (src/model/roles.ts) ; sans équivalent → rôle retiré (listé)
  * - {capo: N} fusionné dans le commentaire {notes} ("Capo N"), affiché à côté de la tonalité
+ * - nettoyage structurel (src/model/cleanup.ts) : repères isolés, MUSIQUE, sections vides, interludes consécutifs
  * Usage : npx tsx scripts/migrate/normalize.ts
  */
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseChordPro, serializeChordPro } from '../../src/model/chordpro';
+import { cleanupSong } from '../../src/model/cleanup';
 import { mapLegacyInstrument, mapLegacyVoice } from '../../src/model/roles';
 import type { Assignment } from '../../src/model/types';
 
@@ -30,7 +32,7 @@ function convert(list: Assignment[], map: (r: string) => string | undefined, whe
 
 for (const f of readdirSync(DIR).filter((x) => x.endsWith('.cho')).sort()) {
   const raw = readFileSync(join(DIR, f), 'utf8');
-  const { song } = parseChordPro(f.slice(0, -4), raw);
+  const song = cleanupSong(parseChordPro(f.slice(0, -4), raw).song);
   song.singers = convert(song.singers, mapLegacyVoice, song.id);
   song.musicians = convert(song.musicians, mapLegacyInstrument, song.id);
   for (const s of song.sections) if (s.voices) s.voices = convert(s.voices, mapLegacyVoice, `${song.id} § ${s.label ?? s.id}`);

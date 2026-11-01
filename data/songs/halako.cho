@@ -2,10 +2,9 @@
 {artist: FENOAMBY}
 {key: MI}
 
-{voices: Toky=Lead, *=Chœur}
-
 {instrumental: INTRO Choeur}
 
+{voices: Toky=Lead, *=Chœur}
 HALAKO O x8
 
 {instrumental: INTERLUDE}

@@ -79,6 +79,7 @@ body {
 .ln { min-height: 1.32em; }
 .page { flex-direction: row; gap: var(--col-gap); padding: var(--pad-y) var(--pad-x); }
 .col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: var(--stanza-gap); overflow: hidden; }
+.col .ln { line-height: calc(1.32 * var(--lh, 1)); min-height: 0; }
 .measure { padding: 0; left: var(--pad-x); right: auto; display: flex; flex-direction: column; gap: var(--stanza-gap); }
 .sec-label { font-size: .7em; }
 .cue-unit { font-family: var(--display); }

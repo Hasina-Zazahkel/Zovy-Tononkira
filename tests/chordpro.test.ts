@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parseChordPro, serializeChordPro, parseKey } from '../src/model/chordpro';
+import { cleanupSong } from '../src/model/cleanup';
 
 const DIR = join(__dirname, '../data/songs');
 
@@ -63,5 +64,6 @@ describe('catalogue réel', () => {
     expect(warnings).toEqual([]);
     expect(serializeChordPro(song)).toBe(raw);
     expect(parseChordPro(song.id, serializeChordPro(song)).song).toEqual(song);
+    expect(serializeChordPro(cleanupSong(song))).toBe(raw); // données déjà nettoyées
   });
 });

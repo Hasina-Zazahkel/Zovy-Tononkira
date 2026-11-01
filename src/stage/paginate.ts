@@ -41,16 +41,36 @@ export interface Measure {
   lines: number[];
 }
 
+export interface Column {
+  units: Unit[];
+  /** Espacement réellement appliqué entre les blocs de cette colonne (≤ espacement nominal). */
+  gap: number;
+  /** Facteur d'interligne appliqué aux lignes de paroles (1 = nominal, ≥ minScale). */
+  scale: number;
+}
+
+export interface FitOptions {
+  /** Espacement minimal entre strophes. */
+  minGap?: number;
+  /** Interligne minimal relatif (ex. 0.92 = −8 %). */
+  minScale?: number;
+}
+
 /**
- * Découpe les unités trop hautes en morceaux de lignes, puis remplit les pages en glouton.
- * Garde l'en-tête de section collé à la strophe qui suit.
+ * Remplit les colonnes en glouton, sans jamais couper une strophe (sauf si elle dépasse une colonne).
+ * - Un repère instrumental reste collé au bloc qui le suit (jamais seul en bas de page).
+ * - L'espacement entre strophes peut se resserrer jusqu'à `minGap` pour faire entrer une strophe de plus.
  */
-export function paginate(units: Unit[], measures: Measure[], pageHeight: number, gap: number): Unit[][] {
-  const blocks: { unit: Unit; h: number }[] = [];
+export function paginate(units: Unit[], measures: Measure[], pageHeight: number, gap: number, opts: FitOptions = {}): Column[] {
+  const minGap = opts.minGap ?? gap;
+  const minScale = opts.minScale ?? 1;
+  type Block = { unit: Unit; h: number; l: number };
+  const blocks: Block[] = [];
+  const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
   units.forEach((u, i) => {
     const m = measures[i];
     if (m.height <= pageHeight || !u.lines || u.lines.length <= 1) {
-      blocks.push({ unit: u, h: m.height });
+      blocks.push({ unit: u, h: m.height, l: sum(m.lines) });
       return;
     }
     let start = 0;
@@ -60,30 +80,56 @@ export function paginate(units: Unit[], measures: Measure[], pageHeight: number,
       if (h + m.lines[l] > pageHeight && l > start) {
         blocks.push({
           unit: { ...u, key: `${u.key}#${part++}`, header: u.header && start === 0, lines: u.lines.slice(start, l), continued: true },
-          h,
+          h, l: sum(m.lines.slice(start, l)),
         });
         start = l;
         h = 0;
       }
       h += m.lines[l];
     }
-    blocks.push({ unit: { ...u, key: `${u.key}#${part}`, header: u.header && start === 0, lines: u.lines.slice(start) }, h });
+    blocks.push({ unit: { ...u, key: `${u.key}#${part}`, header: u.header && start === 0, lines: u.lines.slice(start) }, h, l: sum(m.lines.slice(start)) });
   });
 
-  const pages: Unit[][] = [];
-  let cur: Unit[] = [];
-  let used = 0;
-  for (const b of blocks) {
-    const need = cur.length ? used + gap + b.h : b.h;
-    if (cur.length && need > pageHeight) {
-      pages.push(cur);
-      cur = [b.unit];
-      used = b.h;
-    } else {
-      cur.push(b.unit);
-      used = need;
-    }
+  // Groupes insécables : repère instrumental + bloc suivant
+  const groups: Block[][] = [];
+  for (let i = 0; i < blocks.length; i++) {
+    const g = [blocks[i]];
+    while (g[g.length - 1].unit.cue != null && i + 1 < blocks.length) g.push(blocks[++i]);
+    groups.push(g);
   }
-  if (cur.length) pages.push(cur);
-  return pages.length ? pages : [[]];
+
+  // Tient si : parties fixes + lignes × interligne minimal + espacements minimaux ≤ hauteur
+  const fits = (bs: Block[]) =>
+    sum(bs.map((b) => b.h - b.l)) + sum(bs.map((b) => b.l)) * minScale + Math.max(0, bs.length - 1) * minGap <= pageHeight + 0.5;
+
+  const cols: Block[][] = [];
+  let cur: Block[] = [];
+  for (const g of groups) {
+    if (cur.length && !fits([...cur, ...g])) { cols.push(cur); cur = []; }
+    if (!cur.length && g.length > 1 && !fits(g)) {
+      // Groupe trop haut même seul : placé bloc par bloc
+      for (const b of g) {
+        if (cur.length && !fits([...cur, b])) { cols.push(cur); cur = []; }
+        cur.push(b);
+      }
+      continue;
+    }
+    cur.push(...g);
+  }
+  if (cur.length) cols.push(cur);
+  if (!cols.length) return [{ units: [], gap, scale: 1 }];
+
+  // Réglage par colonne : on resserre d'abord l'espacement, puis l'interligne, juste ce qu'il faut
+  return cols.map((c) => {
+    const n = c.length;
+    const fixed = sum(c.map((b) => b.h - b.l));
+    const lines = sum(c.map((b) => b.l));
+    const gaps = Math.max(0, n - 1);
+    if (fixed + lines + gaps * gap <= pageHeight) return { units: c.map((b) => b.unit), gap, scale: 1 };
+    if (fixed + lines + gaps * minGap <= pageHeight) {
+      return { units: c.map((b) => b.unit), gap: gaps ? (pageHeight - fixed - lines) / gaps : gap, scale: 1 };
+    }
+    const scale = lines ? Math.max(minScale, Math.min(1, (pageHeight - fixed - gaps * minGap) / lines)) : 1;
+    return { units: c.map((b) => b.unit), gap: minGap, scale };
+  });
 }
