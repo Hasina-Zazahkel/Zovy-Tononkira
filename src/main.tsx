@@ -6,6 +6,7 @@ import { initEditor } from './lib/publish';
 import { loadAuth } from './lib/members';
 import { loadSetlistOverride } from './lib/setlistEdit';
 import { initWakeLock } from './lib/wakeLock';
+import './lib/demo';
 import './styles.css';
 import './themes.css';
 

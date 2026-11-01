@@ -10,6 +10,7 @@ import type { Setlist } from '../model/types';
 import { computed, signal } from '@preact/signals';
 import { hasAdmin, serializeMembers, type Member } from '../model/members';
 import { adminSession } from './members';
+import { DEMO } from './demo';
 import { kvDel, kvGet, kvSet } from './store';
 
 export const REPO = { owner: 'Hasina-Zazahkel', repo: 'Zovy-Tononkira', branch: 'main' };
@@ -64,6 +65,7 @@ function decodeBase64Utf8(b64: string): string {
 
 /** Vérifie que le jeton peut écrire sur le dépôt. */
 export async function checkToken(token: string): Promise<void> {
+  if (DEMO) return;
   const r = await gh<{ permissions?: { push?: boolean } }>(token, '');
   if (!r.permissions?.push) throw new PublishError('le jeton n\'a pas le droit d\'écrire sur le dépôt');
 }
@@ -77,6 +79,10 @@ export interface PublishResult {
 
 export async function publish(token: string, list: SongOverride[], setlist?: Setlist, members?: Member[]): Promise<PublishResult> {
   if (!list.length && !setlist && !members) throw new PublishError('rien à publier');
+  if (DEMO) {
+    const files = list.length + (setlist ? 1 : 0) + (members ? 1 : 0);
+    return { commitUrl: '', files, warnings: ['démo : rien n\'a été envoyé sur GitHub'] };
+  }
   if (members && !hasAdmin(members)) throw new PublishError('la liste des membres doit contenir au moins un admin');
   const ref = await gh<{ object: { sha: string } }>(token, `/git/ref/heads/${REPO.branch}`);
   const head = ref.object.sha;

@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
 import { login } from '../lib/members';
+import { DEMO } from '../lib/demo';
 
 const logo = `${import.meta.env.BASE_URL}img/logo-zovy-crop.png`;
 
@@ -42,6 +43,7 @@ export function Login() {
         {err && <p class="msg err" role="alert">Identifiant ou mot de passe incorrect.</p>}
         <button class="btn primary wide" type="submit" disabled={busy || !id.trim() || !pw}>{busy ? 'Vérification…' : 'SE CONNECTER'}</button>
         <p class="login-hint">Accès réservé aux membres du groupe. Identifiants fournis par Hasina.</p>
+        {DEMO && <p class="msg warn">Démo : <b>hasina</b> / <b>zovy2026</b> (admin) ou <b>misa</b> / <b>zovy2026</b> (membre). En mode éditeur, n'importe quel jeton est accepté et rien n'est envoyé.</p>}
       </form>
     </main>
   );

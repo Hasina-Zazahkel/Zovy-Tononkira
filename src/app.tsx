@@ -5,6 +5,7 @@ import { liveCatalog, overridesReady } from './lib/overrides';
 import { canEdit } from './lib/publish';
 import { authReady, loggedIn, loginRequired } from './lib/members';
 import { Login } from './screens/Login';
+import { DEMO, demoToast } from './lib/demo';
 import { route } from './lib/router';
 import { useMemo } from 'preact/hooks';
 import { Home, homeQuery, initial } from './screens/Home';
@@ -28,7 +29,7 @@ export function App() {
 
   if (catalogError.value) return <div class="state">Impossible de charger le catalogue : {catalogError.value}</div>;
   if (!authReady.value) return <div class="state">Chargement…</div>;
-  if (loginRequired.value && !loggedIn.value) return <Login />;
+  if (loginRequired.value && !loggedIn.value) return <><Login /><DemoLayer /></>;
   if (!catalog.value || !overridesReady.value) return <div class="state">Chargement…</div>;
 
   return (
@@ -61,12 +62,24 @@ export function App() {
 
       {sheet && r.name !== 'song' && <SettingsSheet onClose={() => setSheet(false)} />}
 
+      <DemoLayer />
+
       {r.name !== 'song' && r.name !== 'new' && needRefresh && (
         <div class="update" role="status">
           Nouvelle version disponible
           <button onClick={() => updateServiceWorker(true)}>METTRE À JOUR</button>
         </div>
       )}
+    </>
+  );
+}
+
+function DemoLayer() {
+  if (!DEMO) return null;
+  return (
+    <>
+      <div class="demo-badge" aria-hidden="true">DÉMO</div>
+      {demoToast.value && <div class="demo-toast" role="status">{demoToast.value}</div>}
     </>
   );
 }

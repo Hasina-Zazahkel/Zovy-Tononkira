@@ -4,6 +4,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // GitHub Pages sert le site sous /Zovy-Tononkira/
 const base = process.env.BASE_PATH ?? '/Zovy-Tononkira/';
+// Démo (artefact) : pas de service worker (interdit dans le cadre de l'artefact)
+const demo = process.env.VITE_DEMO === '1';
 
 export default defineConfig({
   base,
@@ -12,6 +14,7 @@ export default defineConfig({
     VitePWA({
       // 'prompt' : jamais de rechargement automatique (risque en plein morceau).
       registerType: 'prompt',
+      disable: demo,
       manifest: {
         name: 'Zovy Tononkira',
         short_name: 'Tononkira',
