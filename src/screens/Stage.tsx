@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { catalog, flattenSetlist } from '../lib/catalog';
 import { effectiveSong, overrides } from '../lib/overrides';
+import { canEdit } from '../lib/publish';
 import { EditPanel } from './EditPanel';
 import { goBack, replaceHash, songHref } from '../lib/router';
 import { bumpFont, FONT_MAX, FONT_MIN, settings, update } from '../lib/settings';
@@ -145,10 +146,11 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
           <div class="stage-title">
             <div class="t">{song.title}</div>
             <div class="a">
-              {local && <span class="local" title="Modifié sur cette tablette, pas encore publié">● modifié ici · </span>}
+              {local && <span class="local" title="Modifié sur cet appareil, pas encore publié">● modifié ici · </span>}
               {song.artist}{nav?.part ? ` · ${nav.part} · ${nav.pos + 1}/${nav.total}` : ''}
             </div>
           </div>
+<div class="stage-ctl">
           <button class="font-btn" onClick={() => bumpFont(-1)} disabled={fontSize <= FONT_MIN} aria-label="Réduire le texte"><small>A</small>−</button>
           <button class="font-btn" onClick={() => bumpFont(1)} disabled={fontSize >= FONT_MAX} aria-label="Agrandir le texte">A+</button>
           <button class="case-btn" onClick={() => update({ uppercase: !uppercase })} aria-label="Majuscules">{uppercase ? 'AA' : 'Aa'}</button>
@@ -156,17 +158,20 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
             aria-label="Écran toujours allumé" title={`Écran allumé : ${wakeState.value}`}>
             {keepAwake ? <IconSun size={28} /> : <IconMoon size={28} />}
           </button>
-          <button class="icon-btn" onClick={() => setEditing(true)} aria-label="Modifier les infos du morceau"><IconEdit size={28} /></button>
+          {canEdit.value && (
+            <button class="icon-btn" onClick={() => setEditing(true)} aria-label="Modifier les infos du morceau"><IconEdit size={28} /></button>
+          )}
+          </div>
         </div>
         <div class="keyline">
           {song.key ? <span class="key" aria-label="Tonalité">{displayKey(song.key)}</span> : <span class="key empty">–</span>}
           {comment(song) ? (
-            <button class="comment" onClick={() => setEditing(true)} aria-label={`Commentaire : ${comment(song)}`}>
-              {comment(song)}
-            </button>
-          ) : (
+            canEdit.value
+              ? <button class="comment" onClick={() => setEditing(true)} aria-label={`Commentaire : ${comment(song)}`}>{comment(song)}</button>
+              : <span class="comment" aria-label={`Commentaire : ${comment(song)}`}>{comment(song)}</span>
+          ) : canEdit.value ? (
             <button class="comment add-comment" onClick={() => setEditing(true)}>+ Commentaire</button>
-          )}
+          ) : null}
         </div>
         <Meta song={song} />
       </header>
@@ -200,7 +205,7 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
           <button class="nav-btn" onClick={next} disabled={atEnd} aria-label="Page suivante"><IconNext size={40} /></button>
         )}
       </footer>
-      {editing && <EditPanel base={base} onClose={() => setEditing(false)} />}
+      {editing && canEdit.value && <EditPanel base={base} onClose={() => setEditing(false)} />}
     </div>
   );
 }

@@ -5,14 +5,28 @@
  */
 import { parseChordPro, serializeChordPro } from '../model/chordpro';
 import { applyOverride, type SongOverride } from '../model/overrides';
+import { signal } from '@preact/signals';
 import { kvDel, kvGet, kvSet } from './store';
 
 export const REPO = { owner: 'Hasina-Zazahkel', repo: 'Zovy-Tononkira', branch: 'main' };
 const API = 'https://api.github.com';
 const TOKEN_KEY = 'github.token';
 
+/**
+ * Mode éditeur : seul un appareil qui détient le jeton GitHub (ceux de Hasina) peut modifier.
+ * Tous les autres sont en lecture seule.
+ */
+export const canEdit = signal(false);
+
 export const getToken = () => kvGet<string>(TOKEN_KEY);
-export const setToken = (t: string) => (t.trim() ? kvSet(TOKEN_KEY, t.trim()) : kvDel(TOKEN_KEY));
+export async function setToken(t: string) {
+  if (t.trim()) await kvSet(TOKEN_KEY, t.trim());
+  else await kvDel(TOKEN_KEY);
+  canEdit.value = !!t.trim();
+}
+export async function initEditor() {
+  canEdit.value = !!(await getToken());
+}
 
 export class PublishError extends Error {}
 

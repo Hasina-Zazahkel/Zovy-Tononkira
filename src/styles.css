@@ -180,3 +180,27 @@ input[type=search]::-webkit-search-cancel-button { -webkit-appearance: none; dis
 .row.note-row { grid-template-columns: auto 1fr 56px; }
 .note-row .key { height: 58px; min-width: 70px; font-size: 22px; }
 .comment.add-comment { color: var(--fg-dim); border-color: var(--bg-3); font-weight: 600; font-size: 17px; }
+.stage-ctl { display: flex; gap: 8px; flex: none; }
+
+/* ---------- Téléphone (≤ 600 px) ---------- */
+@media (max-width: 600px) {
+  :root { --touch: 56px; }
+  .stage-row { flex-wrap: wrap; row-gap: 8px; }
+  .stage-title { flex: 1 1 calc(100% - 72px); }
+  .stage-ctl { flex: 1 1 100%; justify-content: space-between; }
+  .stage-ctl > * { flex: 1; }
+  .icon-btn, .font-btn, .case-btn { height: 50px; }
+  .meta-lbl { width: auto; flex-basis: 100%; }
+  .chip, .comment { font-size: 16px; }
+  .page, .measure { padding: 10px 14px; }
+  .stage-foot .nav-btn { min-height: 64px; }
+  .song-row .t { font-size: 19px; }
+  .artist > button { font-size: 20px; }
+  .tab { font-size: 17px; min-height: 50px; }
+  .search input { font-size: 18px; }
+  .row { grid-template-columns: 1fr 1fr 50px; gap: 6px; }
+  .in { font-size: 17px; min-height: 52px; padding: 0 10px; }
+  .sheet-foot { grid-template-columns: 1fr 1fr; }
+  .sheet-foot .btn.ghost { grid-column: 1 / -1; justify-self: center; }
+  .sheet-foot > span:empty { display: none; }
+}

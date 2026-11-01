@@ -2,6 +2,7 @@ import { useState } from 'preact/hooks';
 import { useRegisterSW } from 'virtual:pwa-register/preact';
 import { catalog, catalogError } from './lib/catalog';
 import { overridesReady } from './lib/overrides';
+import { canEdit } from './lib/publish';
 import { route } from './lib/router';
 import { Home } from './screens/Home';
 import { SetlistView } from './screens/SetlistView';
@@ -28,9 +29,9 @@ export function App() {
         <div class="top">
           <div class="brand">
             <img class="logo" src={logo} alt="Zovy" width={360} height={111} />
-            <button class="icon-btn gear" onClick={() => setSheet(true)} aria-label="Modifications et publication"><IconGear size={28} /></button>
+            <button class="icon-btn gear" onClick={() => setSheet(true)} aria-label="Mode éditeur"><IconGear size={28} /></button>
           </div>
-          <PendingBar onOpen={() => setSheet(true)} />
+          {canEdit.value && <PendingBar onOpen={() => setSheet(true)} />}
           <nav class="tabs">
             <a class="tab" href="#/" aria-current={tab === 'home' ? 'page' : undefined}>ARTISTES</a>
             <a class="tab" href="#/repertoire" aria-current={tab === 'setlist' ? 'page' : undefined}>RÉPERTOIRE</a>

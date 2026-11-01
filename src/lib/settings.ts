@@ -13,7 +13,9 @@ export const FONT_MAX = 52;
 export const FONT_STEP = 2;
 
 const KEY = 'zovy.settings.v1';
-const DEFAULTS: Settings = { fontSize: 34, uppercase: true, keepAwake: true };
+// Téléphone : texte plus petit par défaut (ajustable avec A-/A+)
+const narrow = typeof window !== 'undefined' && Math.min(window.innerWidth, window.innerHeight) < 600;
+const DEFAULTS: Settings = { fontSize: narrow ? 24 : 34, uppercase: true, keepAwake: true };
 
 function load(): Settings {
   try {

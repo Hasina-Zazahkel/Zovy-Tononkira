@@ -58,7 +58,7 @@ export function EditPanel({ base, onClose }: { base: Song; onClose: () => void }
   };
 
   const revert = async () => {
-    if (!confirm('Abandonner les modifications de cette tablette pour ce morceau ?')) return;
+    if (!confirm('Abandonner les modifications non publiées de ce morceau sur cet appareil ?')) return;
     await dropOverride(base.id);
     onClose();
   };
