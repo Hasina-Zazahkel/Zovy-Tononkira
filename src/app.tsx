@@ -4,13 +4,15 @@ import { catalog, catalogError } from './lib/catalog';
 import { overridesReady } from './lib/overrides';
 import { canEdit } from './lib/publish';
 import { route } from './lib/router';
-import { Home } from './screens/Home';
+import { useMemo } from 'preact/hooks';
+import { Home, homeQuery, initial } from './screens/Home';
+import { AZBar } from './ui/AZBar';
 import { SetlistView } from './screens/SetlistView';
-import { PendingBar, PublishSheet } from './screens/PublishSheet';
+import { PendingBar, SettingsSheet } from './screens/SettingsSheet';
 import { Stage } from './screens/Stage';
 import { IconGear } from './ui/icons';
 
-const logo = `${import.meta.env.BASE_URL}img/logo-zovy.png`;
+const logo = `${import.meta.env.BASE_URL}img/logo-zovy-crop.png`;
 
 export function App() {
   // Enregistrement du service worker en mode "prompt" : aucune mise à jour sans action explicite.
@@ -19,6 +21,8 @@ export function App() {
   const r = route.value;
   const tab = r.name === 'setlist' ? 'setlist' : 'home';
 
+  const letters = useMemo(() => new Set((catalog.value?.artists ?? []).map((a) => initial(a.name))), [catalog.value]);
+
   if (catalogError.value) return <div class="state">Impossible de charger le catalogue : {catalogError.value}</div>;
   if (!catalog.value || !overridesReady.value) return <div class="state">Chargement…</div>;
 
@@ -26,26 +30,29 @@ export function App() {
     <>
       {/* Écrans liste toujours montés sous la scène : état et défilement conservés au retour */}
       <div class="screen">
-        <div class="top">
-          <div class="brand">
-            <img class="logo" src={logo} alt="Zovy" width={360} height={111} />
-            <button class="icon-btn gear" onClick={() => setSheet(true)} aria-label="Mode éditeur"><IconGear size={28} /></button>
+        <header class="top">
+          <div class="top-row">
+            <img class="logo" src={logo} alt="Zovy" width={627} height={194} />
+            <nav class="tabs">
+              <a class="tab" href="#/" aria-current={tab === 'home' ? 'page' : undefined}>ARTISTES</a>
+              <a class="tab" href="#/repertoire" aria-current={tab === 'setlist' ? 'page' : undefined}>RÉPERTOIRE</a>
+            </nav>
+            <button class="icon-btn gear" onClick={() => setSheet(true)} aria-label="Réglages"><IconGear size={28} /></button>
           </div>
           {canEdit.value && <PendingBar onOpen={() => setSheet(true)} />}
-          <nav class="tabs">
-            <a class="tab" href="#/" aria-current={tab === 'home' ? 'page' : undefined}>ARTISTES</a>
-            <a class="tab" href="#/repertoire" aria-current={tab === 'setlist' ? 'page' : undefined}>RÉPERTOIRE</a>
-          </nav>
+        </header>
+        <div class="list-wrap" hidden={tab !== 'home'}>
+          <div class="scroll with-az" id="scroll-home"><Home /></div>
+          {!homeQuery.value.trim() && <AZBar available={letters} scrollEl={() => document.getElementById('scroll-home')} />}
         </div>
-        <div class="scroll">
-          <div hidden={tab !== 'home'}><Home /></div>
-          <div hidden={tab !== 'setlist'}><SetlistView /></div>
+        <div class="list-wrap" hidden={tab !== 'setlist'}>
+          <div class="scroll" id="scroll-setlist"><SetlistView /></div>
         </div>
       </div>
 
       {r.name === 'song' && <Stage key={`${r.id}-${r.pos ?? ''}`} id={r.id} setlistId={r.setlistId} pos={r.pos} />}
 
-      {sheet && r.name !== 'song' && <PublishSheet onClose={() => setSheet(false)} />}
+      {sheet && r.name !== 'song' && <SettingsSheet onClose={() => setSheet(false)} />}
 
       {r.name !== 'song' && needRefresh && (
         <div class="update" role="status">

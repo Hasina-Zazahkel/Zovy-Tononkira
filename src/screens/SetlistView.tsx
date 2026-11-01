@@ -30,6 +30,7 @@ export function SetlistView() {
         )}
       </div>
 
+      <div class="sl-parts">
       {sl.parts.map((part, pi) => (
         <section key={pi} class={edit ? 'part editing' : 'part'}>
           {edit ? (
@@ -78,6 +79,7 @@ export function SetlistView() {
           {edit && <button class="add voice" onClick={() => setAdding(pi)}>+ Ajouter un titre à « {part.name} »</button>}
         </section>
       ))}
+      </div>
 
       {edit && (
         <button class="add inst new-part" onClick={() => {

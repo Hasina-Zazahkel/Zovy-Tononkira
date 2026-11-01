@@ -3,6 +3,8 @@ import { catalog } from '../lib/catalog';
 import { dropOverride, markPublished, overrides, unpublished } from '../lib/overrides';
 import { canEdit, checkToken, getToken, publish, PublishError, REPO, setToken } from '../lib/publish';
 import { dropSetlistOverride, markSetlistPublished, setlistOverride, setlistUnpublished } from '../lib/setlistEdit';
+import { bumpFont, FONT_MAX, FONT_MIN, settings, update } from '../lib/settings';
+import { wakeState } from '../lib/wakeLock';
 import { IconClose } from '../ui/icons';
 
 const TOKEN_URL = `https://github.com/settings/personal-access-tokens/new?name=Zovy+Tononkira&description=Publication+depuis+la+tablette&target_name=${REPO.owner}&contents=write`;
@@ -21,7 +23,18 @@ export function PendingBar({ onOpen }: { onOpen: () => void }) {
   );
 }
 
-export function PublishSheet({ onClose }: { onClose: () => void }) {
+function Toggle({ label, hint, on, onChange }: { label: string; hint?: string; on: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button class="set-row" role="switch" aria-checked={on} onClick={() => onChange(!on)}>
+      <span class="set-l">{label}{hint && <small>{hint}</small>}</span>
+      <span class={`switch${on ? ' on' : ''}`}><i /></span>
+    </button>
+  );
+}
+
+/** Roue crantée : affichage (tous), puis modifications / publication / mode éditeur (éditeur seulement). */
+export function SettingsSheet({ onClose }: { onClose: () => void }) {
+  const st = settings.value;
   const [token, setTok] = useState('');
   const hasToken = canEdit.value;
   const [busy, setBusy] = useState(false);
@@ -72,13 +85,27 @@ export function PublishSheet({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div class="sheet" role="dialog" aria-modal="true" aria-label="Publication">
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="Réglages">
       <header class="sheet-head">
-        <div class="sheet-title"><div class="t">{hasToken ? 'Modifications & publication' : 'Mode éditeur'}</div></div>
+        <div class="sheet-title"><div class="t">Réglages</div><div class="a">{hasToken ? 'Mode éditeur' : 'Lecture seule'}</div></div>
         <button class="icon-btn" onClick={onClose} aria-label="Fermer"><IconClose /></button>
       </header>
       <div class="sheet-body">
-        {hasToken && <h3 class="sheet-h voice">Modifié sur cet appareil</h3>}
+        <h3 class="sheet-h">Affichage</h3>
+        <div class="set-row static">
+          <span class="set-l">Taille du texte<small>Paroles en vue scène</small></span>
+          <span class="stepper">
+            <button class="font-btn" onClick={() => bumpFont(-1)} disabled={st.fontSize <= FONT_MIN} aria-label="Réduire le texte"><small>A</small>−</button>
+            <b>{st.fontSize}</b>
+            <button class="font-btn" onClick={() => bumpFont(1)} disabled={st.fontSize >= FONT_MAX} aria-label="Agrandir le texte">A+</button>
+          </span>
+        </div>
+        <div class={`preview${st.uppercase ? ' upper' : ''}`} style={{ fontSize: `${Math.min(st.fontSize, 44)}px` }}>Ilay tsiky avy aminao</div>
+        <Toggle label="Écran toujours allumé" hint={wakeState.value === 'unsupported' ? 'Non pris en charge par ce navigateur' : 'Empêche la mise en veille'}
+          on={st.keepAwake} onChange={(v) => update({ keepAwake: v })} />
+        {hasToken && <Toggle label="Paroles en majuscules" on={st.uppercase} onChange={(v) => update({ uppercase: v })} />}
+
+        {hasToken && <h3 class="sheet-h voice">Modifications à publier</h3>}
         {hasToken && !all.length && !slOv && <p class="hint">Aucune modification en attente.</p>}
         {hasToken && slOv && (
           <div class="mod">
@@ -117,6 +144,7 @@ export function PublishSheet({ onClose }: { onClose: () => void }) {
         ) : (
           <>
             {msg && <p class={`msg ${msg.kind}`}>{msg.text}</p>}
+            <h3 class="sheet-h">Mode éditeur</h3>
             <p class="hint">
               Cet appareil est en <b>lecture seule</b>. La modification est réservée à l'éditeur du groupe :
               pour l'activer, colle ici ton jeton GitHub (accès « Contents : Read and write » au dépôt {REPO.repo}).{' '}

@@ -1,4 +1,4 @@
-import { useSignal } from '@preact/signals';
+import { signal } from '@preact/signals';
 import { useMemo, useState } from 'preact/hooks';
 import { catalog, search } from '../lib/catalog';
 import { canEdit } from '../lib/publish';
@@ -35,9 +35,16 @@ function SongLine({ song, sub }: { song: Song; sub?: string }) {
   );
 }
 
+/** Recherche et artiste ouvert : partagés avec l'en-tête (barre A–Z masquée pendant une recherche). */
+export const homeQuery = signal('');
+const openArtist = signal<string | null>(null);
+
+/** Initiale normalisée (sans accent) pour l'index A–Z. */
+export const initial = (name: string) => name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').charAt(0).toUpperCase();
+
 export function Home() {
-  const q = useSignal('');
-  const open = useSignal<string | null>(null);
+  const q = homeQuery;
+  const open = openArtist;
   const state = catalog.value;
   const hits = useMemo(() => (state ? search(state, q.value) : []), [state, q.value]);
 
@@ -69,28 +76,39 @@ function SearchResults({ hits }: { hits: ReturnType<typeof search> }) {
   return (
     <div>
       <div class="count">{hits.length} résultat{hits.length > 1 ? 's' : ''}</div>
-      {hits.map((h) => (
-        <SongLine song={h.song} sub={h.excerpt ? `« ${h.excerpt} »` : h.song.artist} key={h.song.id} />
-      ))}
+      <div class="songs-grid">
+        {hits.map((h) => (
+          <SongLine song={h.song} sub={h.excerpt ? `« ${h.excerpt} »` : h.song.artist} key={h.song.id} />
+        ))}
+      </div>
     </div>
   );
 }
 
 function ArtistList({ open, onToggle }: { open: string | null; onToggle: (name: string) => void }) {
   const state = catalog.value!;
+  const seen = new Set<string>();
   return (
     <div>
       <div class="count">{state.artists.length} artistes · {state.songs.size} morceaux</div>
-      {state.artists.map((a) => (
-        <div class={`artist${open === a.name ? " is-open" : ""}`} key={a.name}>
-          <button onClick={() => onToggle(a.name)} aria-expanded={open === a.name}>
-            <IconChevron size={24} />
-            <span>{a.name}</span>
-            <span class="n">{a.songs.length}</span>
-          </button>
-          {open === a.name && a.songs.map((s) => <SongLine song={s} key={s.id} />)}
-        </div>
-      ))}
+      <div class="artists-grid">
+        {state.artists.map((a) => {
+          const l = initial(a.name);
+          const anchor = seen.has(l) ? undefined : `az-${l}`;
+          seen.add(l);
+          const isOpen = open === a.name;
+          return (
+            <div class={`artist${isOpen ? ' is-open' : ''}`} id={anchor} key={a.name}>
+              <button onClick={() => onToggle(a.name)} aria-expanded={isOpen}>
+                <IconChevron size={24} />
+                <span class="name">{a.name}</span>
+                <span class="n">{a.songs.length}</span>
+              </button>
+              {isOpen && <div class="songs-grid">{a.songs.map((s) => <SongLine song={s} key={s.id} />)}</div>}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

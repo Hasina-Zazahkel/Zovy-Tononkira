@@ -155,7 +155,9 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
 <div class="stage-ctl">
           <button class="font-btn" onClick={() => bumpFont(-1)} disabled={fontSize <= FONT_MIN} aria-label="Réduire le texte"><small>A</small>−</button>
           <button class="font-btn" onClick={() => bumpFont(1)} disabled={fontSize >= FONT_MAX} aria-label="Agrandir le texte">A+</button>
-          <button class="case-btn" onClick={() => update({ uppercase: !uppercase })} aria-label="Majuscules">{uppercase ? 'AA' : 'Aa'}</button>
+          {canEdit.value && (
+            <button class="case-btn" onClick={() => update({ uppercase: !uppercase })} aria-label="Majuscules">{uppercase ? 'AA' : 'Aa'}</button>
+          )}
           <button class={`icon-btn${wakeState.value === 'on' ? ' on' : ''}`} onClick={() => update({ keepAwake: !keepAwake })}
             aria-label="Écran toujours allumé" title={`Écran allumé : ${wakeState.value}`}>
             {keepAwake ? <IconSun size={28} /> : <IconMoon size={28} />}
