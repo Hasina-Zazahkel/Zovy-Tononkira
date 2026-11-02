@@ -1,8 +1,9 @@
 {title: ZAKELINY MAMA}
 {artist: ERICK MANANA}
 {key: RE}
+{singers: Misa=Soprano, Ketaka=Soprano, Hasina=Ténor, Haja=Chœur}
+{musicians: Haja=Guitare, Toky=Guitare, Hasina=Percussion}
 
-{voices: Hasina=Lead, *=Chœur}
 Iny zakeliny mama a
 Iny zakeliny mama a
 Tondraka ny hafaliako
@@ -23,10 +24,14 @@ An'ilay havako e
 
 Ô, mbay lalana ....
 
+{interlude}
+
 Iny Zakeliny ....
 Tonga Zakeliny ....
 Ô, mbay lalana ....
 Ô, mbay lalana ....
+
+{interlude}
 
 ( Ô Zakeliny mama a
 Ô zakeliny mama ô
