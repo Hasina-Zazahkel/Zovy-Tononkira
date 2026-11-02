@@ -9,6 +9,7 @@ import { serializeSetlist } from '../model/setlist';
 import type { Setlist } from '../model/types';
 import { computed, signal } from '@preact/signals';
 import { hasAdmin, serializeMembers, type Member } from '../model/members';
+import { serializeHideBook, type HideBook } from '../model/hide';
 import { adminSession } from './members';
 import { DEMO } from './demo';
 import { settings, update } from './settings';
@@ -81,10 +82,10 @@ export interface PublishResult {
   warnings: string[];
 }
 
-export async function publish(token: string, list: SongOverride[], setlist?: Setlist, members?: Member[]): Promise<PublishResult> {
-  if (!list.length && !setlist && !members) throw new PublishError('rien à publier');
+export async function publish(token: string, list: SongOverride[], setlist?: Setlist, members?: Member[], musician?: HideBook): Promise<PublishResult> {
+  if (!list.length && !setlist && !members && !musician) throw new PublishError('rien à publier');
   if (DEMO) {
-    const files = list.length + (setlist ? 1 : 0) + (members ? 1 : 0);
+    const files = list.length + (setlist ? 1 : 0) + (members ? 1 : 0) + (musician ? 1 : 0);
     return { commitUrl: '', files, warnings: ['démo : rien n\'a été envoyé sur GitHub'] };
   }
   if (members && !hasAdmin(members)) throw new PublishError('la liste des membres doit contenir au moins un admin');
@@ -120,6 +121,10 @@ export async function publish(token: string, list: SongOverride[], setlist?: Set
   if (setlist) {
     // Éditeur unique : le répertoire local remplace le fichier distant.
     tree.push({ path: `data/setlists/${setlist.id}.json`, mode: '100644', type: 'blob', content: serializeSetlist(setlist) });
+  }
+  if (musician) {
+    tree.push({ path: 'data/musician.json', mode: '100644', type: 'blob', content: serializeHideBook(musician) });
+    labels.push('vue musicien');
   }
   if (members) {
     tree.push({ path: 'data/members.json', mode: '100644', type: 'blob', content: serializeMembers(members) });

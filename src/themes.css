@@ -97,6 +97,9 @@ body {
   .pill-btn { height: 46px; padding: 0 12px; font-size: 16px; }
   .pill-btn span { display: none; }
   .mini-comment { display: none; }
+  /* Place pour « Mes notes » : majuscules et écran allumé restent dans Réglages */
+  .head-ctl .case-btn, .head-ctl .wake-btn { display: none; }
+  .pill-btn.pn-btn { padding: 0 11px; }
 }
 
 /* Repères instrumentaux : catégorie + commentaire discret */
@@ -297,3 +300,87 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .wake-status.err { color: #ffb4ab; } .wake-status.err .dot { background: #e53935; }
 .wake-status.wait { color: var(--gold); } .wake-status.wait .dot { background: var(--gold); }
 .wake-status span:nth-child(2) { flex: 1; }
+
+/* Surlignage de lignes (couleurs douces, lisibles sur noir) */
+.hl-jaune  { --hl: 214 186 120; }
+.hl-vert   { --hl: 120 178 140; }
+.hl-bleu   { --hl: 118 156 206; }
+.hl-rose   { --hl: 214 140 178; }
+.hl-violet { --hl: 158 136 206; }
+.hl { background: rgb(var(--hl) / .2); box-shadow: -.22em 0 0 rgb(var(--hl) / .2), .22em 0 0 rgb(var(--hl) / .2); border-radius: .12em; }
+.hl + .hl { margin-top: .08em; }
+.hl .grp-note { color: rgb(var(--hl)); opacity: 1; }
+.hl .grp-note::before { content: '— '; }
+.pick-bar { margin: 4px 0 6px; }
+.pick-modes { display: flex; gap: 8px; margin-bottom: 6px; }
+.ln-wrap.in-hl { background: rgb(var(--hl) / .17); border-radius: 8px; padding: 0 6px; margin: 2px 0; }
+.ln-wrap.in-hl + .ln-wrap.in-hl { margin-top: -2px; border-top-left-radius: 0; border-top-right-radius: 0; }
+.grp-head.note-only { color: var(--fg); background: none; }
+.hl-swatches { display: flex; gap: 6px; }
+.swatch { width: 34px; height: 34px; border-radius: 50%; border: 2px solid transparent; background: rgb(var(--hl) / .55); padding: 0; }
+.swatch.on { border-color: var(--fg); box-shadow: 0 0 0 2px var(--bg); }
+
+/* ---------- Notes personnelles (locales) ---------- */
+.ln.pn { position: relative; }
+.ln.pn::before {
+  content: ''; position: absolute; inset: 0 -.3em; pointer-events: none;
+  background: rgb(var(--pn) / .1);
+  border: .1em dotted rgb(var(--pn) / .9); border-top-style: none; border-bottom-style: none;
+}
+.ln.pn.pn-first::before { border-top-style: dotted; border-top-left-radius: .2em; border-top-right-radius: .2em; top: -.06em; }
+.ln.pn.pn-last::before { border-bottom-style: dotted; border-bottom-left-radius: .2em; border-bottom-right-radius: .2em; bottom: -.06em; }
+.pn-jaune { --pn: 214 186 120; } .pn-vert { --pn: 120 178 140; } .pn-bleu { --pn: 118 156 206; } .pn-rose { --pn: 214 140 178; } .pn-violet { --pn: 158 136 206; }
+.pn-note { display: block; font-family: var(--font); font-style: italic; font-weight: 600; font-size: .5em; line-height: 1.5; letter-spacing: 0; text-transform: none; color: rgb(var(--pn)); padding-top: .15em; }
+.ln.pickable { cursor: pointer; border-radius: .15em; }
+.ln.pickable:hover { background: rgba(255, 255, 255, .04); }
+.ln.picked { background: rgba(255, 255, 255, .1); box-shadow: inset .14em 0 0 #fff; }
+
+.pn-btn .pn-lbl { margin-left: 4px; }
+@media (max-width: 600px) { .pn-btn .pn-lbl { display: none; } }
+
+.pn-bar, .pn-panel {
+  position: absolute; left: 10px; right: 10px; bottom: calc(var(--foot-h, 84px) + 8px); z-index: 30;
+  background: #16130d; border: 1px solid var(--bg-3); border-radius: 14px; box-shadow: 0 12px 40px rgba(0, 0, 0, .6);
+  padding: 10px 12px; font-family: var(--font); max-width: 680px; margin: 0 auto;
+}
+.pn-bar-row { display: flex; align-items: center; gap: 10px; }
+.pn-hint { flex: 1; font-size: 15px; color: var(--fg); }
+.pn-orphans { margin-top: 8px; font-size: 15px; }
+.pn-orphans summary { color: var(--gold); cursor: pointer; }
+.pn-orphan { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.pn-orphan .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pn-orphan i { color: var(--fg-dim); }
+.pn-dot { flex: none; width: 12px; height: 12px; border-radius: 50%; background: rgb(var(--pn)); }
+.pn-panel { display: grid; gap: 10px; }
+.pn-panel-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.pn-panel-head span { color: var(--fg-dim); font-size: 14px; }
+.pn-panel .in { min-height: 48px; }
+.pn-panel-foot { display: flex; gap: 8px; justify-content: flex-end; }
+.pn-panel-foot .btn.ghost { margin-right: auto; }
+.notes-io { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
+
+/* ---------- Vue musicien ---------- */
+.m-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; }
+.m-tools .chip-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; }
+.m-forall, .pn-forall { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--fg); }
+.m-forall input, .pn-forall input { width: 22px; height: 22px; accent-color: var(--gold); }
+.view-btn { color: var(--fg); }
+.stage.musicien .view-btn { color: #9dbbe0; border-color: #4a5f7a; }
+.stage.musicien .sec-label { font-size: 1.05em; color: var(--gold); }
+.stage.musicien .sec-head { border-bottom: 1px solid var(--line); padding-bottom: .1em; margin-bottom: .15em; }
+.stage.musicien .cue-unit { font-size: .78em; }
+.stage.musicien .rep-pill { font-size: .85em; }
+.stage.musicien .ln { color: #d8d2c4; }
+.stage.musicien .page.two { background: none; }
+.stage.musicien .col { border-right: 1px solid var(--line); padding-right: 12px; }
+.stage.musicien .col:last-child { border-right: 0; }
+/* Lignes masquées */
+.ln.hid { height: 0; min-height: 0 !important; overflow: hidden; line-height: 0; }
+.ln.hid-ph { font-family: var(--font); font-size: .55em; line-height: 1.6; min-height: 0 !important; color: var(--fg-dim); letter-spacing: .05em; text-transform: none; }
+.ln.hid-on { opacity: .35; text-decoration: line-through; }
+.unit { position: relative; }
+.collapse-btn { position: absolute; top: 0; right: 0; z-index: 2; font-family: var(--font); font-size: 13px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); color: var(--gold); text-transform: none; }
+@media (max-width: 600px) { .view-btn { padding: 0 11px; } }
+/* Barre d'outils musicien : toujours sur sa propre ligne */
+.stage-head:not(.mini) { flex-wrap: wrap; }
+.m-tools { flex-basis: 100%; }

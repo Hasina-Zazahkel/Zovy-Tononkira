@@ -14,7 +14,16 @@ import { CUE_LABEL } from '../model/cues';
 import { viewLines, wholeLineMarker, type LineView } from '../model/repeat';
 import type { Assignment, Section, Song } from '../model/types';
 import { buildUnits, paginate, type Column, type Measure, type Unit } from '../stage/paginate';
-import { IconBack, IconCollapse, IconEdit, IconExpand, IconInfo, IconMoon, IconNext, IconPrev, IconSun } from '../ui/icons';
+import {
+  currentDefaultHides, deleteNote, personalBooks, personalHides, saveDefaultHides, saveNote, setPersonalHide,
+} from '../lib/personal';
+import { effectiveHidden, rangeFor, resolveHide, type HideRange } from '../model/hide';
+import { saveOverride } from '../lib/overrides';
+import { serializeChordPro } from '../model/chordpro';
+import { makeNote, resolveNotes, type PersonalNote, type PnMark } from '../model/personal';
+import { groupLines, HL_COLORS, HL_DEFAULT, ungroupWhere, type HlColor } from '../model/repeat';
+import { DraftInput } from '../ui/DraftInput';
+import { IconBack, IconGuitar, IconMic, IconNote, IconEyeOff, IconCollapse, IconEdit, IconExpand, IconInfo, IconMoon, IconNext, IconPrev, IconSun } from '../ui/icons';
 
 interface Props { id: string; setlistId?: string; pos?: number }
 
@@ -61,11 +70,141 @@ type Nav = {
 } | null;
 
 function StageView({ song, base, local, nav, fallback }: { song: Song; base: Song; local: boolean; nav: Nav; fallback: string }) {
-  const { fontSize, uppercase, keepAwake, headerCollapsed } = settings.value;
+  const { uppercase, keepAwake, headerCollapsed, view: mode, structureOnly } = settings.value;
+  const musician = mode === 'musicien';
+  const fontSize = musician ? settings.value.fontSizeM : settings.value.fontSize;
   const [editing, setEditing] = useState<false | 'header' | 'lyrics'>(false);
   const press = useRef<number | undefined>(undefined);
   const [infoOpen, setInfoOpen] = useState(false);
   const units = useMemo(() => buildUnits(song), [song]);
+
+  // Notes personnelles (locales) : mode annotation, sélection, panneau
+  const [annot, setAnnot] = useState(false);
+  const [pick, setPick] = useState<{ key: string; line: number } | null>(null);
+  const [replacing, setReplacing] = useState<PersonalNote | null>(null);
+  const [panel, setPanel] = useState<{ key: string; from: number; to: number; id?: string; color: HlColor; note: string; forAll: boolean; official?: number } | null>(null);
+  const myNotes = personalBooks.value[mode][song.id];
+  const resolved = useMemo(() => resolveNotes(song, myNotes ?? []), [song, myNotes]);
+  const showPn = settings.value.showPersonal || annot;
+  /** Groupes publiés d'une strophe (surlignages / répétitions), pour l'admin. */
+  const stanzaViews = (key: string) => {
+    const [sid, j] = key.split('.');
+    const st = song.sections.find((x) => x.id === sid)?.stanzas[Number(j)];
+    return st ? viewLines(st) : [];
+  };
+  const tapLine = (key: string, line: number) => {
+    const g = stanzaViews(key)[line]?.group;
+    if (canEdit.value && g && g.times <= 1 && !pick && !replacing && !resolved.marks.get(key)?.get(line)) {
+      const vs = stanzaViews(key);
+      const ls = vs.map((v, i) => (v.group?.id === g.id ? i : -1)).filter((i) => i >= 0);
+      setPanel({ key, from: Math.min(...ls), to: Math.max(...ls), color: g.color ?? HL_DEFAULT, note: g.note, forAll: true, official: g.id });
+      return;
+    }
+    const m = resolved.marks.get(key)?.get(line);
+    if (m && !pick && !replacing) {
+      const lines = [...resolved.marks.get(key)!].filter(([, x]) => x.id === m.id).map(([l]) => l);
+      setPanel({ key, from: Math.min(...lines), to: Math.max(...lines), id: m.id, color: m.color, note: m.note, forAll: false });
+      return;
+    }
+    if (!pick || pick.key !== key) { setPick({ key, line }); return; }
+    const src = replacing;
+    setPanel({ key, from: Math.min(pick.line, line), to: Math.max(pick.line, line), id: src?.id, color: src?.color ?? HL_DEFAULT, note: src?.note ?? '', forAll: false });
+    setPick(null);
+  };
+  const pnFor = (u: Unit, live = true): PnProps | undefined => {
+    if (u.cue != null) return undefined;
+    const k = stanzaKey(u);
+    return {
+      marks: showPn ? resolved.marks.get(k) : undefined,
+      ...(live && annot ? { pick: pick?.key === k ? pick.line : null, onLine: (l: number) => tapLine(k, l) } : {}),
+    };
+  };
+  /** Surlignage publié (pour tout le groupe) : modifie le morceau, envoyé avec PUBLIER. */
+  const applyOfficial = async (key: string, edit: (lines: string[]) => string[]) => {
+    const [sid, j] = key.split('.');
+    const next = { ...song, sections: song.sections.map((x) => (x.id !== sid ? x : { ...x, stanzas: x.stanzas.map((st, k) => (k === Number(j) ? edit(st) : st)) })) };
+    const ov = overrides.value[song.id];
+    await saveOverride({ songId: song.id, cho: serializeChordPro(next), updatedAt: Date.now(), ...(ov?.created ? { created: true } : {}) });
+  };
+  /** Un surlignage publié ne peut pas recouvrir une répétition de lignes (à faire dans l'éditeur). */
+  const blocksOfficial = (p: NonNullable<typeof panel>) =>
+    stanzaViews(p.key).some((v, i) => i >= p.from && i <= p.to && v.group && v.group.times > 1);
+  const savePanel = async () => {
+    if (!panel) return;
+    if (panel.forAll) {
+      if (blocksOfficial(panel)) return;
+      const { key, from, to, color, note, official } = panel;
+      await applyOfficial(key, (st) => groupLines(official != null ? ungroupWhere(st, (id) => id === official) : st, from, to, 1, note.trim(), color));
+      setPanel(null); setReplacing(null);
+      return;
+    }
+    const n = makeNote(song, panel.key, panel.from, panel.to, panel.color, panel.note, panel.id);
+    if (!n) return;
+    // Les notes perso qui touchent ces lignes sont remplacées (jamais de chevauchement entre notes perso)
+    const marks = resolved.marks.get(panel.key);
+    const replace = new Set<string>();
+    for (let l = panel.from; l <= panel.to; l++) { const m = marks?.get(l); if (m && m.id !== panel.id) replace.add(m.id); }
+    await saveNote(mode, song.id, n, [...replace]);
+    setPanel(null); setReplacing(null);
+  };
+
+  // Vue musicien : lignes masquées (défaut admin + perso), mode masquage
+  const [hideMode, setHideMode] = useState(false);
+  const [hideForAll, setHideForAll] = useState(false);
+  const defaults = currentDefaultHides.value[song.id] ?? NO_RANGES;
+  const mine = personalHides.value[song.id];
+  const hiddenView = useMemo(() => effectiveHidden(song, defaults, mine), [song, defaults, mine]);
+  const hiddenFor = (k: string, n: number): Set<number> | undefined => {
+    if (!musician) return undefined;
+    const set = new Set(hiddenView.hidden.get(k) ?? []);
+    if (structureOnly && !hideMode) for (let l = 1; l < n; l++) set.add(l);
+    return set.size ? set : undefined;
+  };
+  /** Masque / réaffiche des lignes d'une strophe (perso, ou par défaut pour tous si l'admin l'a choisi). */
+  const setHidden = async (key: string, lines: number[], hide: boolean) => {
+    if (hideForAll && canEdit.value) {
+      const map = resolveHide(song, defaults).get(key) ?? new Map<number, string>();
+      let next = [...defaults];
+      for (const l of lines) {
+        const id = map.get(l);
+        if (hide && !id) { const r = rangeFor(song, key, l); if (r) next.push(r); }
+        if (!hide && id) next = next.filter((r) => r.id !== id);
+      }
+      await saveDefaultHides(song.id, next);
+      return;
+    }
+    const dmap = resolveHide(song, defaults).get(key) ?? new Map<number, string>();
+    const pmap = resolveHide(song, mine?.hide ?? []).get(key) ?? new Map<number, string>();
+    let hideList: HideRange[] = [...(mine?.hide ?? [])];
+    let show = [...(mine?.show ?? [])];
+    for (const l of lines) {
+      const d = dmap.get(l), p = pmap.get(l);
+      if (hide) {
+        if (d && show.includes(d)) show = show.filter((x) => x !== d);
+        else if (!d && !p) { const r = rangeFor(song, key, l); if (r) hideList.push(r); }
+      } else {
+        if (p) hideList = hideList.filter((r) => r.id !== p);
+        if (d && !show.includes(d)) show.push(d);
+      }
+    }
+    await setPersonalHide(song.id, { hide: hideList, show });
+  };
+  const hideFor = (u: Unit, live = true): HideProps | undefined => {
+    if (!musician || u.cue != null || !u.lines) return undefined;
+    const k = stanzaKey(u);
+    const total = song.sections.find((x) => `${x.id}` === k.split('.')[0])?.stanzas[Number(k.split('.')[1])]?.length ?? u.lines.length;
+    const set = hiddenFor(k, total);
+    const all = Array.from({ length: total }, (_, i) => i);
+    const rest = all.slice(1);
+    return {
+      set, mode: hideMode,
+      ...(live && hideMode ? {
+        onToggle: (l: number) => void setHidden(k, [l], !set?.has(l)),
+        collapsed: rest.length > 0 && rest.every((l) => set?.has(l)),
+        onCollapse: () => void setHidden(k, rest, !rest.every((l) => set?.has(l))),
+      } : {}),
+    };
+  };
 
   const bodyRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
@@ -75,7 +214,8 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
   const [pages, setPages] = useState<Column[][]>([]);
   const [page, setPage] = useState(0);
   const target = useRef(0);
-  const cols = box.w >= 1100 ? 2 : 1;
+  // Vue musicien : autant de colonnes que la largeur le permet (tout le morceau d'un coup d'œil)
+  const cols = musician ? Math.max(1, Math.floor((box.w + 40) / (fontSize * 15 + 40))) : box.w >= 1100 ? 2 : 1;
 
   // Taille réelle de la zone de paroles
   useLayoutEffect(() => {
@@ -119,7 +259,7 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
       const sc = pagesRef.current;
       if (sc) sc.scrollTo({ left: idx * sc.clientWidth, behavior: 'instant' as ScrollBehavior });
     });
-  }, [units, fontSize, uppercase, geo, cols]);
+  }, [units, fontSize, uppercase, geo, cols, resolved, showPn, musician, hiddenView, hideMode, structureOnly]);
 
   const count = pages.length;
   const goTo = useCallback((i: number) => {
@@ -170,7 +310,7 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
     : canEdit.value ? <button class="comment add-comment" onClick={() => setEditing('header')}>+ Commentaire</button> : null;
 
   return (
-    <div class={`stage${headerCollapsed ? ' collapsed' : ''}`} style={style}>
+    <div class={`stage${headerCollapsed ? ' collapsed' : ''}${musician ? ' musicien' : ''}`} style={style}>
       {headerCollapsed ? (
         <header class="stage-head mini">
           <button class="icon-btn" onClick={() => goBack(fallback)} aria-label="Retour"><IconBack size={26} /></button>
@@ -201,13 +341,21 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
                 <IconInfo size={22} /><span>Infos</span>
               </button>
             )}
+            <button class="pill-btn view-btn" onClick={() => { update({ view: musician ? 'chanteur' : 'musicien' }); setHideMode(false); setPanel(null); setPick(null); }}
+              aria-label={`Vue ${mode} (changer)`} title="Changer de vue">
+              {musician ? <IconGuitar size={22} /> : <IconMic size={22} />}<span>{musician ? 'Musicien' : 'Chanteur'}</span>
+            </button>
+            <button class={`pill-btn pn-btn${annot ? ' on' : ''}`} onClick={() => { setAnnot(!annot); setHideMode(false); setPick(null); setReplacing(null); setInfoOpen(false); }}
+              aria-pressed={annot} aria-label="Mes notes">
+              <IconNote size={22} /><span class="pn-lbl">Mes notes</span>
+            </button>
             <span class="spacer">{commentEl && <span class="ctl-comment">{commentEl}</span>}</span>
             <button class="font-btn" onClick={() => bumpFont(-1)} disabled={fontSize <= FONT_MIN} aria-label="Réduire le texte"><small>A</small>−</button>
             <button class="font-btn" onClick={() => bumpFont(1)} disabled={fontSize >= FONT_MAX} aria-label="Agrandir le texte">A+</button>
             {canEdit.value && (
               <button class="case-btn" onClick={() => update({ uppercase: !uppercase })} aria-label="Majuscules">{uppercase ? 'AA' : 'Aa'}</button>
             )}
-            <button class={`icon-btn${wakeState.value === 'on' ? ' on' : ''}`} onClick={() => update({ keepAwake: !keepAwake })}
+            <button class={`icon-btn wake-btn${wakeState.value === 'on' ? ' on' : ''}`} onClick={() => update({ keepAwake: !keepAwake })}
               aria-label="Écran toujours allumé" title={`Écran allumé : ${wakeState.value}`}>
               {keepAwake ? <IconSun size={26} /> : <IconMoon size={26} />}
             </button>
@@ -216,22 +364,96 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
             )}
             <button class="icon-btn" onClick={() => { setInfoOpen(false); update({ headerCollapsed: true }); }} aria-label="Masquer l'en-tête"><IconCollapse size={26} /></button>
           </div>
+          {musician && (
+            <div class="m-tools">
+              <button class={`chip-btn${structureOnly ? ' on' : ''}`} aria-pressed={structureOnly} onClick={() => update({ structureOnly: !structureOnly })}>Structure seule</button>
+              <button class={`chip-btn${hideMode ? ' on' : ''}`} aria-pressed={hideMode}
+                onClick={() => { setHideMode(!hideMode); setAnnot(false); setPick(null); setPanel(null); }}>
+                <IconEyeOff size={18} /> Masquer des lignes
+              </button>
+              {hideMode && canEdit.value && (
+                <label class="m-forall"><input type="checkbox" checked={hideForAll} onChange={(e) => setHideForAll((e.target as HTMLInputElement).checked)} />
+                  Par défaut pour tous les musiciens</label>
+              )}
+            </div>
+          )}
           {infoOpen && <InfoPanel song={song} note={note} onClose={() => setInfoOpen(false)} />}
         </header>
       )}
 
       <div class="stage-body" ref={bodyRef}>
         <div class={`measure ${lyricsCls}`} ref={measureRef} aria-hidden="true" style={geo ? { width: `${geo.colW}px` } : undefined}>
-          {units.map((u) => <UnitView u={u} key={u.key} />)}
+          {units.map((u) => <UnitView u={u} key={u.key} pn={pnFor(u, false)} hide={hideFor(u, false)} />)}
         </div>
         <div class="pages" ref={pagesRef} onScroll={onScroll} onClick={() => infoOpen && setInfoOpen(false)}>
           {pages.map((p, i) => (
             <div class={`page ${lyricsCls}${cols > 1 ? ' two' : ''}`} key={i} aria-hidden={i !== page}>
-              {p.map((c, j) => <div class="col" key={j} style={{ gap: `${c.gap}px`, '--lh': c.scale }}>{c.units.map((u) => <UnitView u={u} key={u.key} />)}</div>)}
+              {p.map((c, j) => <div class="col" key={j} style={{ gap: `${c.gap}px`, '--lh': c.scale }}>{c.units.map((u) => <UnitView u={u} key={u.key} pn={pnFor(u)} hide={hideFor(u)} />)}</div>)}
             </div>
           ))}
         </div>
       </div>
+
+      {hideMode && (
+        <div class="pn-bar" role="status">
+          <div class="pn-bar-row">
+            <span class="pn-hint">{hideForAll && canEdit.value
+              ? 'Par défaut pour tous : touche une ligne pour la masquer / réafficher (envoyé avec PUBLIER)'
+              : 'Touche une ligne pour la masquer / réafficher ; « Replier » garde la 1re ligne du paragraphe'}</span>
+            <button class="chip-btn on" onClick={() => setHideMode(false)}>Terminer</button>
+          </div>
+        </div>
+      )}
+      {annot && !panel && (
+        <div class="pn-bar" role="status">
+          <div class="pn-bar-row">
+            <span class="pn-hint">👤 {replacing ? 'Replacer : ' : ''}{pick ? '…puis la dernière ligne (la même = une seule)' : 'Touche la 1re ligne à surligner, ou une note pour la modifier'}</span>
+            <button class="chip-btn on" onClick={() => { setAnnot(false); setPick(null); setReplacing(null); }}>Terminer</button>
+          </div>
+          {resolved.orphans.length > 0 && !replacing && (
+            <details class="pn-orphans">
+              <summary>{resolved.orphans.length} note{resolved.orphans.length > 1 ? 's' : ''} à replacer (paroles modifiées)</summary>
+              {resolved.orphans.map((o) => (
+                <div class="pn-orphan" key={o.id}>
+                  <span class={`pn-dot pn-${o.color}`} />
+                  <span class="t">« {o.lines[0]}{o.lines.length > 1 ? ' …' : ''} »{o.note && <i> — {o.note}</i>}</span>
+                  <button class="chip-btn" onClick={() => { setReplacing(o); setPick(null); }}>Replacer</button>
+                  <button class="icon-btn del" aria-label="Supprimer cette note" onClick={() => void deleteNote(mode, song.id, o.id)}>✕</button>
+                </div>
+              ))}
+            </details>
+          )}
+        </div>
+      )}
+      {panel && (
+        <div class="pn-panel" role="dialog" aria-label="Ma note">
+          <div class="pn-panel-head">
+            <b>{panel.forAll ? '👥 Note du groupe' : '👤 Ma note'}</b>
+            <span>{panel.to > panel.from ? `${panel.to - panel.from + 1} lignes` : '1 ligne'} · {panel.forAll ? 'visible par tous après PUBLIER' : `vue ${mode}, seulement sur cet appareil`}</span>
+          </div>
+          <span class="hl-swatches" role="radiogroup" aria-label="Couleur">
+            {HL_COLORS.map((c) => (
+              <button key={c} role="radio" aria-checked={panel.color === c} aria-label={c} title={c}
+                class={`swatch hl-${c}${panel.color === c ? ' on' : ''}`} onClick={() => setPanel({ ...panel, color: c })} />
+            ))}
+          </span>
+          <DraftInput key={`${panel.key}:${panel.from}:${panel.id ?? ""}`} class="in" value={panel.note} maxLength={80} placeholder="Commentaire facultatif (ex. respirer ici)" aria-label="Mon commentaire"
+            onValue={(x) => setPanel((p) => (p ? { ...p, note: x } : p))} />
+          {canEdit.value && panel.official == null && !replacing && (
+            <label class="pn-forall">
+              <input type="checkbox" checked={panel.forAll} onChange={(e) => setPanel({ ...panel, forAll: (e.target as HTMLInputElement).checked })} />
+              Pour tout le monde (surlignage du groupe, envoyé avec PUBLIER)
+            </label>
+          )}
+          {panel.forAll && blocksOfficial(panel) && <p class="msg err">Ces lignes sont dans une répétition de lignes : surligne-les depuis l'éditeur.</p>}
+          <div class="pn-panel-foot">
+            {panel.official != null && <button class="btn ghost small" onClick={async () => { await applyOfficial(panel.key, (st) => ungroupWhere(st, (id) => id === panel.official)); setPanel(null); }}>Retirer</button>}
+            {panel.id && !replacing && !panel.forAll && <button class="btn ghost small" onClick={async () => { await deleteNote(mode, song.id, panel.id!); setPanel(null); }}>Supprimer</button>}
+            <button class="btn small" onClick={() => { setPanel(null); setPick(null); }}>Annuler</button>
+            <button class="btn primary small" disabled={panel.forAll && blocksOfficial(panel)} onClick={savePanel}>Enregistrer</button>
+          </div>
+        </div>
+      )}
 
       <footer class="stage-foot">
         {atStart && nav?.prev ? (
@@ -296,7 +518,13 @@ function SectionHead({ s }: { s: Section }) {
   );
 }
 
-export function UnitView({ u }: { u: Unit }) {
+/** Notes personnelles d'une strophe : marques par ligne + sélection en cours (mode « Mes notes »). */
+export interface PnProps { marks?: Map<number, PnMark>; pick?: number | null; onLine?: (line: number) => void }
+
+/** Vue musicien : lignes masquées d'une strophe + mode masquage. */
+export interface HideProps { set?: Set<number>; mode: boolean; onToggle?: (line: number) => void; collapsed?: boolean; onCollapse?: () => void }
+
+export function UnitView({ u, pn, hide }: { u: Unit; pn?: PnProps; hide?: HideProps }) {
   if (u.cue != null) {
     return (
       <div class={`unit cue-unit ${u.cue.type}`}>
@@ -309,25 +537,51 @@ export function UnitView({ u }: { u: Unit }) {
   return (
     <div class={`unit${rep ? ' rep' : ''}${rep && !u.continued ? ' rep-end' : ''}`}>
       {u.header && <SectionHead s={u.section} />}
-      {groupRuns(u.views ?? viewLines(u.lines ?? [])).map((run, r) => {
+      {hide?.onCollapse && !u.continued && (u.lines?.length ?? 0) > 1 && (
+        <button class="collapse-btn" onClick={(e) => { e.stopPropagation(); hide.onCollapse!(); }}>{hide.collapsed ? '⤓ Déplier' : '⤒ Replier'}</button>
+      )}
+      {groupRuns(u.views ?? viewLines(u.lines ?? [])).map((run, r, all) => {
+        const before = all.slice(0, r).reduce((n, x) => n + x.lines.length, 0);
         const lines = run.lines.map((v, i) => {
           const cue = isCueLine(v.text) || wholeLineMarker(v.text) != null;
           const g = v.group;
+          const idx = (u.start ?? 0) + before + i;
+          const hid = !!hide?.set?.has(idx);
+          if (hid && !hide!.mode) {
+            // Masquée : seule la 1re d'une suite affiche « ⋯ n lignes » ; les autres ont une hauteur nulle
+            if (hide!.set!.has(idx - 1) && idx > (u.start ?? 0)) return <div class="ln hid" key={i} />;
+            let n = 0;
+            while (hide!.set!.has(idx + n)) n++;
+            return <div class="ln hid-ph" key={i}>⋯ {n} ligne{n > 1 ? 's' : ''}</div>;
+          }
+          const m = pn?.marks?.get(idx);
+          const cls = `${cue ? 'ln cue' : 'ln'}${g?.last && g.times > 1 ? ' grp-last' : ''}`
+            + (m ? ` pn pn-${m.color}${m.first ? ' pn-first' : ''}${m.last ? ' pn-last' : ''}` : '')
+            + (pn?.onLine || hide?.onToggle ? ' pickable' : '') + (pn?.pick === idx ? ' picked' : '') + (hid ? ' hid-on' : '');
           return (
-            <div class={`${cue ? 'ln cue' : 'ln'}${g?.last ? ' grp-last' : ''}`} key={i}>
+            <div class={cls} key={i} onClick={hide?.onToggle ? (e) => { e.stopPropagation(); hide.onToggle!(idx); }
+              : pn?.onLine ? (e) => { e.stopPropagation(); pn.onLine!(idx); } : undefined}>
+              {m?.first && m.note && <span class="pn-note">👤 {m.note}</span>}
               {v.text}{v.times > 1 && <span class="rep-pill" aria-label={`répéter ${v.times} fois`}>×{v.times}</span>}
               {v.note && <span class="ln-note">{v.note}</span>}
-              {g?.last && g.note && <span class="ln-note grp-note">{g.note}</span>}
-              {g?.last && <span class="rep-pill para" aria-label={`lignes répétées ${g.times} fois`}>×{g.times}</span>}
+              {g && g.times <= 1 && g.first && g.note && <span class="ln-note grp-note">{g.note}</span>}
+              {g && g.times > 1 && g.last && g.note && <span class="ln-note grp-note">{g.note}</span>}
+              {g && g.times > 1 && g.last && <span class="rep-pill para" aria-label={`lignes répétées ${g.times} fois`}>×{g.times}</span>}
             </div>
           );
         });
-        return run.group != null ? <div class="grp" key={r}>{lines}</div> : <Fragment key={r}>{lines}</Fragment>;
+        const g0 = run.lines[0].group;
+        return g0 ? <div class={g0.times > 1 ? 'grp' : `hl hl-${g0.color ?? 'bleu'}`} key={r}>{lines}</div> : <Fragment key={r}>{lines}</Fragment>;
       })}
       {rep && !u.continued && <span class="rep-pill para" aria-label={`paragraphe répété ${u.repeat} fois`}>×{u.repeat}</span>}
     </div>
   );
 }
+
+/** Clé de strophe d'une unité (sans le suffixe de découpage « #n »). */
+const stanzaKey = (u: Unit) => u.key.split('#')[0];
+const NO_RANGES: HideRange[] = [];
+
 
 /** Regroupe les lignes consécutives d'un même groupe répété (barre dorée commune). */
 function groupRuns(views: LineView[]): { group: number | null; lines: LineView[] }[] {

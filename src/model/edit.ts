@@ -4,7 +4,7 @@
  *   Song.sections ⇄ Item[] ⇄ corps .cho ⇄ notation « texte » de l'éditeur.
  */
 import { formatAssignments, parseChordPro, serializeChordPro } from './chordpro';
-import { formatLine, parseLine, viewLines } from './repeat';
+import { collapseGroup, formatLine, parseLine, viewLines } from './repeat';
 import type { Assignment, CueType, Section, Song } from './types';
 
 export type Item =
@@ -67,6 +67,7 @@ export const TEXT_HELP = [
   ['… // commentaire', 'en fin de ligne : commentaire discret pour cette ligne'],
   ['[×2]', 'seul, avant un paragraphe : paragraphe répété'],
   ['[×2 … ]', 'quelques lignes répétées : « [×2 » au début de la 1re, « ] » à la fin de la dernière ; commentaire : [×2 «chœur seul» …'],
+  ['[vert «…» … ]', 'lignes surlignées (jaune, vert, bleu, rose, violet) + commentaire facultatif : [vert «Misa seule» 1re ligne … dernière ligne]'],
   ['[intro: …] [interlude: …] [outro: …]', 'repère instrumental + commentaire'],
   ['[section: NOM]', 'nouvelle section'],
   ['[voix: Hasina=Lead, Misa=Soprano]', 'voix de la section'],
@@ -168,9 +169,9 @@ export function cutLines(lines: string[], line: number): { first: string[]; seco
   const g = viewLines(lines)[line]?.group;
   if (g && !g.last) {
     const a = parseLine(first[first.length - 1]);
-    first[first.length - 1] = formatLine(a.open ? { ...a, open: undefined, times: Math.max(a.times, g.times) } : { ...a, close: true });
+    first[first.length - 1] = formatLine(a.open ? collapseGroup(a, a.open) : { ...a, close: true });
     const b = parseLine(second[0]);
-    second[0] = formatLine(b.close ? { ...b, close: undefined, times: Math.max(b.times, g.times) } : { ...b, open: { times: g.times, note: g.note } });
+    second[0] = formatLine(b.close ? collapseGroup(b, g) : { ...b, open: { times: g.times, note: g.note } });
   }
   return { first, second };
 }
@@ -181,10 +182,10 @@ export function removeLine(lines: string[], l: number): string[] {
   const out = [...lines];
   if (p.open && l + 1 < out.length) {
     const n = parseLine(out[l + 1]);
-    out[l + 1] = formatLine(n.close ? { ...n, close: undefined, times: Math.max(n.times, p.open.times) } : { ...n, open: p.open });
+    out[l + 1] = formatLine(n.close ? collapseGroup(n, p.open) : { ...n, open: p.open });
   } else if (p.close && l > 0 && viewLines(lines)[l].group) {
     const q = parseLine(out[l - 1]);
-    out[l - 1] = formatLine(q.open ? { ...q, open: undefined, times: Math.max(q.times, q.open.times) } : { ...q, close: true });
+    out[l - 1] = formatLine(q.open ? collapseGroup(q, q.open) : { ...q, close: true });
   }
   out.splice(l, 1);
   return out;

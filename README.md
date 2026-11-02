@@ -76,6 +76,8 @@ ligne - commentaire x2        → ligne répétée
 ligne<TAB>x2                  → paragraphe répété (ou « x2 » seul sous le paragraphe)
 [x2 ligne A                   → groupe de lignes répété (commentaire : [x2 «chœur seul» ligne A)
 ligne B]                        … refermé par « ] » en fin de dernière ligne
+[vert «Misa seule» ligne A     → lignes surlignées (jaune, vert, bleu, rose, violet), commentaire facultatif
+ligne B]
 [REFRAIN]                     → section, suivie éventuellement de « Voix : Tous - Chœur »
 Interlude - commentaire
 Outro
@@ -91,3 +93,18 @@ Suppression : éditeur → En-tête → **Supprimer le morceau** (retiré du ré
 - Session : 30 jours par appareil, vérifiée au démarrage (expirée ou membre retiré → page de connexion). Fonctionne hors ligne.
 - Mode éditeur = **compte admin connecté + jeton GitHub sur l'appareil**.
 - Protection simple : le site et le dépôt restent publics.
+
+## Mes notes (personnelles, locales)
+
+Page de lecture → **Mes notes** : toucher la 1re puis la dernière ligne → couleur + commentaire facultatif. Pour tous les membres, jamais publié.
+- Stockées sur l'appareil, par identifiant connecté. Réglages → Mes notes : afficher/masquer, **Exporter** / **Importer** (fichier JSON).
+- Rattachées au texte des lignes : si le morceau publié change, la note suit ses lignes ; sinon elle passe dans « Notes à replacer ».
+- Rendu distinct des surlignages du groupe (liseré pointillé, commentaire 👤 sur sa propre ligne) : les deux cohabitent sans se masquer.
+
+## Vue musicien
+
+Page de lecture → bouton **Chanteur / Musicien** (choix retenu sur l'appareil). Portrait ou paysage.
+- Texte plus petit (taille propre, A− / A+), autant de colonnes que la largeur le permet, structure mise en avant ; défilement horizontal.
+- **Structure seule** : 1re ligne de chaque paragraphe. **Masquer des lignes** : toucher une ligne, ou « Replier » un paragraphe.
+- Mes notes : séparées entre vue chanteur et vue musicien (locales).
+- Admin : « Par défaut pour tous les musiciens » (lignes masquées publiées dans `data/musician.json`) ; dans Mes notes, case « Pour tout le monde » = surlignage du groupe.

@@ -4,6 +4,7 @@ import { loadCatalog } from './lib/catalog';
 import { loadOverrides, overridesReady } from './lib/overrides';
 import { initEditor } from './lib/publish';
 import { loadAuth } from './lib/members';
+import { loadMusicianDefaults } from './lib/personal';
 import { loadSetlistOverride } from './lib/setlistEdit';
 import { initWakeLock } from './lib/wakeLock';
 import './lib/demo';
@@ -14,6 +15,7 @@ import './themes.css';
 initWakeLock();
 void initEditor();
 void loadAuth();
+void loadMusicianDefaults();
 void loadCatalog()
   .then(() => Promise.all([loadOverrides(), loadSetlistOverride()]))
   .finally(() => { overridesReady.value = true; });

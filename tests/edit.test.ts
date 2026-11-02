@@ -88,3 +88,9 @@ describe('groupes : couper / supprimer une ligne', () => {
     expect(removeLine(['[×2 A', 'B]'], 0)).toEqual(['B [×2]']);
   });
 });
+
+describe('surlignage : couper', () => {
+  it('le surlignage reste sur les deux moitiés', () => {
+    expect(cutLines(['[vert «solo» A', 'B]', 'C'], 0)).toEqual({ first: ['[vert «solo» A]'], second: ['[vert «solo» B]', 'C'] });
+  });
+});
