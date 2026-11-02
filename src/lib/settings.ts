@@ -8,6 +8,8 @@ export interface Settings {
   keepAwake: boolean;
   /** En-tête de la page de lecture replié (plein écran paroles). */
   headerCollapsed: boolean;
+  /** Mode éditeur actif (jeton conservé quand on repasse en lecture seule). */
+  editorOn: boolean;
 }
 
 export const FONT_MIN = 22;
@@ -17,7 +19,7 @@ export const FONT_STEP = 2;
 const KEY = 'zovy.settings.v1';
 // Téléphone : texte plus petit par défaut (ajustable avec A-/A+)
 const narrow = typeof window !== 'undefined' && Math.min(window.innerWidth, window.innerHeight) < 600;
-const DEFAULTS: Settings = { fontSize: narrow ? 24 : 34, uppercase: true, keepAwake: true, headerCollapsed: false };
+const DEFAULTS: Settings = { fontSize: narrow ? 24 : 34, uppercase: true, keepAwake: true, headerCollapsed: false, editorOn: true };
 
 function load(): Settings {
   try {
