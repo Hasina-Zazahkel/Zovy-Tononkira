@@ -33,7 +33,8 @@ export const currentSetlist = computed<Setlist | undefined>(() => {
 export async function loadSetlistOverride() {
   const o = await kvGet<SetlistOverride>(KEY);
   const base = baseSetlist();
-  if (o && base && o.setlist.id === base.id && !sameSetlist(o.setlist, base)) setlistOverride.value = o;
+  const sentAndBuilt = !!o?.publishedAt && o.updatedAt <= o.publishedAt && (catalog.value?.builtAt ?? 0) > o.publishedAt;
+  if (o && base && o.setlist.id === base.id && !sameSetlist(o.setlist, base) && !sentAndBuilt) setlistOverride.value = o;
   else if (o) await kvDel(KEY);
 }
 
