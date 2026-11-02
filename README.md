@@ -111,5 +111,5 @@ Page de lecture → bouton **Chanteur / Musicien** (choix retenu sur l'appareil)
 
 ## Original (lecteur YouTube)
 
-Éditeur → En-tête → **Original (lien YouTube)** : coller l'adresse d'une vidéo (\`{youtube: <id>}\` dans le .cho, aussi « YouTube : … » à l'import).
+Éditeur → En-tête → **Original (lien YouTube)** : coller l'adresse d'une vidéo (`{youtube: <id>}` dans le .cho, aussi « YouTube : … » à l'import).
 Page de lecture → bouton **▶ Original** : lecteur YouTube officiel au-dessus des paroles, lecture / pause, −10 s / +10 s. Réseau nécessaire ; rien n'est stocké dans le dépôt.
