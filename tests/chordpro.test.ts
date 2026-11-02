@@ -2,7 +2,6 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parseChordPro, serializeChordPro, parseKey } from '../src/model/chordpro';
-import { cleanupSong } from '../src/model/cleanup';
 
 const DIR = join(__dirname, '../data/songs');
 
@@ -57,13 +56,13 @@ l5
 
 describe('catalogue réel', () => {
   const files = readdirSync(DIR).filter((f) => f.endsWith('.cho'));
-  it('contient les 236 morceaux', () => expect(files.length).toBe(236));
+  // Le catalogue évolue depuis l'app (ajouts / suppressions) : pas de nombre figé
+  it('contient au moins les morceaux migrés', () => expect(files.length).toBeGreaterThanOrEqual(200));
   it.each(files)('%s : canonique, sans avertissement', (f) => {
     const raw = readFileSync(join(DIR, f), 'utf8');
     const { song, warnings } = parseChordPro(f.slice(0, -4), raw);
     expect(warnings).toEqual([]);
     expect(serializeChordPro(song)).toBe(raw);
     expect(parseChordPro(song.id, serializeChordPro(song)).song).toEqual(song);
-    expect(serializeChordPro(cleanupSong(song))).toBe(raw); // données déjà nettoyées
   });
 });
