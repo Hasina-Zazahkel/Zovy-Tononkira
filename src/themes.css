@@ -384,3 +384,19 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 /* Barre d'outils musicien : toujours sur sa propre ligne */
 .stage-head:not(.mini) { flex-wrap: wrap; }
 .m-tools { flex-basis: 100%; }
+
+/* ---------- Lecteur de l'original (YouTube) ---------- */
+.stage-body { position: relative; }
+.yt-panel { position: absolute; top: 8px; right: 8px; z-index: 25; width: min(400px, calc(100% - 16px)); background: #16130d; border: 1px solid var(--bg-3); border-radius: 14px; box-shadow: 0 12px 40px rgba(0, 0, 0, .6); overflow: hidden; font-family: var(--font); }
+.yt-video { position: relative; aspect-ratio: 16 / 9; min-height: 200px; background: #000; }
+.yt-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.yt-msg { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; text-align: center; color: var(--fg-dim); font-size: 15px; }
+.yt-ctl { display: flex; align-items: center; gap: 8px; padding: 8px 10px; }
+.yt-btn { min-width: 64px; height: 46px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); color: var(--fg); font-weight: 800; font-size: 16px; }
+.yt-btn.play { min-width: 56px; background: var(--gold); color: #111; border: 0; font-size: 18px; }
+.yt-btn:disabled { opacity: .4; }
+.yt-time { flex: 1; text-align: right; color: var(--fg-dim); font-variant-numeric: tabular-nums; font-size: 15px; }
+.yt-close { width: 44px; height: 44px; }
+.yt-open { color: #f28b82; }
+.yt-open.on { background: #f28b82; color: #111; }
+.pill-btn { white-space: nowrap; }

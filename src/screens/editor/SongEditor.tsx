@@ -4,6 +4,7 @@ import { deleteSong, dropOverride, effectiveSong, liveCatalog, overrides, saveCr
 import { replaceHash } from '../../lib/router';
 import { addToSetlist, removeFromSetlist } from '../../lib/setlistEdit';
 import { slugify } from '../../model/importText';
+import { parseYoutube } from '../../model/youtube';
 import { PartSelect } from '../AddSheets';
 import { parseChordPro, serializeChordPro } from '../../model/chordpro';
 import {
@@ -36,7 +37,7 @@ export function SongEditor({ base, onClose, tab: initialTab = 'lyrics', create =
   const [tab, setTab] = useState<Tab>(initialTab);
   const [mode, setMode] = useState<Mode>(wide() ? 'text' : 'blocks');
   const [head, setHead] = useState<HeaderDraft>({
-    title: current.title, artist: current.artist, key: current.key, notes: current.notes ?? '',
+    title: current.title, artist: current.artist, key: current.key, notes: current.notes ?? '', youtube: current.youtube ?? '',
     singers: toRows(current.singers), musicians: toRows(current.musicians),
   });
   const [items, setItems] = useState<Keyed<Item>[]>(() => toItems(current.sections).map(keyed));
@@ -72,11 +73,14 @@ export function SongEditor({ base, onClose, tab: initialTab = 'lyrics', create =
     };
     if (head.key) meta.key = head.key; else delete meta.key;
     if (!meta.notes) delete meta.notes;
+    const yt = parseYoutube(head.youtube);
+    if (yt) meta.youtube = yt; else delete meta.youtube;
     delete meta.capo;
     const li = currentItems();
     const { song } = withItems(meta, li.items);
     const errors: string[] = [];
     if (!song.title) errors.push('Le titre est obligatoire.');
+    if (head.youtube.trim() && !yt) errors.push('Lien YouTube non reconnu (onglet En-tête).');
     if (!song.artist) errors.push("L'artiste est obligatoire.");
     if (!song.sections.some((s) => s.stanzas.length)) errors.push('Le morceau doit contenir au moins une ligne de paroles.');
     const bad = [...song.singers.filter((a) => a.role && !VOICE_ROLES.includes(a.role as never)),

@@ -108,3 +108,8 @@ Page de lecture → bouton **Chanteur / Musicien** (choix retenu sur l'appareil)
 - **Structure seule** : 1re ligne de chaque paragraphe. **Masquer des lignes** : toucher une ligne, ou « Replier » un paragraphe.
 - Mes notes : séparées entre vue chanteur et vue musicien (locales).
 - Admin : « Par défaut pour tous les musiciens » (lignes masquées publiées dans `data/musician.json`) ; dans Mes notes, case « Pour tout le monde » = surlignage du groupe.
+
+## Original (lecteur YouTube)
+
+Éditeur → En-tête → **Original (lien YouTube)** : coller l'adresse d'une vidéo (\`{youtube: <id>}\` dans le .cho, aussi « YouTube : … » à l'import).
+Page de lecture → bouton **▶ Original** : lecteur YouTube officiel au-dessus des paroles, lecture / pause, −10 s / +10 s. Réseau nécessaire ; rien n'est stocké dans le dépôt.
