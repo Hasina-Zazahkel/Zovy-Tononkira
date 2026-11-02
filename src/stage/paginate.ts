@@ -1,3 +1,4 @@
+import { viewLines, type LineView } from '../model/repeat';
 import type { CueType, Section, Song } from '../model/types';
 
 /**
@@ -12,6 +13,8 @@ export interface Unit {
   /** Repère instrumental : catégorie + commentaire discret. */
   cue?: { type: CueType; note?: string };
   lines?: string[];
+  /** Lignes lues dans le contexte du paragraphe (groupes répétés), découpées avec `lines`. */
+  views?: LineView[];
   /** Vrai pour une strophe découpée qui continue sur la page suivante. */
   continued?: boolean;
   /** Paragraphe répété N fois (barre + pastille). */
@@ -32,7 +35,7 @@ export function buildUnits(song: Song): Unit[] {
     }
     s.stanzas.forEach((st, j) => {
       const repeat = s.repeats?.[j] ?? 1;
-      units.push({ key: `${s.id}.${j}`, section: s, header: hasHeader && j === 0, lines: st, ...(repeat > 1 ? { repeat } : {}) });
+      units.push({ key: `${s.id}.${j}`, section: s, header: hasHeader && j === 0, lines: st, views: viewLines(st), ...(repeat > 1 ? { repeat } : {}) });
     });
   }
   return units;
@@ -85,7 +88,7 @@ export function paginate(units: Unit[], measures: Measure[], pageHeight: number,
     for (let l = 0; l < u.lines.length; l++) {
       if (h + m.lines[l] > pageHeight && l > start) {
         blocks.push({
-          unit: { ...u, key: `${u.key}#${part++}`, header: u.header && start === 0, lines: u.lines.slice(start, l), continued: true },
+          unit: { ...u, key: `${u.key}#${part++}`, header: u.header && start === 0, lines: u.lines.slice(start, l), views: u.views?.slice(start, l), continued: true },
           h, l: sum(m.lines.slice(start, l)),
         });
         start = l;
@@ -93,7 +96,7 @@ export function paginate(units: Unit[], measures: Measure[], pageHeight: number,
       }
       h += m.lines[l];
     }
-    blocks.push({ unit: { ...u, key: `${u.key}#${part}`, header: u.header && start === 0, lines: u.lines.slice(start) }, h, l: sum(m.lines.slice(start)) });
+    blocks.push({ unit: { ...u, key: `${u.key}#${part}`, header: u.header && start === 0, lines: u.lines.slice(start), views: u.views?.slice(start) }, h, l: sum(m.lines.slice(start)) });
   });
 
   // Groupes insécables : repère instrumental + bloc suivant

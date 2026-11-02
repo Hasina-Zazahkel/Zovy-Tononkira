@@ -1,3 +1,4 @@
+import { Fragment } from 'preact';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { catalog, flattenSetlist } from '../lib/catalog';
 import { liveCatalog, overrides } from '../lib/overrides';
@@ -10,7 +11,7 @@ import { isCueLine } from '../lib/text';
 import { wakeState } from '../lib/wakeLock';
 import { displayKey } from '../model/chordpro';
 import { CUE_LABEL } from '../model/cues';
-import { parseLine, wholeLineMarker } from '../model/repeat';
+import { viewLines, wholeLineMarker, type LineView } from '../model/repeat';
 import type { Assignment, Section, Song } from '../model/types';
 import { buildUnits, paginate, type Column, type Measure, type Unit } from '../stage/paginate';
 import { IconBack, IconCollapse, IconEdit, IconExpand, IconInfo, IconMoon, IconNext, IconPrev, IconSun } from '../ui/icons';
@@ -308,17 +309,34 @@ export function UnitView({ u }: { u: Unit }) {
   return (
     <div class={`unit${rep ? ' rep' : ''}${rep && !u.continued ? ' rep-end' : ''}`}>
       {u.header && <SectionHead s={u.section} />}
-      {u.lines?.map((l, i) => {
-        const { text, times, note } = parseLine(l);
-        const cue = isCueLine(text) || wholeLineMarker(text) != null;
-        return (
-          <div class={cue ? 'ln cue' : 'ln'} key={i}>
-            {text}{times > 1 && <span class="rep-pill" aria-label={`répéter ${times} fois`}>×{times}</span>}
-            {note && <span class="ln-note">{note}</span>}
-          </div>
-        );
+      {groupRuns(u.views ?? viewLines(u.lines ?? [])).map((run, r) => {
+        const lines = run.lines.map((v, i) => {
+          const cue = isCueLine(v.text) || wholeLineMarker(v.text) != null;
+          const g = v.group;
+          return (
+            <div class={`${cue ? 'ln cue' : 'ln'}${g?.last ? ' grp-last' : ''}`} key={i}>
+              {v.text}{v.times > 1 && <span class="rep-pill" aria-label={`répéter ${v.times} fois`}>×{v.times}</span>}
+              {v.note && <span class="ln-note">{v.note}</span>}
+              {g?.last && g.note && <span class="ln-note grp-note">{g.note}</span>}
+              {g?.last && <span class="rep-pill para" aria-label={`lignes répétées ${g.times} fois`}>×{g.times}</span>}
+            </div>
+          );
+        });
+        return run.group != null ? <div class="grp" key={r}>{lines}</div> : <Fragment key={r}>{lines}</Fragment>;
       })}
       {rep && !u.continued && <span class="rep-pill para" aria-label={`paragraphe répété ${u.repeat} fois`}>×{u.repeat}</span>}
     </div>
   );
+}
+
+/** Regroupe les lignes consécutives d'un même groupe répété (barre dorée commune). */
+function groupRuns(views: LineView[]): { group: number | null; lines: LineView[] }[] {
+  const runs: { group: number | null; lines: LineView[] }[] = [];
+  for (const v of views) {
+    const g = v.group?.id ?? null;
+    const last = runs[runs.length - 1];
+    if (last && last.group === g && !(g != null && v.group!.first)) last.lines.push(v);
+    else runs.push({ group: g, lines: [v] });
+  }
+  return runs;
 }

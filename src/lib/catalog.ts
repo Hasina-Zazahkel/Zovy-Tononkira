@@ -1,7 +1,7 @@
 import { signal } from '@preact/signals';
 import type { Catalog, Setlist, Song } from '../model/types';
 import { normalize } from './text';
-import { splitLineRepeat } from '../model/repeat';
+import { viewLines } from '../model/repeat';
 
 export interface IndexedSong {
   song: Song;
@@ -33,7 +33,7 @@ const collator = new Intl.Collator('fr', { sensitivity: 'base', numeric: true })
 export function buildState(list: Song[], setlists: Setlist[]): CatalogState {
   const songs = new Map(list.map((s) => [s.id, s]));
   const index = list.map((song) => {
-    const lines = song.sections.flatMap((s) => s.stanzas.flat()).map((l) => splitLineRepeat(l).text);
+    const lines = song.sections.flatMap((s) => s.stanzas.flatMap((st) => viewLines(st).map((v) => v.text)));
     return { song, nTitle: normalize(song.title), nArtist: normalize(song.artist), lines, nLines: lines.map(normalize) };
   });
   const byArtist = new Map<string, Song[]>();

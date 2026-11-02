@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parseChordPro, serializeChordPro } from '../src/model/chordpro';
-import { bodyToText, itemsToBody, mergeWithPrevious, sectionsToText, splitStanza, textToItems, toItems, withItems, type Item } from '../src/model/edit';
+import { bodyToText, cutLines, removeLine, itemsToBody, mergeWithPrevious, sectionsToText, splitStanza, textToItems, toItems, withItems, type Item } from '../src/model/edit';
 
 const src = `{title: T}
 {artist: A}
@@ -74,5 +74,17 @@ describe('mode texte : commentaire de ligne', () => {
   it('« // » et [x4] combinés', () => {
     const { items } = textToItems(song, 'la la [x4] // Misa seule\nho ho //  piano \n');
     expect(itemsToBody(items)).toBe('la la [×4] // Misa seule\nho ho // piano\n');
+  });
+});
+
+describe('groupes : couper / supprimer une ligne', () => {
+  it('couper au milieu d\'un groupe = deux groupes', () => {
+    expect(cutLines(['[×2 A', 'B', 'C', 'D]'], 1)).toEqual({ first: ['[×2 A', 'B]'], second: ['[×2 C', 'D]'] });
+    expect(cutLines(['[×2 A', 'B]', 'C'], 0)).toEqual({ first: ['A [×2]'], second: ['B [×2]', 'C'] });
+  });
+  it('supprimer la 1re / dernière ligne garde le groupe', () => {
+    expect(removeLine(['[×2 «x» A', 'B', 'C]'], 0)).toEqual(['[×2 «x» B', 'C]']);
+    expect(removeLine(['[×2 A', 'B', 'C]'], 2)).toEqual(['[×2 A', 'B]']);
+    expect(removeLine(['[×2 A', 'B]'], 0)).toEqual(['B [×2]']);
   });
 });

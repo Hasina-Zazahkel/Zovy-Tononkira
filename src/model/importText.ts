@@ -44,6 +44,9 @@ Ligne 2 x2
 Ligne 3
 x2
 
+[×2 Ligne A (groupe de lignes répété)
+Ligne B]
+
 [REFRAIN]
 Voix : Tous - Chœur
 Ligne 4
@@ -231,7 +234,7 @@ function parseOne(chunk: string, existing: Song[], taken: Set<string>): ImportRe
       continue;
     }
     if ((m = /^\[\s*([^\]]+?)\s*\]$/.exec(l) ?? /^§\s*(.+)$/.exec(l))) {
-      if (REP_ONLY.test(m[1])) { /* « [x2] » : traité plus bas */ } else {
+      if (REP_ONLY.test(m[1]) || /^[x×]\s*\d+\s+\S/i.test(m[1])) { /* « [x2] » : traité plus bas */ } else {
         close();
         lastSection = { kind: 'section', label: m[1].toUpperCase(), voices: [] };
         items.push(lastSection);
@@ -296,12 +299,14 @@ function parseOne(chunk: string, existing: Song[], taken: Set<string>): ImportRe
   const named = song.sections.filter((s) => s.kind === 'lyrics' && s.label).length;
   const lineReps = song.sections.flatMap((s) => s.stanzas.flat()).filter((l) => /\[×\d+\]/.test(l)).length;
   const paraReps = song.sections.flatMap((s) => s.repeats ?? []).filter((r) => r > 1).length;
+  const groups = song.sections.flatMap((s) => s.stanzas.flat()).filter((l) => /^\[×\d+/.test(l)).length;
   const notes = song.sections.flatMap((s) => s.stanzas.flat()).filter((l) => / \/\/ /.test(l)).length;
   if (nLines) found.push(`${stanzas} paragraphe${stanzas > 1 ? 's' : ''}, ${nLines} ligne${nLines > 1 ? 's' : ''}`);
   if (cues) found.push(`${cues} intro / interlude / outro`);
   if (named) found.push(`${named} section${named > 1 ? 's' : ''} nommée${named > 1 ? 's' : ''}`);
   if (lineReps) found.push(`${lineReps} ligne${lineReps > 1 ? 's' : ''} répétée${lineReps > 1 ? 's' : ''}`);
   if (paraReps) found.push(`${paraReps} paragraphe${paraReps > 1 ? 's' : ''} répété${paraReps > 1 ? 's' : ''}`);
+  if (groups) found.push(`${groups} groupe${groups > 1 ? 's' : ''} de lignes répété${groups > 1 ? 's' : ''}`);
   if (notes) found.push(`${notes} commentaire${notes > 1 ? 's' : ''} de ligne`);
 
   const dup = existing.find((s) => fold(s.title) === fold(title) && fold(s.artist) === fold(artist));

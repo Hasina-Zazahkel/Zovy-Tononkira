@@ -1,8 +1,8 @@
 import { CUE_LABEL, CUE_TYPES } from '../../model/cues';
 import {
-  insertAt, keyed, mergeWithPrevious, move, removeAt, replaceAt, splitStanza, type Item, type Keyed,
+  insertAt, keyed, mergeWithPrevious, move, removeAt, removeLine, replaceAt, splitStanza, type Item, type Keyed,
 } from '../../model/edit';
-import { formatLine, parseLine } from '../../model/repeat';
+import { formatLine, groupLines, parseLine, setGroup, ungroupWhere, viewLines } from '../../model/repeat';
 import type { Assignment, CueType } from '../../model/types';
 import { Chips } from '../Stage';
 import { RoleRows, fromRows, toRows } from './RoleRows';
@@ -24,6 +24,8 @@ function focusLine(uid: number, line: number, atEnd = true) {
 
 export function LyricsBlocks({ items, onChange }: { items: KItem[]; onChange: (i: KItem[]) => void }) {
   const [voicesOpen, setVoicesOpen] = useState<number | null>(null);
+  /** Sélection de lignes à répéter : paragraphe concerné et 1re ligne touchée. */
+  const [pick, setPick] = useState<{ uid: number; start: number | null } | null>(null);
   const [notesOpen, setNotesOpen] = useState<Set<string>>(new Set());
   const toggleNote = (k: string) => setNotesOpen((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; });
   const set = (i: number, it: Item) => onChange(replaceAt(items, i, { ...it, uid: items[i].uid }));
@@ -94,17 +96,49 @@ export function LyricsBlocks({ items, onChange }: { items: KItem[]; onChange: (i
                     {REPEATS.map((n) => <option value={n} key={n}>{n === 1 ? '×1' : `×${n}`}</option>)}
                   </select>
                 </label>
+                {it.lines.length > 1 && (
+                  <button class={`mini${pick?.uid === it.uid ? ' on' : ''}`} onClick={() => setPick(pick?.uid === it.uid ? null : { uid: it.uid, start: null })}
+                    title="Répéter quelques lignes de ce paragraphe" aria-label="Répéter des lignes">⟦⟧<span class="lbl-wide"> Lignes</span></button>
+                )}
                 {prevIsStanza && <button class="mini" onClick={() => onChange(mergeWithPrevious(items, i, mk))} title="Fusionner avec le paragraphe précédent" aria-label="Fusionner avec le paragraphe précédent">⤒<span class="lbl-wide"> Fusionner</span></button>}
                 <Tools i={i} />
               </div>
-              {it.lines.map((raw, l) => {
+              {pick?.uid === it.uid && (
+                <p class="pick-hint">{pick.start == null ? 'Touche la 1re ligne à répéter…' : '…puis la dernière (la même ligne = cette ligne seule).'}</p>
+              )}
+              {pick?.uid === it.uid && viewLines(it.lines).map((v, l) => {
+                const a = pick.start;
+                return (
+                  <button class={`ln-pick${a === l ? ' on' : ''}`} key={l} onClick={() => {
+                    if (a == null) { setPick({ uid: it.uid, start: l }); return; }
+                    set(i, { ...it, lines: groupLines(it.lines, a, l) });
+                    setPick(null);
+                  }}>{v.text || '…'}</button>
+                );
+              })}
+              {pick?.uid !== it.uid && it.lines.map((raw, l) => {
                 const lp = parseLine(raw);
+                const view = viewLines(it.lines)[l];
+                const g = view.group;
+                const gHead = g?.first ? (
+                  <div class="grp-head">
+                    <span>⟦ Lignes répétées</span>
+                    <select value={g.times} aria-label="Répétitions du groupe de lignes"
+                      onChange={(e) => set(i, { ...it, lines: setGroup(it.lines, l, { times: Number((e.target as HTMLSelectElement).value) }) })}>
+                      {REPEATS.filter((n) => n > 1).map((n) => <option value={n} key={n}>×{n}</option>)}
+                    </select>
+                    <input class="in grp-note-in" value={g.note} maxLength={60} placeholder="Commentaire (ex. chœur seul)" aria-label="Commentaire du groupe"
+                      onInput={(e) => set(i, { ...it, lines: setGroup(it.lines, l, { note: (e.target as HTMLInputElement).value }) })} />
+                    <button class="mini red" onClick={() => set(i, { ...it, lines: ungroupWhere(it.lines, (id) => id === g.id) })} aria-label="Ne plus répéter ces lignes">✕</button>
+                  </div>
+                ) : null;
                 const { text, times, note } = lp;
                 const nk = `${it.uid}:${l}`;
                 const showNote = !!note || notesOpen.has(nk);
                 const setLine = (patch: Partial<typeof lp>) => set(i, { ...it, lines: replaceAt(it.lines, l, formatLine({ ...lp, ...patch })) });
                 return (
-                  <div class="ln-wrap" key={l}>
+                  <div class={`ln-wrap${g ? ' in-grp' : ''}${g?.last ? ' grp-end' : ''}`} key={l}>
+                    {gHead}
                     <div class="ln-row">
                       <input class="ln-in" value={text} data-line={`${it.uid}:${l}`} aria-label={`Ligne ${l + 1}`}
                         onInput={(e) => setLine({ text: (e.target as HTMLInputElement).value })}
@@ -123,7 +157,8 @@ export function LyricsBlocks({ items, onChange }: { items: KItem[]; onChange: (i
                             // Entrée : nouvelle ligne (le texte après le curseur y part ; répétition et commentaire restent sur la 1re)
                             const cut = el.selectionStart ?? text.length;
                             const lines = [...it.lines];
-                            lines.splice(l, 1, formatLine({ ...lp, text: text.slice(0, cut) }), text.slice(cut));
+                            lines.splice(l, 1, formatLine({ ...lp, text: text.slice(0, cut), close: undefined }),
+                              formatLine({ text: text.slice(cut), times: 1, note: '', close: lp.close }));
                             set(i, { ...it, lines });
                             focusLine(it.uid, l + 1, false);
                           } else if (e.key === 'Backspace' && el.selectionStart === 0 && el.selectionEnd === 0 && l > 0) {
@@ -131,7 +166,8 @@ export function LyricsBlocks({ items, onChange }: { items: KItem[]; onChange: (i
                             e.preventDefault();
                             const prev = parseLine(it.lines[l - 1]);
                             const lines = [...it.lines];
-                            lines.splice(l - 1, 2, formatLine({ ...prev, text: prev.text + text, note: [prev.note, note].filter(Boolean).join(' · ') }));
+                            lines.splice(l - 1, 2, formatLine({ ...prev, text: prev.text + text, note: [prev.note, note].filter(Boolean).join(' · '),
+                              open: prev.open ?? lp.open, close: lp.close ?? prev.close }));
                             set(i, { ...it, lines });
                             focusLine(it.uid, l - 1);
                           }
@@ -146,7 +182,7 @@ export function LyricsBlocks({ items, onChange }: { items: KItem[]; onChange: (i
                         )}
                         <button class="mini red" onClick={() => {
                           if (it.lines.length === 1) onChange(removeAt(items, i));
-                          else set(i, { ...it, lines: removeAt(it.lines, l) });
+                          else set(i, { ...it, lines: removeLine(it.lines, l) });
                         }} aria-label="Supprimer la ligne">✕</button>
                       </span>
                     </div>

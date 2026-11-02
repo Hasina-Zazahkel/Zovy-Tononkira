@@ -74,6 +74,8 @@ Ton : Ré / Capo 5    (ou « 5 - … » ; après « / » = commentaire)
 Intro - commentaire
 ligne - commentaire x2        → ligne répétée
 ligne<TAB>x2                  → paragraphe répété (ou « x2 » seul sous le paragraphe)
+[x2 ligne A                   → groupe de lignes répété (commentaire : [x2 «chœur seul» ligne A)
+ligne B]                        … refermé par « ] » en fin de dernière ligne
 [REFRAIN]                     → section, suivie éventuellement de « Voix : Tous - Chœur »
 Interlude - commentaire
 Outro

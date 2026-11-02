@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseChordPro, serializeChordPro } from '../src/model/chordpro';
 import { cleanupSong } from '../src/model/cleanup';
-import { splitLineRepeat, trailingMarker, wholeLineMarker, withLineRepeat } from '../src/model/repeat';
+import { formatLine, groupLines, normalizeGroups, parseLine, setGroup, splitLineRepeat, trailingMarker, ungroupWhere, viewLines, wholeLineMarker, withLineRepeat } from '../src/model/repeat';
 
 describe('marqueurs de fin de ligne', () => {
   it.each([
@@ -36,7 +36,6 @@ describe('conversion et format', () => {
   });
 });
 
-import { formatLine, parseLine } from '../src/model/repeat';
 describe('commentaire de ligne', () => {
   it.each([
     ['AU ZOMA OUI [×4] // Misa seule', { text: 'AU ZOMA OUI', times: 4, note: 'Misa seule' }],
@@ -51,5 +50,43 @@ describe('commentaire de ligne', () => {
   it('ligne avec commentaire : aller-retour .cho', () => {
     const src = '{title: T}\n{artist: A}\n\nl1 [×2] // Misa seule\nl2 // piano\n';
     expect(serializeChordPro(parseChordPro('t', src).song)).toBe(src);
+  });
+});
+
+describe('groupe de lignes répété', () => {
+  const st = ['A', '[×2 «chœur seul» B', 'C] [×3] // doux', 'D'];
+  it('lecture', () => {
+    const v = viewLines(st);
+    expect(v.map((x) => x.text)).toEqual(['A', 'B', 'C', 'D']);
+    expect(v[1].group).toEqual({ id: 0, times: 2, note: 'chœur seul', first: true, last: false });
+    expect(v[2]).toMatchObject({ times: 3, note: 'doux', group: { last: true } });
+    expect(v[0].group).toBeUndefined();
+    expect(v[3].group).toBeUndefined();
+  });
+  it('écriture stable', () => {
+    expect(st.map((l) => formatLine(parseLine(l)))).toEqual(st);
+    expect(formatLine(parseLine('[x2 B'))).toBe('[×2 B');
+  });
+  it('crochets du texte non pris pour un groupe', () => {
+    expect(viewLines(['MAMA (MANAMBITAMBY E]'])[0].text).toBe('MAMA (MANAMBITAMBY E]');
+    expect(normalizeGroups(['MAMA (MANAMBITAMBY E]'])).toEqual(['MAMA (MANAMBITAMBY E]']);
+    expect(parseLine('[(Very any) x 3] [×4]')).toMatchObject({ text: '[(Very any) x 3]', times: 4 });
+  });
+  it('normalisation : non refermé, imbriqué, une seule ligne', () => {
+    expect(normalizeGroups(['[×2 A', 'B', 'C'])).toEqual(['[×2 A', 'B', 'C]']);
+    expect(normalizeGroups(['[×2 A', '[×3 B', 'C]'])).toEqual(['[×2 A', 'B', 'C]']);
+    expect(normalizeGroups(['[×2 «x» A]', 'B'])).toEqual(['A [×2] // x', 'B']);
+  });
+  it('créer / modifier / retirer', () => {
+    let l = groupLines(['A', 'B', 'C', 'D'], 1, 2);
+    expect(l).toEqual(['A', '[×2 B', 'C]', 'D']);
+    l = setGroup(l, 1, { times: 3, note: 'piano' });
+    expect(l).toEqual(['A', '[×3 «piano» B', 'C]', 'D']);
+    expect(groupLines(l, 0, 1)).toEqual(['[×2 A', 'B]', 'C', 'D']);
+    expect(ungroupWhere(l, () => true)).toEqual(['A', 'B', 'C', 'D']);
+  });
+  it('parseChordPro canonise', () => {
+    const { song } = parseChordPro('t', '{title: T}\n{artist: A}\n\nA\n[x2 B\nC\n');
+    expect(song.sections[0].stanzas[0]).toEqual(['A', '[×2 B', 'C]']);
   });
 });

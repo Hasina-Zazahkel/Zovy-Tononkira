@@ -13,6 +13,7 @@
  * Ligne vide = fin de strophe.
  */
 import { classifyCue } from './cues';
+import { normalizeGroups } from './repeat';
 import type { Assignment, CueType, Key, NoteRoot, Section, Song } from './types';
 
 const DIRECTIVE_RE = /^\s*\{\s*([a-z_]+)\s*(?::\s*(.*?))?\s*\}\s*$/i;
@@ -140,8 +141,9 @@ export function parseChordPro(id: string, text: string): ParseResult {
     stanza.push(line.replace(/\s+$/, ''));
   });
 
-  // Répétitions : tableau dense (1 par défaut)
+  // Répétitions : tableau dense (1 par défaut) ; groupes de lignes sous forme canonique
   for (const s of song.sections) {
+    s.stanzas = s.stanzas.map(normalizeGroups);
     if (s.repeats) s.repeats = s.stanzas.map((_, i) => s.repeats![i] ?? 1);
   }
   // Sections de paroles vides sans label ni voix = bruit

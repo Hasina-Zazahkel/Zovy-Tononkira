@@ -4,6 +4,7 @@
  *   Song.sections ⇄ Item[] ⇄ corps .cho ⇄ notation « texte » de l'éditeur.
  */
 import { formatAssignments, parseChordPro, serializeChordPro } from './chordpro';
+import { formatLine, parseLine, viewLines } from './repeat';
 import type { Assignment, CueType, Section, Song } from './types';
 
 export type Item =
@@ -65,6 +66,7 @@ export const TEXT_HELP = [
   ['… [×4]', 'en fin de ligne : ligne répétée'],
   ['… // commentaire', 'en fin de ligne : commentaire discret pour cette ligne'],
   ['[×2]', 'seul, avant un paragraphe : paragraphe répété'],
+  ['[×2 … ]', 'quelques lignes répétées : « [×2 » au début de la 1re, « ] » à la fin de la dernière ; commentaire : [×2 «chœur seul» …'],
   ['[intro: …] [interlude: …] [outro: …]', 'repère instrumental + commentaire'],
   ['[section: NOM]', 'nouvelle section'],
   ['[voix: Hasina=Lead, Misa=Soprano]', 'voix de la section'],
@@ -144,8 +146,9 @@ export const replaceAt = <T>(list: T[], i: number, item: T): T[] => list.map((x,
 export function splitStanza<T extends Item>(list: T[], i: number, line: number, make: (it: Item) => T): T[] {
   const it = list[i];
   if (it.kind !== 'stanza' || line >= it.lines.length - 1) return list;
-  const a = make({ kind: 'stanza', lines: it.lines.slice(0, line + 1), repeat: it.repeat });
-  const b = make({ kind: 'stanza', lines: it.lines.slice(line + 1), repeat: 1 });
+  const { first, second } = cutLines(it.lines, line);
+  const a = make({ kind: 'stanza', lines: first, repeat: it.repeat });
+  const b = make({ kind: 'stanza', lines: second, repeat: 1 });
   return [...list.slice(0, i), a, b, ...list.slice(i + 1)];
 }
 
@@ -156,4 +159,33 @@ export function mergeWithPrevious<T extends Item>(list: T[], i: number, make: (i
   if (it?.kind !== 'stanza' || prev?.kind !== 'stanza') return list;
   const merged = make({ kind: 'stanza', lines: [...prev.lines, ...it.lines], repeat: prev.repeat });
   return [...list.slice(0, i - 1), merged, ...list.slice(i + 1)];
+}
+
+/** Coupe des lignes après `line` ; un groupe répété coupé en deux devient deux groupes. */
+export function cutLines(lines: string[], line: number): { first: string[]; second: string[] } {
+  const first = lines.slice(0, line + 1);
+  const second = lines.slice(line + 1);
+  const g = viewLines(lines)[line]?.group;
+  if (g && !g.last) {
+    const a = parseLine(first[first.length - 1]);
+    first[first.length - 1] = formatLine(a.open ? { ...a, open: undefined, times: Math.max(a.times, g.times) } : { ...a, close: true });
+    const b = parseLine(second[0]);
+    second[0] = formatLine(b.close ? { ...b, close: undefined, times: Math.max(b.times, g.times) } : { ...b, open: { times: g.times, note: g.note } });
+  }
+  return { first, second };
+}
+
+/** Supprime une ligne en gardant les bornes de son groupe sur les lignes voisines. */
+export function removeLine(lines: string[], l: number): string[] {
+  const p = parseLine(lines[l]);
+  const out = [...lines];
+  if (p.open && l + 1 < out.length) {
+    const n = parseLine(out[l + 1]);
+    out[l + 1] = formatLine(n.close ? { ...n, close: undefined, times: Math.max(n.times, p.open.times) } : { ...n, open: p.open });
+  } else if (p.close && l > 0 && viewLines(lines)[l].group) {
+    const q = parseLine(out[l - 1]);
+    out[l - 1] = formatLine(q.open ? { ...q, open: undefined, times: Math.max(q.times, q.open.times) } : { ...q, close: true });
+  }
+  out.splice(l, 1);
+  return out;
 }

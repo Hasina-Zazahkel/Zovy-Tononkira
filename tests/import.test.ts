@@ -78,7 +78,7 @@ describe('format à étiquettes + améliorations', () => {
     const [r] = parseImport(t);
     expect(r.errors).toEqual([]);
     expect(r.song.sections.find((s) => s.label === 'REFRAIN')?.voices).toEqual([{ member: '*', role: 'Chœur' }]);
-    expect(r.song.sections[1].repeats).toEqual([2]);
+    expect(r.song.sections[1].repeats).toEqual([2, 1]);
   });
   it('x2 seul sous le paragraphe = paragraphe répété ; [x3] aussi', () => {
     const [r] = parseImport('Titre : A\nArtiste : B\n\nl1\nl2\nx2\n\nl3\n[x3]\n');
@@ -114,5 +114,13 @@ describe('exemple affiché dans la case', () => {
     expect(r.warnings).toEqual([]);
     expect(r.song.sections.find((s) => s.label === 'REFRAIN')?.voices).toEqual([{ member: '*', role: 'Chœur' }]);
     expect(serializeChordPro(r.song)).toContain('{repeat: 2}\nIlay tsiky avy aminao // Misa seule\nNo mba zavatra tsy foiko [×2]');
+  });
+});
+
+describe('import : groupe de lignes', () => {
+  it('[x2 … ] dans un paragraphe, avec commentaire', () => {
+    const [r] = parseImport('Titre : A\nArtiste : B\n\nl1\n[x2 «chœur» l2 - doucement\nl3]\nl4\n\n[x2 seule]\n');
+    expect(r.song.sections[0].stanzas).toEqual([['l1', '[×2 «chœur» l2 // doucement', 'l3]', 'l4'], ['seule [×2]']]);
+    expect(r.found).toContain('1 groupe de lignes répété');
   });
 });
