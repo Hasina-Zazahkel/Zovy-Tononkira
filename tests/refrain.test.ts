@@ -8,12 +8,13 @@ const song = (body: string) => parseChordPro('t', `{title: T}\n{artist: A}\n\n${
 const body = (s: ReturnType<typeof song>) => serializeChordPro(s).split('\n').slice(3).join('\n');
 
 describe('refrain', () => {
-  it.each([['REF:', undefined, ''], ['Ref.1:', 1, ''], ['REF.2 :', 2, ''], ['ref: Iza re,', undefined, 'Iza re,'], ['(refrain)', undefined, ''], ['REF…', undefined, ''], ['Ref', undefined, ''], ['RefRain :', undefined, '']])(
+  it.each([['REF:', undefined, ''], ['Ref.1:', 1, ''], ['REF.2 :', 2, ''], ['ref: Iza re,', undefined, 'Iza re,'], ['(refrain)', undefined, ''], ['REF…', undefined, ''], ['Ref', undefined, ''], ['RefRain :', undefined, ''], ['FIV:', undefined, ''], ['Fiv: Tsapako', undefined, 'Tsapako'], ['FIV:ka tsara....', undefined, ''], ['CHORUS', undefined, '']])(
     '%s', (l, num, rest) => expect(refrainMarker(l)).toMatchObject({ ...(num ? { num } : {}), rest }));
   it('pas un marqueur', () => {
     expect(refrainMarker('Refesy aho')).toBeNull();
     expect(refrainMarker('Refrain bis en La la la')).toBeNull();
     expect(refrainMarker('Ilay ref')).toBeNull();
+    expect(refrainMarker('Fivoarana')).toBeNull();
   });
   it('paragraphe, reprise recopiée, section suivante sans nom', () => {
     const { song: s, report } = applyRefrains(song('c1\n\nREF:\nr1\nr2\n\nc2\n\nREF…\n'));

@@ -1,5 +1,5 @@
 /**
- * Marqueurs de refrain écrits dans les paroles (« REF: », « Ref.1 », « REFRAIN », « (refrain) », « REF… »)
+ * Marqueurs de refrain écrits dans les paroles (« REF: », « Ref.1 », « REFRAIN », « (refrain) », « REF… », « FIV: », « CHORUS »)
  * → section REFRAIN (REFRAIN 1, REFRAIN 2…).
  * - marqueur suivi de paroles (sur la même ligne ou les lignes suivantes du paragraphe) : ce paragraphe devient la section ;
  * - marqueur seul dans son paragraphe (« on rechante le refrain ici ») : le refrain correspondant est recopié en entier ;
@@ -9,7 +9,8 @@ import { toItems, withItems, type Item } from './edit';
 import { formatLine, parseLine } from './repeat';
 import type { Song } from './types';
 
-const RE = /^\(?\s*ref(?:rain)?(?![a-zà-ÿ])\s*\.?\s*(\d+)?\s*\)?\s*[:.…]*\s*(.*)$/i;
+// REF / REFRAIN, FIV (« fiverenana », refrain en malgache), CHORUS
+const RE = /^\(?\s*(?:ref(?:rain)?|fiv(?:erenana)?|chorus)(?![a-zà-ÿ])\s*\.?\s*(\d+)?\s*\)?\s*[:.…]*\s*(.*)$/i;
 
 export interface RefrainMarker { num?: number; rest: string; times: number; note: string }
 
@@ -19,8 +20,10 @@ export function refrainMarker(line: string): RefrainMarker | null {
   if (p.open || p.close) return null;
   const m = RE.exec(p.text.trim());
   if (!m) return null;
-  const rest = m[2].trim();
+  let rest = m[2].trim();
   if (/^bis\b/i.test(rest)) return null;
+  // « FIV: ka tsara.... » : début du refrain abrégé = reprise
+  if (/(\.{2,}|…)\s*$/.test(rest)) rest = '';
   return { ...(m[1] ? { num: Number(m[1]) } : {}), rest, times: p.times, note: p.note };
 }
 
