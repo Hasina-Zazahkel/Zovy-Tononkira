@@ -60,6 +60,8 @@ export interface Song {
   musicians: Assignment[];
   /** Commentaire court affiché à côté de la tonalité (ex. « Capo 5 · Intro sax »). */
   notes?: string;
+  /** Vidéo YouTube de l'original (identifiant), pour répéter. */
+  youtube?: string;
   sections: Section[];
 }
 

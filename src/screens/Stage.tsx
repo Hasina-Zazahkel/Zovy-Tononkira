@@ -23,7 +23,8 @@ import { serializeChordPro } from '../model/chordpro';
 import { makeNote, resolveNotes, type PersonalNote, type PnMark } from '../model/personal';
 import { groupLines, HL_COLORS, HL_DEFAULT, ungroupWhere, type HlColor } from '../model/repeat';
 import { DraftInput } from '../ui/DraftInput';
-import { IconBack, IconGuitar, IconMic, IconNote, IconEyeOff, IconCollapse, IconEdit, IconExpand, IconInfo, IconMoon, IconNext, IconPrev, IconSun } from '../ui/icons';
+import { YoutubePlayer } from '../ui/YoutubePlayer';
+import { IconBack, IconPlay, IconGuitar, IconMic, IconNote, IconEyeOff, IconCollapse, IconEdit, IconExpand, IconInfo, IconMoon, IconNext, IconPrev, IconSun } from '../ui/icons';
 
 interface Props { id: string; setlistId?: string; pos?: number }
 
@@ -76,6 +77,7 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
   const [editing, setEditing] = useState<false | 'header' | 'lyrics'>(false);
   const press = useRef<number | undefined>(undefined);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [ytOpen, setYtOpen] = useState(false);
   const units = useMemo(() => buildUnits(song), [song]);
 
   // Notes personnelles (locales) : mode annotation, sélection, panneau
@@ -341,6 +343,11 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
                 <IconInfo size={22} /><span>Infos</span>
               </button>
             )}
+            {song.youtube && (
+              <button class={`pill-btn yt-open${ytOpen ? ' on' : ''}`} onClick={() => setYtOpen(!ytOpen)} aria-pressed={ytOpen} aria-label="Écouter l'original">
+                <IconPlay size={20} /><span>Original</span>
+              </button>
+            )}
             <button class="pill-btn view-btn" onClick={() => { update({ view: musician ? 'chanteur' : 'musicien' }); setHideMode(false); setPanel(null); setPick(null); }}
               aria-label={`Vue ${mode} (changer)`} title="Changer de vue">
               {musician ? <IconGuitar size={22} /> : <IconMic size={22} />}<span>{musician ? 'Musicien' : 'Chanteur'}</span>
@@ -385,6 +392,7 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
         <div class={`measure ${lyricsCls}`} ref={measureRef} aria-hidden="true" style={geo ? { width: `${geo.colW}px` } : undefined}>
           {units.map((u) => <UnitView u={u} key={u.key} pn={pnFor(u, false)} hide={hideFor(u, false)} />)}
         </div>
+        {ytOpen && song.youtube && <YoutubePlayer id={song.youtube} onClose={() => setYtOpen(false)} />}
         <div class="pages" ref={pagesRef} onScroll={onScroll} onClick={() => infoOpen && setInfoOpen(false)}>
           {pages.map((p, i) => (
             <div class={`page ${lyricsCls}${cols > 1 ? ' two' : ''}`} key={i} aria-hidden={i !== page}>

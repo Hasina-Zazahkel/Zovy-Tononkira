@@ -14,6 +14,7 @@
  */
 import { classifyCue } from './cues';
 import { normalizeGroups } from './repeat';
+import { parseYoutube } from './youtube';
 import type { Assignment, CueType, Key, NoteRoot, Section, Song } from './types';
 
 const DIRECTIVE_RE = /^\s*\{\s*([a-z_]+)\s*(?::\s*(.*?))?\s*\}\s*$/i;
@@ -105,6 +106,11 @@ export function parseChordPro(id: string, text: string): ParseResult {
         case 'singers': song.singers = parseAssignments(val); break;
         case 'musicians': song.musicians = parseAssignments(val); break;
         case 'notes': song.notes = val; break;
+        case 'youtube': {
+          const id = parseYoutube(val);
+          if (id) song.youtube = id; else warnings.push(`l.${idx + 1} lien YouTube invalide "${val}"`);
+          break;
+        }
         case 'section': current = newSection('lyrics', val || undefined); break;
         case 'intro': case 'interlude': case 'outro':
           newSection('instrumental', val || undefined, name); current = null; break;
@@ -164,6 +170,7 @@ export function serializeChordPro(song: Song): string {
   if (song.singers.length) out.push(`{singers: ${formatAssignments(song.singers)}}`);
   if (song.musicians.length) out.push(`{musicians: ${formatAssignments(song.musicians)}}`);
   if (song.notes) out.push(`{notes: ${song.notes}}`);
+  if (song.youtube) out.push(`{youtube: ${song.youtube}}`);
 
   let prevKind: Section['kind'] | null = null;
   song.sections.forEach((s, i) => {

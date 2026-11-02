@@ -16,6 +16,7 @@ import { serializeChordPro } from './chordpro';
 import { cleanNote } from './cues';
 import { withItems, type Item } from './edit';
 import { formatLine } from './repeat';
+import { parseYoutube } from './youtube';
 import { INSTRUMENT_ROLES, mapLegacyInstrument, mapLegacyVoice, VOICE_ROLES } from './roles';
 import type { Accidental, Assignment, CueType, Key, NoteRoot, Song } from './types';
 
@@ -36,6 +37,7 @@ Artiste :
 Voix : Prénom - Lead / Prénom - Soprano / Prénom - Alto
 Musique : Prénom - Guitare / Prénom - Guitare basse
 Ton : Do / Capo 5
+YouTube :
 
 Intro - commentaire
 
@@ -150,11 +152,11 @@ function parseLyricLine(raw: string): string {
 }
 
 /* ---------- En-tête ---------- */
-type Field = 'title' | 'artist' | 'voices' | 'musicians' | 'key' | 'notes' | 'lyrics';
+type Field = 'title' | 'artist' | 'voices' | 'musicians' | 'key' | 'notes' | 'lyrics' | 'youtube';
 const LABELS: [RegExp, Field][] = [
   [/^titre$/, 'title'], [/^(artiste|auteur|interprete|groupe)$/, 'artist'],
   [/^(voix|chanteurs?|chant)$/, 'voices'], [/^(musique|musiciens?|instruments?)$/, 'musicians'],
-  [/^(ton|tonalite|cle)$/, 'key'], [/^(note|notes|commentaire|remarque)$/, 'notes'], [/^paroles?$/, 'lyrics'],
+  [/^(ton|tonalite|cle)$/, 'key'], [/^(note|notes|commentaire|remarque)$/, 'notes'], [/^paroles?$/, 'lyrics'], [/^(youtube|original|lien|video)$/, 'youtube'],
 ];
 const NUMBERED: Field[] = ['title', 'artist', 'voices', 'musicians', 'key', 'lyrics'];
 
@@ -190,7 +192,7 @@ function parseOne(chunk: string, existing: Song[], taken: Set<string>): ImportRe
   const warn = (m: string) => warnings.push(m);
   const lines = chunk.split('\n');
 
-  const head = { title: '', artist: '', voices: [] as Assignment[], musicians: [] as Assignment[], key: undefined as Key | undefined, notes: '' };
+  const head = { youtube: undefined as string | undefined, title: '', artist: '', voices: [] as Assignment[], musicians: [] as Assignment[], key: undefined as Key | undefined, notes: '' };
   let i = 0;
   // En-tête : tant que les lignes sont des champs reconnus (ou vides)
   for (; i < lines.length; i++) {
@@ -201,6 +203,11 @@ function parseOne(chunk: string, existing: Song[], taken: Set<string>): ImportRe
     if (h.field === 'lyrics') {
       // « 6 - Paroles de la chanson » = simple intitulé ; sinon c'est déjà la 1re ligne de paroles
       if (h.value && !/^paroles?( de la chanson)?\s*:?$/i.test(h.value)) { lines[i] = h.value; break; }
+      continue;
+    }
+    if (h.field === 'youtube') {
+      head.youtube = parseYoutube(h.value);
+      if (h.value && !head.youtube) warn(`Lien YouTube « ${h.value} » non reconnu`);
       continue;
     }
     if (h.field === 'title') head.title = h.value;
@@ -279,7 +286,7 @@ function parseOne(chunk: string, existing: Song[], taken: Set<string>): ImportRe
   for (let n = 2; taken.has(id); n++) id = `${slugify(title || 'nouveau-morceau')}-${n}`;
   const base: Song = {
     id, title, artist, tags: [], medley: [], singers: head.voices, musicians: head.musicians, sections: [],
-    ...(head.key ? { key: head.key } : {}), ...(head.notes ? { notes: head.notes.replace(/[{}]/g, '') } : {}),
+    ...(head.key ? { key: head.key } : {}), ...(head.notes ? { notes: head.notes.replace(/[{}]/g, '') } : {}), ...(head.youtube ? { youtube: head.youtube } : {}),
   };
   const { song } = withItems(base, items);
 
@@ -292,6 +299,7 @@ function parseOne(chunk: string, existing: Song[], taken: Set<string>): ImportRe
   if (artist) found.push(`Artiste : ${artist}`);
   if (song.key) found.push(`Tonalité : ${song.key.root}${song.key.accidental ?? ''}`);
   if (song.notes) found.push(`Commentaire : ${song.notes}`);
+  if (song.youtube) found.push('Lien YouTube');
   if (song.singers.length) found.push(`${song.singers.length} chanteur${song.singers.length > 1 ? 's' : ''}`);
   if (song.musicians.length) found.push(`${song.musicians.length} musicien${song.musicians.length > 1 ? 's' : ''}`);
   const stanzas = song.sections.reduce((n, s) => n + s.stanzas.length, 0);
