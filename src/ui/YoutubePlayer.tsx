@@ -48,9 +48,14 @@ export function YoutubePlayer({ id, onClose }: { id: string; onClose: () => void
       host.current.appendChild(el);
       player.current = new window.YT!.Player(el, {
         videoId: id, width: '100%', height: '100%',
-        playerVars: { playsinline: 1, rel: 0, modestbranding: 1 },
+        playerVars: { playsinline: 1, rel: 0, modestbranding: 1, autoplay: 1 },
         events: {
-          onReady: () => { if (alive) setState('ready'); },
+          onReady: (e: { target: YTPlayer }) => {
+            if (!alive) return;
+            setState('ready');
+            // Lancement immédiat : l'ouverture vient d'un geste (bouton ▶ Original). Si le navigateur refuse, ▶ reste disponible.
+            try { e.target.playVideo(); } catch { /* lecture manuelle */ }
+          },
           onStateChange: (e: { data: number }) => setPlaying(e.data === 1),
           onError: () => { if (alive) setState('offline'); },
         },
