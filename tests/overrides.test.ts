@@ -112,3 +112,14 @@ describe('synonymes d\'instruments', () => {
     expect(mapLegacyInstrument(raw)).toBe(role);
   });
 });
+
+describe('prune : copie envoyée périmée', () => {
+  it('retirée dès que la version reçue est postérieure à l\'envoi', () => {
+    const base = parseChordPro('a', '{title: A}\n{artist: X}\n\nnouveau\n').song;
+    const ov = { a: { songId: 'a', cho: '{title: A}\n{artist: X}\n\nancien\n', updatedAt: 100, publishedAt: 200 } };
+    expect(Object.keys(prune(ov, new Map([['a', base]]), 150))).toEqual(['a']);
+    expect(prune(ov, new Map([['a', base]]), 300)).toEqual({});
+    const pending = { a: { ...ov.a, updatedAt: 400 } };
+    expect(Object.keys(prune(pending, new Map([['a', base]]), 300))).toEqual(['a']);
+  });
+});

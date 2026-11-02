@@ -22,6 +22,8 @@ export interface CatalogState {
   index: IndexedSong[];
   artists: ArtistGroup[];
   setlists: Setlist[];
+  /** Date de construction de la version publiée (ms), si connue. */
+  builtAt?: number;
 }
 
 /** Catalogue publié (tel que reçu). L'affichage utilise `liveCatalog` (publié + modifs locales). */
@@ -55,7 +57,7 @@ export async function loadCatalog(): Promise<void> {
       fetch(`${base}data/songs.json`).then((r) => r.json() as Promise<Catalog>),
       fetch(`${base}data/setlists.json`).then((r) => r.json() as Promise<Setlist[]>),
     ]);
-    catalog.value = buildState(c.songs, s);
+    catalog.value = { ...buildState(c.songs, s), builtAt: Date.parse(c.builtAt) || undefined };
   } catch (e) {
     catalogError.value = e instanceof Error ? e.message : String(e);
   }

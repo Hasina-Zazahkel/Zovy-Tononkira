@@ -14,12 +14,13 @@ Tsy nagnamia veloma
 Daonko tsy nainga aby izy ireny
 Fô marigny akeo ô !
 
-refrain
+{section: REFRAIN}
 mbola ho avy ê ! Izy iny
 fô tsy lasan-davitra arô
 mbola ho avy ê izy iny
 antignay koa izy arô atsia
 
+{section}
 La ! La ! La ! La !
 
 Mbô aza atao koa arô
@@ -31,7 +32,7 @@ Sy jerijery agn’iny ê !
 Sarotra amin-tsika
 Magnala an’azy agnaty ê !
 
-Refrain
+{section: REFRAIN}
 mbola ho avy ê ! Izy iny
 fô tsy lasan-davitra arô
 mbola ho avy ê izy iny

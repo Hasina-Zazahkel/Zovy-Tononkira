@@ -17,6 +17,7 @@ import { cleanNote } from './cues';
 import { withItems, type Item } from './edit';
 import { formatLine } from './repeat';
 import { parseYoutube } from './youtube';
+import { convertRefrainItems } from './refrain';
 import { INSTRUMENT_ROLES, mapLegacyInstrument, mapLegacyVoice, VOICE_ROLES } from './roles';
 import type { Accidental, Assignment, CueType, Key, NoteRoot, Song } from './types';
 
@@ -288,7 +289,8 @@ function parseOne(chunk: string, existing: Song[], taken: Set<string>): ImportRe
     id, title, artist, tags: [], medley: [], singers: head.voices, musicians: head.musicians, sections: [],
     ...(head.key ? { key: head.key } : {}), ...(head.notes ? { notes: head.notes.replace(/[{}]/g, '') } : {}), ...(head.youtube ? { youtube: head.youtube } : {}),
   };
-  const { song } = withItems(base, items);
+  const conv = convertRefrainItems(items);
+  const { song } = withItems(base, conv.items);
 
   if (!title) errors.push('Titre manquant');
   if (!artist) errors.push('Artiste manquant');
@@ -305,6 +307,7 @@ function parseOne(chunk: string, existing: Song[], taken: Set<string>): ImportRe
   const stanzas = song.sections.reduce((n, s) => n + s.stanzas.length, 0);
   const cues = song.sections.filter((s) => s.kind === 'instrumental').length;
   const named = song.sections.filter((s) => s.kind === 'lyrics' && s.label).length;
+  if (conv.report.length) found.push(`${conv.report.length} refrain${conv.report.length > 1 ? 's' : ''} (REF) reconnu${conv.report.length > 1 ? 's' : ''}`);
   const lineReps = song.sections.flatMap((s) => s.stanzas.flat()).filter((l) => /\[×\d+\]/.test(l)).length;
   const paraReps = song.sections.flatMap((s) => s.repeats ?? []).filter((r) => r > 1).length;
   const groups = song.sections.flatMap((s) => s.stanzas.flat()).filter((l) => /^\[×\d+/.test(l)).length;

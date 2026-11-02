@@ -5,6 +5,7 @@
  */
 import { formatAssignments, parseChordPro, serializeChordPro } from './chordpro';
 import { collapseGroup, formatLine, parseLine, viewLines } from './repeat';
+import { convertRefrainItems } from './refrain';
 import type { Assignment, CueType, Section, Song } from './types';
 
 export type Item =
@@ -70,6 +71,7 @@ export const TEXT_HELP = [
   ['[vert «…» … ]', 'lignes surlignées (jaune, vert, bleu, rose, violet) + commentaire facultatif : [vert «Misa seule» 1re ligne … dernière ligne]'],
   ['[intro: …] [interlude: …] [outro: …]', 'repère instrumental + commentaire'],
   ['[section: NOM]', 'nouvelle section'],
+  ['REF: (ou Ref.1, REFRAIN)', 'en tête de paragraphe : section REFRAIN ; seul dans son paragraphe : le refrain est recopié'],
   ['[voix: Hasina=Lead, Misa=Soprano]', 'voix de la section'],
 ] as const;
 
@@ -126,7 +128,8 @@ export function textToItems(song: Song, text: string): { items: Item[]; warnings
   const { body, warnings } = textToBody(text);
   const head = serializeChordPro({ ...song, sections: [] });
   const { song: parsed, warnings: w2 } = parseChordPro(song.id, `${head}\n${body}`);
-  return { items: toItems(parsed.sections), warnings: [...warnings, ...w2.filter((w) => !/manquant/.test(w))] };
+  // « REF: », « Ref.1 », « REFRAIN »… tapés en mode Texte → section REFRAIN
+  return { items: convertRefrainItems(toItems(parsed.sections)).items, warnings: [...warnings, ...w2.filter((w) => !/manquant/.test(w))] };
 }
 
 /* ---------- Opérations (immuables) ---------- */

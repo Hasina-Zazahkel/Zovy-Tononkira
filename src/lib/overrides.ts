@@ -43,7 +43,7 @@ async function persist() {
 /** À appeler une fois le catalogue chargé : retire les modifs déjà intégrées à la version publiée. */
 export async function loadOverrides() {
   const stored = (await kvGet<Record<string, SongOverride>>(KEY)) ?? {};
-  overrides.value = prune(stored, catalog.value?.songs ?? new Map());
+  overrides.value = prune(stored, catalog.value?.songs ?? new Map(), catalog.value?.builtAt);
   if (Object.keys(overrides.value).length !== Object.keys(stored).length) await persist();
 }
 

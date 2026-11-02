@@ -2,7 +2,7 @@
 {artist: DEDESSE}
 {youtube: GIvQOanEy20}
 
-RefRain :
+{section: REFRAIN}
 Malakilaky anareô,
 handimby zahay afara
 Zahay tsy hilèfa
@@ -11,6 +11,7 @@ Malakilaky anareô fa soa tara
 Zahay koa mihilagna
 Anareô ho sahiragna
 
+{section}
 Anareô ny ho avy sy harégna
 Ambilà ny hakamogana
 Kaza mora varimbariagna
@@ -21,7 +22,7 @@ Karàha antimbavy-nagnambagna
 Fa ny rariny,rariny ihany
 Ka tianay anareô mba hiadagna
 
-Refrain :
+{section: REFRAIN}
 Malakilaky anareô,
 handimby zahay afara
 Zahay tsy hilèfa
@@ -30,6 +31,7 @@ Malakilaky anareô fa soa tara
 Zahay koa mihilagna
 Anareô ho sahiragna
 
+{section}
 Zahay,kakazo maiky
 nifolaham-baratra
 Tsy nanignènanay ny vita

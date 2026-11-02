@@ -94,9 +94,12 @@ export function cleanAssignments(list: Assignment[]): Assignment[] {
 export const isPending = (o: SongOverride) => !o.publishedAt || o.updatedAt > o.publishedAt;
 
 /** Modifs encore utiles au regard du catalogue publié reçu. */
-export function prune(stored: Record<string, SongOverride>, songs: Map<string, Song>): Record<string, SongOverride> {
+export function prune(stored: Record<string, SongOverride>, songs: Map<string, Song>, builtAt?: number): Record<string, SongOverride> {
   const kept: Record<string, SongOverride> = {};
   for (const [id, ov] of Object.entries(stored)) {
+    // Déjà envoyée et la version reçue a été construite après l'envoi : c'est la version en ligne qui fait foi
+    // (sinon une copie locale périmée masquerait les corrections faites ensuite sur le serveur).
+    if (!isPending(ov) && builtAt && ov.publishedAt && builtAt > ov.publishedAt) continue;
     const base = songs.get(id);
     if (ov.deleted) {
       // Suppression : gardée tant que le fichier existe encore ou qu'elle n'est pas envoyée

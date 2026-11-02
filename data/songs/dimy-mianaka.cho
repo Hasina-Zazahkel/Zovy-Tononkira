@@ -9,17 +9,23 @@ Efa niezaka hatramin’ny ela
 Nikaroka momba ny hasambarana
 Amin’ity fiainana ity
 
-ref: Iza re,
+{section: REFRAIN}
+Iza re,
 Iza iza no afaka
 Hanambara fa olona sambatra
 
+{section}
 Iza ary no mba afaka
 Hilaza fa hoe tena sambatra
 amin’ity fiainana
 Sasatra ny mikaroka foana re
 
-ref:
+{section: REFRAIN}
+Iza re,
+Iza iza no afaka
+Hanambara fa olona sambatra
 
+{section}
 N’aiza n’aiza ary no haleha
 Dia tsy maintsy mikaroka foana
 Amin’ity fiainana
@@ -37,12 +43,13 @@ Tsy nagnamia veloma
 Daonko tsy nainga aby izy ireny
 Fô marigny akeo ô !
 
-refrain
+{section: REFRAIN}
 mbola ho avy ê ! Izy iny
 fô tsy lasan-davitra arô
 mbola ho avy ê izy iny
 antignay koa izy arô atsia
 
+{section}
 Tsy aviavy teny ianao
 Fa raha lalako
 Manin’olona tsy tia
@@ -82,7 +89,7 @@ K’izagny no mahatonga zaho
 Hamangivangy anao matetika
 Mafy ny fitiavako anao arô
 
-Fiv:
+{section: REFRAIN}
 HItanao fa na
 dia maizigna ny andro
 Ny kotro-baratra,
@@ -92,6 +99,7 @@ tsy andeha atôy
 Fa toy ny tsy tantin’ny foko,
 F’aminao foana ny eritreritro
 
+{section}
 Losogno anao,
 Nandeha tsy nimpody e
 Zaho raika foagna ato ie
