@@ -8,6 +8,7 @@ import { retryWakeLock, wakeState } from '../lib/wakeLock';
 import { adminSession, currentMembers, loginRequired, logout, markMembersPublished, membersOverride, membersUnpublished, session } from '../lib/members';
 import { SESSION_DAYS } from '../model/members';
 import { MembersSection } from './MembersSection';
+import { MyNotesSection } from './MyNotesSection';
 import { IconClose } from '../ui/icons';
 
 const TOKEN_URL = `https://github.com/settings/personal-access-tokens/new?name=Zovy+Tononkira&description=Publication+depuis+la+tablette&target_name=${REPO.owner}&contents=write`;
@@ -113,6 +114,7 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
         <Toggle label="Écran toujours allumé" hint="Empêche la mise en veille quand l'app est au premier plan"
           on={st.keepAwake} onChange={(v) => update({ keepAwake: v })} />
         {st.keepAwake && <WakeStatus />}
+        <MyNotesSection />
         {hasToken && <Toggle label="Paroles en majuscules" on={st.uppercase} onChange={(v) => update({ uppercase: v })} />}
 
         {hasToken && <h3 class="sheet-h voice">Modifications à publier</h3>}

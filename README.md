@@ -93,3 +93,10 @@ Suppression : éditeur → En-tête → **Supprimer le morceau** (retiré du ré
 - Session : 30 jours par appareil, vérifiée au démarrage (expirée ou membre retiré → page de connexion). Fonctionne hors ligne.
 - Mode éditeur = **compte admin connecté + jeton GitHub sur l'appareil**.
 - Protection simple : le site et le dépôt restent publics.
+
+## Mes notes (personnelles, locales)
+
+Page de lecture → **Mes notes** : toucher la 1re puis la dernière ligne → couleur + commentaire facultatif. Pour tous les membres, jamais publié.
+- Stockées sur l'appareil, par identifiant connecté. Réglages → Mes notes : afficher/masquer, **Exporter** / **Importer** (fichier JSON).
+- Rattachées au texte des lignes : si le morceau publié change, la note suit ses lignes ; sinon elle passe dans « Notes à replacer ».
+- Rendu distinct des surlignages du groupe (liseré pointillé, commentaire 👤 sur sa propre ligne) : les deux cohabitent sans se masquer.

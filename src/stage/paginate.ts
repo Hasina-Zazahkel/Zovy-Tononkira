@@ -15,6 +15,8 @@ export interface Unit {
   lines?: string[];
   /** Lignes lues dans le contexte du paragraphe (groupes répétés), découpées avec `lines`. */
   views?: LineView[];
+  /** Index de la 1re ligne dans la strophe (strophe découpée sur plusieurs pages). */
+  start?: number;
   /** Vrai pour une strophe découpée qui continue sur la page suivante. */
   continued?: boolean;
   /** Paragraphe répété N fois (barre + pastille). */
@@ -88,7 +90,7 @@ export function paginate(units: Unit[], measures: Measure[], pageHeight: number,
     for (let l = 0; l < u.lines.length; l++) {
       if (h + m.lines[l] > pageHeight && l > start) {
         blocks.push({
-          unit: { ...u, key: `${u.key}#${part++}`, header: u.header && start === 0, lines: u.lines.slice(start, l), views: u.views?.slice(start, l), continued: true },
+          unit: { ...u, key: `${u.key}#${part++}`, header: u.header && start === 0, lines: u.lines.slice(start, l), views: u.views?.slice(start, l), start, continued: true },
           h, l: sum(m.lines.slice(start, l)),
         });
         start = l;
@@ -96,7 +98,7 @@ export function paginate(units: Unit[], measures: Measure[], pageHeight: number,
       }
       h += m.lines[l];
     }
-    blocks.push({ unit: { ...u, key: `${u.key}#${part}`, header: u.header && start === 0, lines: u.lines.slice(start), views: u.views?.slice(start) }, h, l: sum(m.lines.slice(start)) });
+    blocks.push({ unit: { ...u, key: `${u.key}#${part}`, header: u.header && start === 0, lines: u.lines.slice(start), views: u.views?.slice(start), start }, h, l: sum(m.lines.slice(start)) });
   });
 
   // Groupes insécables : repère instrumental + bloc suivant

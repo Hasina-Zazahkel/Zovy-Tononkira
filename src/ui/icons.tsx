@@ -18,3 +18,4 @@ export const IconGear = svg('M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7
 export const IconInfo = svg('M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v6M12 7.5v.5');
 export const IconCollapse = svg('M6 15l6-6 6 6');
 export const IconExpand = svg('M6 9l6 6 6-6');
+export const IconNote = svg('M5 3h14v11l-7 7H5zM12 21v-7h7M9 8h6M9 12h3');
