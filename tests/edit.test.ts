@@ -88,3 +88,9 @@ describe('groupes : couper / supprimer une ligne', () => {
     expect(removeLine(['[×2 A', 'B]'], 0)).toEqual(['B [×2]']);
   });
 });
+
+describe('groupe commenté : couper', () => {
+  it('le commentaire reste sur les deux moitiés', () => {
+    expect(cutLines(['[«solo» A', 'B]', 'C'], 0)).toEqual({ first: ['A // solo'], second: ['B // solo', 'C'] });
+  });
+});

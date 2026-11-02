@@ -2,15 +2,16 @@
  * Format d'une ligne de paroles :  « [×G «note» texte] [×N] // commentaire »
  * - « [×N] » : ligne répétée N fois (facultatif)
  * - « // commentaire » : note discrète pour cette ligne (facultatif)
- * - Groupe de lignes répété (dans un paragraphe) : « [×G » au début de la 1re ligne (avec un commentaire
+ * - Groupe de lignes (dans un paragraphe) : « [×G » au début de la 1re ligne (avec un commentaire
  *   facultatif entre « »), « ] » à la fin du texte de la dernière.
+ *   Groupe commenté sans répétition : « [«commentaire» » au début de la 1re ligne.
  * Paragraphe répété : directive {repeat: N} avant la strophe (Section.repeats).
  */
 export interface LineParts {
   text: string;
   times: number;
   note: string;
-  /** Début d'un groupe de lignes répété. */
+  /** Début d'un groupe de lignes (times = 1 : commentaire seul, sans répétition). */
   open?: { times: number; note: string };
   /** Fin d'un groupe de lignes (le « ] » est retiré du texte). */
   close?: boolean;
@@ -19,6 +20,7 @@ export interface LineParts {
 const NOTE_SEP = /\s*\/\/\s*/;
 const LINE_TOKEN = /\s*\[×(\d+)\]\s*$/;
 const OPEN_TOKEN = /^\s*\[\s*[x×]\s*(\d+)(?:\s*«([^»]*)»)?\s+(?=\S)/i;
+const NOTE_OPEN_TOKEN = /^\s*\[\s*«([^»]*)»\s*(?=\S)/;
 
 export function parseLine(raw: string): LineParts {
   const i = raw.search(NOTE_SEP);
@@ -26,9 +28,13 @@ export function parseLine(raw: string): LineParts {
   const note = i >= 0 ? raw.slice(i).replace(NOTE_SEP, '').trim() : '';
   let open: LineParts['open'];
   const o = OPEN_TOKEN.exec(main);
+  const c = o ? null : NOTE_OPEN_TOKEN.exec(main);
   if (o && Number(o[1]) > 1) {
     open = { times: Number(o[1]), note: (o[2] ?? '').trim() };
     main = main.slice(o[0].length);
+  } else if (c) {
+    open = { times: 1, note: c[1].trim() };
+    main = main.slice(c[0].length);
   }
   let times = 1;
   const m = LINE_TOKEN.exec(main);
@@ -42,7 +48,8 @@ export function parseLine(raw: string): LineParts {
 
 export function formatLine({ text, times, note, open, close }: LineParts): string {
   const t = text.replace(/\s*\/\/.*$/, '').replace(/\s+$/, '');
-  const o = open && open.times > 1 ? `[×${open.times}${open.note.trim() ? ` «${open.note.trim().replace(/[«»{}]/g, '')}»` : ''} ` : '';
+  const n = (open?.note ?? '').trim().replace(/[«»{}]/g, '');
+  const o = !open ? '' : open.times > 1 ? `[×${open.times}${n ? ` «${n}»` : ''} ` : `[«${n}» `;
   return `${o}${t}${close ? ']' : ''}${times > 1 ? ` [×${times}]` : ''}${note.trim() ? ` // ${note.trim().replace(/[{}]/g, '')}` : ''}`;
 }
 
@@ -79,6 +86,13 @@ export function viewLines(lines: string[]): LineView[] {
  * Forme canonique des groupes d'un paragraphe : groupe non refermé fermé à la fin, groupe imbriqué retiré,
  * groupe d'une seule ligne converti en ligne répétée. Les lignes sans groupe ne sont pas réécrites.
  */
+/** Groupe réduit à une ligne : répétition et commentaire passent sur la ligne. */
+export function collapseGroup(p: LineParts, o: { times: number; note: string }): LineParts {
+  const q: LineParts = { ...p, times: Math.max(p.times, o.times), note: o.note ? [o.note, p.note].filter(Boolean).join(' · ') : p.note };
+  delete q.open; delete q.close;
+  return q;
+}
+
 export function normalizeGroups(lines: string[]): string[] {
   const parts = lines.map(parseLine);
   const touched = new Set<number>();
@@ -91,26 +105,23 @@ export function normalizeGroups(lines: string[]): string[] {
     }
     if (p.close && openAt >= 0) {
       touched.add(i);
-      if (openAt === i) {
-        // Groupe d'une ligne = ligne répétée
-        const o = p.open!;
-        delete p.open; delete p.close;
-        p.times = Math.max(p.times, o.times);
-        if (o.note) p.note = [o.note, p.note].filter(Boolean).join(' · ');
-      }
+      if (openAt === i) parts[i] = collapseGroup(p, p.open!); // groupe d'une ligne = ligne répétée / commentée
       openAt = -1;
     }
   });
   if (openAt >= 0) {
     const last = parts.length - 1;
     touched.add(last);
-    if (last === openAt) {
-      const p = parts[last], o = p.open!;
-      delete p.open;
-      p.times = Math.max(p.times, o.times);
-      if (o.note) p.note = [o.note, p.note].filter(Boolean).join(' · ');
-    } else parts[last].close = true;
+    if (last === openAt) parts[last] = collapseGroup(parts[last], parts[last].open!);
+    else parts[last].close = true;
   }
+  // Groupe sans répétition ni commentaire : retiré
+  let emptyAt = -1;
+  parts.forEach((p, i) => {
+    if (p.open && p.open.times <= 1 && !p.open.note) { emptyAt = i; delete p.open; touched.add(i); }
+    else if (p.open) emptyAt = -1;
+    if (p.close && emptyAt >= 0 && i >= emptyAt) { delete p.close; touched.add(i); emptyAt = -1; }
+  });
   return lines.map((l, i) => (touched.has(i) ? formatLine(parts[i]) : l));
 }
 

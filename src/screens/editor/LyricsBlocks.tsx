@@ -7,6 +7,7 @@ import type { Assignment, CueType } from '../../model/types';
 import { Chips } from '../Stage';
 import { RoleRows, fromRows, toRows } from './RoleRows';
 import { useState } from 'preact/hooks';
+import { DraftInput } from '../../ui/DraftInput';
 
 type KItem = Keyed<Item>;
 const REPEATS = [1, 2, 3, 4, 5, 6, 8];
@@ -25,7 +26,7 @@ function focusLine(uid: number, line: number, atEnd = true) {
 export function LyricsBlocks({ items, onChange }: { items: KItem[]; onChange: (i: KItem[]) => void }) {
   const [voicesOpen, setVoicesOpen] = useState<number | null>(null);
   /** Sélection de lignes à répéter : paragraphe concerné et 1re ligne touchée. */
-  const [pick, setPick] = useState<{ uid: number; start: number | null } | null>(null);
+  const [pick, setPick] = useState<{ uid: number; start: number | null; mode: 'repeat' | 'note' } | null>(null);
   const [notesOpen, setNotesOpen] = useState<Set<string>>(new Set());
   const toggleNote = (k: string) => setNotesOpen((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; });
   const set = (i: number, it: Item) => onChange(replaceAt(items, i, { ...it, uid: items[i].uid }));
@@ -97,21 +98,41 @@ export function LyricsBlocks({ items, onChange }: { items: KItem[]; onChange: (i
                   </select>
                 </label>
                 {it.lines.length > 1 && (
-                  <button class={`mini${pick?.uid === it.uid ? ' on' : ''}`} onClick={() => setPick(pick?.uid === it.uid ? null : { uid: it.uid, start: null })}
-                    title="Répéter quelques lignes de ce paragraphe" aria-label="Répéter des lignes">⟦⟧<span class="lbl-wide"> Lignes</span></button>
+                  <button class={`mini${pick?.uid === it.uid ? ' on' : ''}`} onClick={() => setPick(pick?.uid === it.uid ? null : { uid: it.uid, start: null, mode: 'repeat' })}
+                    title="Répéter ou commenter quelques lignes de ce paragraphe" aria-label="Répéter des lignes">⟦⟧<span class="lbl-wide"> Lignes</span></button>
                 )}
                 {prevIsStanza && <button class="mini" onClick={() => onChange(mergeWithPrevious(items, i, mk))} title="Fusionner avec le paragraphe précédent" aria-label="Fusionner avec le paragraphe précédent">⤒<span class="lbl-wide"> Fusionner</span></button>}
                 <Tools i={i} />
               </div>
               {pick?.uid === it.uid && (
-                <p class="pick-hint">{pick.start == null ? 'Touche la 1re ligne à répéter…' : '…puis la dernière (la même ligne = cette ligne seule).'}</p>
+                <div class="pick-bar">
+                  <div class="pick-modes" role="radiogroup" aria-label="Action sur les lignes">
+                    <button role="radio" aria-checked={pick.mode === 'repeat'} class={`chip-btn${pick.mode === 'repeat' ? ' on' : ''}`}
+                      onClick={() => setPick({ ...pick, mode: 'repeat' })}>↻ Répéter</button>
+                    <button role="radio" aria-checked={pick.mode === 'note'} class={`chip-btn${pick.mode === 'note' ? ' on' : ''}`}
+                      onClick={() => setPick({ ...pick, mode: 'note' })}>💬 Commentaire</button>
+                  </div>
+                  <p class="pick-hint">{pick.start == null
+                    ? `Touche la 1re ligne ${pick.mode === 'repeat' ? 'à répéter' : 'à commenter'}…`
+                    : '…puis la dernière (la même ligne = cette ligne seule).'}</p>
+                </div>
               )}
               {pick?.uid === it.uid && viewLines(it.lines).map((v, l) => {
                 const a = pick.start;
                 return (
                   <button class={`ln-pick${a === l ? ' on' : ''}`} key={l} onClick={() => {
-                    if (a == null) { setPick({ uid: it.uid, start: l }); return; }
-                    set(i, { ...it, lines: groupLines(it.lines, a, l) });
+                    if (a == null) { setPick({ ...pick, start: l }); return; }
+                    if (pick.mode === 'note') {
+                      if (a === l) {
+                        // Une seule ligne : commentaire de la ligne
+                        const nk = `${it.uid}:${l}`;
+                        setNotesOpen((s) => new Set(s).add(nk));
+                        requestAnimationFrame(() => document.querySelector<HTMLInputElement>(`[data-note="${nk}"]`)?.focus());
+                      } else {
+                        set(i, { ...it, lines: groupLines(it.lines, a, l, 1) });
+                        requestAnimationFrame(() => document.querySelector<HTMLInputElement>(`[data-grp-note="${it.uid}:${Math.min(a, l)}"]`)?.focus());
+                      }
+                    } else set(i, { ...it, lines: groupLines(it.lines, a, l) });
                     setPick(null);
                   }}>{v.text || '…'}</button>
                 );
@@ -121,15 +142,22 @@ export function LyricsBlocks({ items, onChange }: { items: KItem[]; onChange: (i
                 const view = viewLines(it.lines)[l];
                 const g = view.group;
                 const gHead = g?.first ? (
-                  <div class="grp-head">
-                    <span>⟦ Lignes répétées</span>
-                    <select value={g.times} aria-label="Répétitions du groupe de lignes"
-                      onChange={(e) => set(i, { ...it, lines: setGroup(it.lines, l, { times: Number((e.target as HTMLSelectElement).value) }) })}>
-                      {REPEATS.filter((n) => n > 1).map((n) => <option value={n} key={n}>×{n}</option>)}
-                    </select>
-                    <input class="in grp-note-in" value={g.note} maxLength={60} placeholder="Commentaire (ex. chœur seul)" aria-label="Commentaire du groupe"
-                      onInput={(e) => set(i, { ...it, lines: setGroup(it.lines, l, { note: (e.target as HTMLInputElement).value }) })} />
-                    <button class="mini red" onClick={() => set(i, { ...it, lines: ungroupWhere(it.lines, (id) => id === g.id) })} aria-label="Ne plus répéter ces lignes">✕</button>
+                  <div class={`grp-head${g.times <= 1 ? ' note-only' : ''}`}>
+                    {g.times > 1 ? (
+                      <>
+                        <span>⟦ Lignes répétées</span>
+                        <select value={g.times} aria-label="Répétitions du groupe de lignes"
+                          onChange={(e) => set(i, { ...it, lines: setGroup(it.lines, l, { times: Number((e.target as HTMLSelectElement).value) }) })}>
+                          {REPEATS.filter((n) => n > 1).map((n) => <option value={n} key={n}>×{n}</option>)}
+                        </select>
+                      </>
+                    ) : <span>💬 Commentaire</span>}
+                    <DraftInput class="in grp-note-in" value={g.note} maxLength={60} data-grp-note={`${it.uid}:${l}`}
+                      placeholder={g.times > 1 ? 'Commentaire (ex. chœur seul)' : 'Commentaire de ces lignes (ex. Misa seule)'}
+                      aria-label={g.times > 1 ? 'Commentaire du groupe' : 'Commentaire des lignes'}
+                      onValue={(x) => set(i, { ...it, lines: setGroup(it.lines, l, { note: x }) })} />
+                    <button class="mini red" onClick={() => set(i, { ...it, lines: ungroupWhere(it.lines, (id) => id === g.id) })}
+                      aria-label={g.times > 1 ? 'Ne plus répéter ces lignes' : 'Retirer le commentaire de ces lignes'}>✕</button>
                   </div>
                 ) : null;
                 const { text, times, note } = lp;
@@ -137,12 +165,12 @@ export function LyricsBlocks({ items, onChange }: { items: KItem[]; onChange: (i
                 const showNote = !!note || notesOpen.has(nk);
                 const setLine = (patch: Partial<typeof lp>) => set(i, { ...it, lines: replaceAt(it.lines, l, formatLine({ ...lp, ...patch })) });
                 return (
-                  <div class={`ln-wrap${g ? ' in-grp' : ''}${g?.last ? ' grp-end' : ''}`} key={l}>
+                  <div class={`ln-wrap${g ? ' in-grp' : ''}${g && g.times <= 1 ? ' note-only' : ''}${g?.last ? ' grp-end' : ''}`} key={l}>
                     {gHead}
                     <div class="ln-row">
-                      <input class="ln-in" value={text} data-line={`${it.uid}:${l}`} aria-label={`Ligne ${l + 1}`}
-                        onInput={(e) => setLine({ text: (e.target as HTMLInputElement).value })}
-                        onKeyDown={(e) => {
+                      <DraftInput class="ln-in" value={text} data-line={`${it.uid}:${l}`} aria-label={`Ligne ${l + 1}`}
+                        onValue={(x) => setLine({ text: x })}
+                        onKeyDown={(e: KeyboardEvent) => {
                           const el = e.target as HTMLInputElement;
                           if (e.key === 'Enter' && !text.trim() && l > 0) {
                             // Entrée sur une ligne vide : nouveau paragraphe à partir d'ici (comme une ligne vide en mode Texte)
@@ -187,8 +215,8 @@ export function LyricsBlocks({ items, onChange }: { items: KItem[]; onChange: (i
                       </span>
                     </div>
                     {showNote && (
-                      <input class="ln-note-in" value={note} data-note={nk} maxLength={80} placeholder="Commentaire de la ligne (ex. Misa seule, piano)"
-                        aria-label={`Commentaire de la ligne ${l + 1}`} onInput={(e) => setLine({ note: (e.target as HTMLInputElement).value.replace(/\/\//g, '/') })} />
+                      <DraftInput class="ln-note-in" value={note} data-note={nk} maxLength={80} placeholder="Commentaire de la ligne (ex. Misa seule, piano)"
+                        aria-label={`Commentaire de la ligne ${l + 1}`} onValue={(x) => setLine({ note: x.replace(/\/\//g, '/') })} />
                     )}
                   </div>
                 );

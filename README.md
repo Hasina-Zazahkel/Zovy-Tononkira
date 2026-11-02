@@ -76,6 +76,8 @@ ligne - commentaire x2        → ligne répétée
 ligne<TAB>x2                  → paragraphe répété (ou « x2 » seul sous le paragraphe)
 [x2 ligne A                   → groupe de lignes répété (commentaire : [x2 «chœur seul» ligne A)
 ligne B]                        … refermé par « ] » en fin de dernière ligne
+[«Misa seule» ligne A          → commentaire sur plusieurs lignes, sans répétition
+ligne B]
 [REFRAIN]                     → section, suivie éventuellement de « Voix : Tous - Chœur »
 Interlude - commentaire
 Outro

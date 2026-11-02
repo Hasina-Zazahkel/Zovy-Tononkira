@@ -314,15 +314,16 @@ export function UnitView({ u }: { u: Unit }) {
           const cue = isCueLine(v.text) || wholeLineMarker(v.text) != null;
           const g = v.group;
           return (
-            <div class={`${cue ? 'ln cue' : 'ln'}${g?.last ? ' grp-last' : ''}`} key={i}>
+            <div class={`${cue ? 'ln cue' : 'ln'}${g?.last && g.times > 1 ? ' grp-last' : ''}`} key={i}>
               {v.text}{v.times > 1 && <span class="rep-pill" aria-label={`répéter ${v.times} fois`}>×{v.times}</span>}
               {v.note && <span class="ln-note">{v.note}</span>}
-              {g?.last && g.note && <span class="ln-note grp-note">{g.note}</span>}
-              {g?.last && <span class="rep-pill para" aria-label={`lignes répétées ${g.times} fois`}>×{g.times}</span>}
+              {g && g.times <= 1 && g.first && g.note && <span class="ln-note grp-note">{g.note}</span>}
+              {g && g.times > 1 && g.last && g.note && <span class="ln-note grp-note">{g.note}</span>}
+              {g && g.times > 1 && g.last && <span class="rep-pill para" aria-label={`lignes répétées ${g.times} fois`}>×{g.times}</span>}
             </div>
           );
         });
-        return run.group != null ? <div class="grp" key={r}>{lines}</div> : <Fragment key={r}>{lines}</Fragment>;
+        return run.group != null ? <div class={`grp${run.lines[0].group!.times <= 1 ? ' grp-note-only' : ''}`} key={r}>{lines}</div> : <Fragment key={r}>{lines}</Fragment>;
       })}
       {rep && !u.continued && <span class="rep-pill para" aria-label={`paragraphe répété ${u.repeat} fois`}>×{u.repeat}</span>}
     </div>

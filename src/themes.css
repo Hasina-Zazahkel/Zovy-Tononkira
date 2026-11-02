@@ -297,3 +297,9 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .wake-status.err { color: #ffb4ab; } .wake-status.err .dot { background: #e53935; }
 .wake-status.wait { color: var(--gold); } .wake-status.wait .dot { background: var(--gold); }
 .wake-status span:nth-child(2) { flex: 1; }
+.grp.grp-note-only { border-left: .08em solid var(--fg-dim); opacity: 1; }
+.grp-note-only .grp-note { color: var(--gold); }
+.pick-bar { margin: 4px 0 6px; }
+.pick-modes { display: flex; gap: 8px; margin-bottom: 6px; }
+.ln-wrap.in-grp.note-only { border-left-color: var(--fg-dim); border-left-style: dashed; }
+.grp-head.note-only { color: var(--fg); }
