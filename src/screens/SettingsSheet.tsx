@@ -4,7 +4,7 @@ import { catalog } from '../lib/catalog';
 import { canEdit, hasToken as tokenSignal, checkToken, getToken, publish, PublishError, REPO, setToken } from '../lib/publish';
 import { dropSetlistOverride, markSetlistPublished, setlistOverride, setlistUnpublished } from '../lib/setlistEdit';
 import { bumpFont, FONT_MAX, FONT_MIN, settings, update } from '../lib/settings';
-import { wakeState } from '../lib/wakeLock';
+import { retryWakeLock, wakeState } from '../lib/wakeLock';
 import { adminSession, currentMembers, loginRequired, logout, markMembersPublished, membersOverride, membersUnpublished, session } from '../lib/members';
 import { SESSION_DAYS } from '../model/members';
 import { MembersSection } from './MembersSection';
@@ -110,8 +110,9 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
           </span>
         </div>
         <div class={`preview${st.uppercase ? ' upper' : ''}`} style={{ fontSize: `${Math.min(st.fontSize, 44)}px` }}>Ilay tsiky avy aminao</div>
-        <Toggle label="Écran toujours allumé" hint={wakeState.value === 'unsupported' ? 'Non pris en charge par ce navigateur' : 'Empêche la mise en veille'}
+        <Toggle label="Écran toujours allumé" hint="Empêche la mise en veille quand l'app est au premier plan"
           on={st.keepAwake} onChange={(v) => update({ keepAwake: v })} />
+        {st.keepAwake && <WakeStatus />}
         {hasToken && <Toggle label="Paroles en majuscules" on={st.uppercase} onChange={(v) => update({ uppercase: v })} />}
 
         {hasToken && <h3 class="sheet-h voice">Modifications à publier</h3>}
@@ -192,6 +193,22 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+/** État réel du maintien de l'écran sur cet appareil (à vérifier avant un concert). */
+function WakeStatus() {
+  const w = wakeState.value;
+  const [label, cls] = w === 'on' ? ['Actif : l\'écran ne se mettra pas en veille', 'ok']
+    : w === 'unsupported' ? ['Non pris en charge par ce navigateur : règle la mise en veille d\'Android sur 10 ou 30 min', 'err']
+    : w === 'error' ? ['Refusé par l\'appareil (économie d\'énergie ?)', 'err']
+    : ['En attente : touche l\'écran pour l\'activer', 'wait'];
+  return (
+    <div class={`wake-status ${cls}`} role="status">
+      <span class="dot" aria-hidden="true" />
+      <span>{label}</span>
+      {(w === 'error' || w === 'off') && <button class="chip-btn" onClick={retryWakeLock}>Réessayer</button>}
     </div>
   );
 }

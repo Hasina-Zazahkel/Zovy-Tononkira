@@ -289,3 +289,11 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .pick-hint { margin: 4px 0 8px; color: var(--gold); font-size: 15px; }
 .ln-pick { display: block; width: 100%; text-align: left; min-height: 46px; margin: 3px 0; padding: 0 12px; border-radius: 10px; border: 2px dashed var(--bg-3); background: none; color: var(--fg); font-family: var(--display); font-weight: 600; font-size: 20px; text-transform: uppercase; }
 .ln-pick.on { border-style: solid; border-color: var(--gold); background: rgba(255, 192, 0, .12); }
+
+/* État du maintien de l'écran */
+.wake-status { display: flex; align-items: center; gap: 10px; margin: -2px 0 10px; padding: 10px 12px; border-radius: 12px; font-size: 15px; background: var(--bg-2); }
+.wake-status .dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--fg-dim); }
+.wake-status.ok { color: #9be39f; } .wake-status.ok .dot { background: #4caf50; box-shadow: 0 0 8px #4caf50; }
+.wake-status.err { color: #ffb4ab; } .wake-status.err .dot { background: #e53935; }
+.wake-status.wait { color: var(--gold); } .wake-status.wait .dot { background: var(--gold); }
+.wake-status span:nth-child(2) { flex: 1; }
