@@ -66,8 +66,9 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
   };
 
   const forget = async () => {
-    if (nPending > 0
-      && !confirm('Des modifications ne sont pas publiées : elles resteront sur cet appareil sans pouvoir être envoyées. Continuer ?')) return;
+    if (!confirm(nPending > 0
+      ? 'Supprimer le jeton GitHub de cet appareil ? Des modifications ne sont pas publiées : elles resteront ici sans pouvoir être envoyées tant que le jeton n\'est pas recollé.'
+      : 'Supprimer le jeton GitHub de cet appareil ? Il faudra le recoller pour modifier à nouveau.')) return;
     await setToken(''); setMsg(null);
   };
 
@@ -148,15 +149,19 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
 
         {hasToken && <MembersSection />}
 
-        {hasToken ? (
+        {tokenHere && adminSession.value ? (
           <>
-            <button class="btn primary wide" disabled={busy || !nPending} onClick={run}>
-              {busy ? 'Publication…' : nPending ? `PUBLIER POUR TOUT LE GROUPE (${nPending})` : 'Tout est publié'}
-            </button>
+            {hasToken && (
+              <button class="btn primary wide" disabled={busy || !nPending} onClick={run}>
+                {busy ? 'Publication…' : nPending ? `PUBLIER POUR TOUT LE GROUPE (${nPending})` : 'Tout est publié'}
+              </button>
+            )}
             {msg && <p class={`msg ${msg.kind}`}>{msg.text} {msg.url && <a href={msg.url} target="_blank" rel="noopener">Voir sur GitHub</a>}</p>}
             <h3 class="sheet-h">Mode éditeur</h3>
-            <p class="hint">Cet appareil peut modifier et publier (jeton GitHub enregistré).</p>
-            <button class="btn ghost" onClick={forget}>Repasser cet appareil en lecture seule</button>
+            <Toggle label="Mode éditeur" on={st.editorOn} onChange={(v) => { setMsg(null); update({ editorOn: v }); }}
+              hint={st.editorOn ? 'Modifier et publier depuis cet appareil' : 'Lecture seule : jeton conservé, réactivable ici'} />
+            {!st.editorOn && nPending > 0 && <p class="hint">{nPending} modification{nPending > 1 ? 's' : ''} non publiée{nPending > 1 ? 's' : ''} conservée{nPending > 1 ? 's' : ''} sur cet appareil.</p>}
+            <button class="btn ghost" onClick={forget}>Oublier le jeton de cet appareil</button>
           </>
         ) : !adminSession.value ? (
           <>

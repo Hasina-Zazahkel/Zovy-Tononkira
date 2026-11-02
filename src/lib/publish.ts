@@ -11,6 +11,7 @@ import { computed, signal } from '@preact/signals';
 import { hasAdmin, serializeMembers, type Member } from '../model/members';
 import { adminSession } from './members';
 import { DEMO } from './demo';
+import { settings, update } from './settings';
 import { kvDel, kvGet, kvSet } from './store';
 
 export const REPO = { owner: 'Hasina-Zazahkel', repo: 'Zovy-Tononkira', branch: 'main' };
@@ -22,12 +23,15 @@ const TOKEN_KEY = 'github.token';
  * Tous les autres sont en lecture seule.
  */
 export const hasToken = signal(false);
-/** Mode éditeur = jeton sur l'appareil + session admin (ou aucune liste de membres publiée). */
-export const canEdit = computed(() => hasToken.value && adminSession.value);
+/**
+ * Mode éditeur = jeton sur l'appareil + session admin (ou aucune liste de membres publiée)
+ * + interrupteur « Mode éditeur » des Réglages (lecture seule sans oublier le jeton).
+ */
+export const canEdit = computed(() => hasToken.value && adminSession.value && settings.value.editorOn);
 
 export const getToken = () => kvGet<string>(TOKEN_KEY);
 export async function setToken(t: string) {
-  if (t.trim()) await kvSet(TOKEN_KEY, t.trim());
+  if (t.trim()) { await kvSet(TOKEN_KEY, t.trim()); update({ editorOn: true }); }
   else await kvDel(TOKEN_KEY);
   hasToken.value = !!t.trim();
 }
