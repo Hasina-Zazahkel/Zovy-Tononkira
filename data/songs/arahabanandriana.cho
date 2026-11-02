@@ -1,9 +1,9 @@
 {title: ARAHABAN'ANDRIANA}
 {artist: MBOLA TALENTA}
 {key: FA}
-{capo: 5}
-{singers: 5 Voix}
-{musicians: Guitare Haja & Toky | Percussion Manitra}
+{singers: *=Chœur}
+{musicians: Haja=Guitare, Toky=Guitare, Manitra=Percussion}
+{notes: Capo 5}
 
 Tonga vahiny ianareo
 Hitondra ny hafatra
@@ -18,7 +18,7 @@ tompoko ô !
 Toy izao ny fiarahaban’andriana
 Ataonay amin’olon-tiana
 
-{instrumental: Interlude}
+{interlude}
 
 Tonga vahiny ianareo
 Hitondra ny hafatra
@@ -50,7 +50,7 @@ fa manina azy
 Fa fitia mivaly fitia,
 Fararano aza tonga ririnina
 mainka izany
-fa raha fahavaratra (bis)
+fa raha fahavaratra [×2]
 
 Sarasara tsy ambakaina ,
 tompoko ô !
@@ -74,7 +74,7 @@ fa manina azy
 Fa fitia mivaly fitia,
 Fararano aza tonga ririnina
 mainka izany
-fa raha fahavaratra (bis)
+fa raha fahavaratra [×2]
 
 Sarasara tsy ambakaina ,
 tompoko ô !

@@ -2,7 +2,7 @@
 {artist: SAMOELA}
 {key: RE}
 {tags: medley}
-{musicians: Guitare Haja | Basse Toky | Sax TOFA}
+{musicians: Haja=Guitare, Toky=Guitare basse, Tofa=Sax}
 
 Any ianao ’zay
 Rotsirotsin’ny fiaraben’ny
@@ -17,7 +17,7 @@ No sady tsy foiny aho e
 Lokon’Arema,
 fa nifankatiavanay
 
-{instrumental: interlude}
+{interlude}
 
 Sigara Good Look aky
 Anembonako an-dry
@@ -32,7 +32,7 @@ amin’ny tanana an-kavia aiii
 ('Ty kosa ho'aho mahasosotra
 mihitsy rehefa manao an'izay)
 
-{instrumental: interlude}
+{interlude}
 
 Rehefa eo an-tratranao aho
 dia ravoravo o
@@ -65,7 +65,7 @@ dia hilentika angamba ny sambo
 Ka n’inona n’inona miseho
 Dia aza mihetsiketsika eo e
 
-{instrumental: interlude}
+{interlude}
 
 Iha raika avao ty hanambaly amboa
 Raha tsy mbola vitan’ny ty olo

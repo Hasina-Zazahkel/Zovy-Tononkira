@@ -2,7 +2,7 @@
 {artist: RICKY}
 {key: MI}
 {singers: Hasina, Toky, Haja}
-{musicians: Guitare Haja | Basse Toky | Sax Tofa | Batterie Manitra}
+{musicians: Haja=Guitare, Toky=Guitare basse, Tofa=Sax, Manitra=Percussion}
 
 EFA ELA LOATRA HO AHO E
 IZAY NANDEHANANAO TANY IZAY
@@ -24,7 +24,7 @@ INY HAVAKO INY O INY
 RAHA SENDRA MANDALO IANAO
 MIANDRY FOANA AHO
 
-{instrumental: INTERLUDE}
+{interlude}
 
 TAIZA FOANA A TAIZA IANAO E
 MANGININA AHO TSY MISY MPILALAO
@@ -39,11 +39,11 @@ TSY NETY VOAFAFA HO AHO
 IREO LASA FAHINY
 MBOLA HIRAIKO NA MAMIRIFIRY
 
+{repeat: 6}
 INY HAVAKO INY O INY
 RAHA SENDRA MANDALO
 DIA ANTSOY MBA HIVILY
-X6
 
-{instrumental: INTERLUDE}
+{interlude}
 
-INY HAVAKO INY X6
+INY HAVAKO INY [×6]

@@ -7,6 +7,7 @@ Vérifie public/data/songs.json contre le HTML legacy :
 Usage : python3 -I scripts/migrate/verify_legacy.py legacy/Tononkira_Zovy.html .
 """
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -14,6 +15,20 @@ sys.path.insert(0, str(Path(__file__).parent))
 from legacy_html import (CUE_RE, MANUAL_LINKS, NAMED_SECTION_RE, PAREN_LINE_RE,  # noqa: E402
                          Report, parse_voices, slugify)
 from bs4 import BeautifulSoup  # noqa: E402
+
+# Mêmes règles que src/model/repeat.ts (marqueurs de répétition retirés des deux côtés)
+REP_WORD = r"(?:[x×]\s*\d+|\d+\s*[x×*]|bis|indroa|in-2|intelo|in-3)"
+def is_rep_only(l: str) -> bool:
+    t = l.strip().rstrip(".!…").upper()
+    parts = t.split()
+    if len(parts) == 2 and all(is_rep_only(p) for p in parts):  # « BIS X4 »
+        return True
+    return bool(re.fullmatch(r"\(?\s*(?:[X×]\s*\d+|\d+\s*[X×*]|BIS|INDROA|IN-2|INTELO|IN-3)\s*\)?|\(\d\)", t))
+def strip_rep(l: str) -> str:
+    m = re.match(r"^(.*\S)\s+(\(?\s*" + REP_WORD + r"\s*\)?|\(\d\))\s*[.!…]*$", l, re.I) or re.match(r"^(.*\S)(\((?:[x×]\s*\d+|\d|bis|indroa|in-2|intelo|in-3)\))\s*[.!…]*$", l, re.I)
+    if not m or (m.group(1).startswith("(") and ")" not in m.group(1)):
+        return l
+    return re.sub(r"[\s,;:–-]+$", "", m.group(1))
 
 src, root = sys.argv[1], Path(sys.argv[2])
 soup = BeautifulSoup(Path(src).read_text(encoding="utf-8"), "html.parser")
@@ -42,19 +57,28 @@ for sec in soup.select("div.lyrics-section"):
             exp_named.append(m.group(1))
         elif CUE_RE.match(line):
             exp_cues.append(line.strip())
+        elif re.match(r"^\s*\.{2,}\s*MUSIQUE\s*\.{2,}\s*$", line, re.I):
+            exp_cues.append("MUSIQUE")  # converti en repère instrumental
         elif (pm := PAREN_LINE_RE.match(line)) and parse_voices(pm.group(1), Report(), legacy) is not None:
             exp_voices += 1
         else:
             exp_lines.append(line)
-    got_lines = [l for s in song["sections"] for st in s["stanzas"] for l in st]
-    got_cues = [s.get("label", "") for s in song["sections"] if s["kind"] == "instrumental"]
+    # Répétitions converties en données : on compare le texte sans les marqueurs
+    got_lines = [re.sub(r"\s*\[×\d+\]$", "", l) for s in song["sections"] for st in s["stanzas"] for l in st]
+    exp_lines = [strip_rep(l) for l in exp_lines if not is_rep_only(l)]
+    got_lines = [l for l in got_lines if not is_rep_only(l)]
+    got_cues = [s for s in song["sections"] if s["kind"] == "instrumental"]
     got_named = [s["label"] for s in song["sections"] if s["kind"] == "lyrics" and s.get("label")]
     got_voices = sum(1 for s in song["sections"] if s.get("voices"))
     if got_lines != exp_lines:
         i = next((i for i, (a, b) in enumerate(zip(got_lines, exp_lines)) if a != b), min(len(got_lines), len(exp_lines)))
         fails.append(f"{legacy} : paroles divergentes à la ligne {i} ({len(got_lines)} vs {len(exp_lines)})")
-    if got_cues != exp_cues:
-        fails.append(f"{legacy} : repères instrumentaux {got_cues} vs {exp_cues}")
+    # Repères normalisés (catégorie + commentaire) et fusionnés quand consécutifs :
+    # chaque repère d'origine doit avoir donné un repère, sans en inventer.
+    if not (0 < len(got_cues) <= len(exp_cues)) and (got_cues or exp_cues):
+        fails.append(f"{legacy} : {len(got_cues)} repères normalisés pour {len(exp_cues)} d'origine")
+    if any(c.get("cue") not in ("intro", "interlude", "outro") for c in got_cues):
+        fails.append(f"{legacy} : repère sans catégorie")
     if got_named != exp_named:
         fails.append(f"{legacy} : sections nommées {got_named} vs {exp_named}")
     if got_voices != exp_voices:

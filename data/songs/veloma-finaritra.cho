@@ -2,8 +2,8 @@
 {artist: FEON'ALA}
 {key: SIb}
 {tags: medley}
-{singers: Ketaka & Misa}
-{musicians: Guitare Toky | Clavier Haja}
+{singers: Ketaka, Misa}
+{musicians: Toky=Guitare, Haja=Clavier}
 
 MMMHH MMMHH
 
@@ -38,7 +38,7 @@ HA SAMY HO MAIVAGNE
 HO ARO ANIE IAH! OUH! OUH! OUH!
 VELOMA FINARITRA E
 
-{instrumental: interlude}
+{interlude}
 
 NY FO ROA TSY METY HANADINO
 HIMENOMENONA TSIAHY ISAN'ANDRO
@@ -64,7 +64,7 @@ Fampikoragna kara taloha
 Modia, modia, izahay efa ngôma
 Ny ahita andreo, miara-misôma
 
-{instrumental: interlude}
+{interlude}
 
 Na, na, na, na...
 
@@ -80,20 +80,20 @@ nialanan-dreo taty an-tànagna
 Modia, modia, izahay mahatsiaro
 Manign'andreo, magnisa andro
 
-{instrumental: interlude}
+{interlude}
 
 Na, na, na, na...
 
 Magniry zahay ny mbô ho vangiane
 Ny fo mahatsiaro, ny maso tia ahita
 Volagna araiky na herinandro
-Ah, zavavy e, tongava e x4
+Ah, zavavy e, tongava e [×4]
 
 Magniry zahay ny mbô ho vangiane
 Ny fo mahatsiaro, ny maso tia ahita
 Volagna araiky na herinandro
-Ah, zavavy e, tongava e x4
+Ah, zavavy e, tongava e [×4]
 
-{instrumental: Interlude long}
+{interlude: Long}
 
 Na, na, na, na...

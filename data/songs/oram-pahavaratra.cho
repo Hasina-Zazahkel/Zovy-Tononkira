@@ -1,9 +1,9 @@
 {title: ORAM-PAHAVARATRA}
 {artist: ZANDRY GASY}
 {key: RE}
-{capo: 7}
-{singers: 5 voix}
-{musicians: Guitare haja & toky}
+{singers: *=Chœur}
+{musicians: Haja=Guitare, Toky=Guitare}
+{notes: Capo 7}
 
 MIDONA NY ANY ANKARATRA
 MANAKO ANY ALAVITRA ANY
@@ -14,7 +14,7 @@ VOTON-DRANOMASO
 ALAHELO NO MIAVOSA O
 VOKATRY NY ANKASO
 
-{instrumental: interlude}
+{interlude}
 
 MIDONA NY ANY ANKARATRA
 MANAKO ANY ALAVITRA ANY
@@ -43,7 +43,7 @@ FA IFONAKO NY EFA VITA
 NY FOKO IZAY MANANTENA O
 AZA ODIA TSY HITA
 
-{instrumental: interlude}
+{interlude}
 
 MIDONA NY ANY ANKARATRA
 MANAKO ANY ALAVITRA ANY
@@ -54,7 +54,7 @@ VOTON-DRANOMASO
 ALAHELO NO MIAVOSA O
 VOKATRY NY ANKASO
 
-{instrumental: interlude}
+{interlude}
 
 RALALA O RALALA O
 HENOY NY FITARAINANA
@@ -74,7 +74,7 @@ NY HASOSORANA AOKA IZAY
 MODIA AMIN’NY TANANA O
 MBA HIARAKA INDRAY
 
-{instrumental: interlude}
+{interlude}
 
 MIDONA NY ANY ANKARATRA
 MANAKO ANY ALAVITRA ANY

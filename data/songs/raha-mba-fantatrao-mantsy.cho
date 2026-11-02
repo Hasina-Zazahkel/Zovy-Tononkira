@@ -2,7 +2,7 @@
 {artist: EJEMA}
 {key: MI}
 {singers: Hasina}
-{musicians: Clavier Haja | Guitare Toky}
+{musicians: Haja=Clavier, Toky=Guitare}
 
 raha mba fantatrao
 mantsy malala
@@ -26,7 +26,7 @@ vodivodiana
 mitoe-drery mangina,
 agnaty ao rô mila ho tsy tanty
 
-{instrumental: Interlude}
+{interlude}
 
 Mahita anao fôna,
 isan'andro isan'andro ô
@@ -36,7 +36,7 @@ Mihevera ra,
 fa samy mpandalo ô
 ô ô ô ambor'ategna rô
 
-{instrumental: Interlude}
+{interlude}
 
 ô ô ô cheri e,
 aza ela fiavy

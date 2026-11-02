@@ -139,6 +139,10 @@
 
 - `HANARAKA-ANAO` : section dupliquée à l'identique, une seule conservée
 
+## Segments du titre déplacés en notes (1)
+
+- `MIALANGALANA` : Intro SAX
+
 ## Liens réparés manuellement (1)
 
 - index `SAKELIDALANA` : `#TAO-ANATIN'NY-TOLOLA` → `#TAO-ANATIN'NY-TOLONA`

@@ -2,7 +2,7 @@
 {artist: TARIKA}
 {key: RE}
 {singers: Ketaka, Misa, Toky}
-{musicians: Clavier Haja | Toky Basse}
+{musicians: Haja=Clavier, Toky=Guitare basse}
 
 MIDOBODOKA TSY MIJANONA NY FOKO
 MIERIKA NY MASOKO MITADY TSY MAHITA
@@ -28,7 +28,7 @@ TEO AMIN’NY TOERANA AVO INDRINDRA
 TSY HAIN’IZA HO HAZAVAINA
 TSY VITAN’IZA HO RAVANA
 
-{instrumental: INTERLUDE ATTENTION MELODIE}
+{interlude: Attention melodie}
 
 TSY tiako ovaina INTSONY
 NY LASA ZARAKO AZA IANAO
@@ -55,7 +55,7 @@ TSY MILA OLON-KAFA AHO
 TSY HITADY AN’IZA N’IZA
 FA IANAO IRERY IHANY
 
-{instrumental: INTERLUDE 1 FOIS}
+{interlude: 1 fois}
 
 TSY HAIKO INTSONY NY MANAFINA
 EFA FANTATRAO IZANY
@@ -70,6 +70,4 @@ RAHOVIANA IANAO RY TIAKO
 VAO HO TONGA ETO INDRAY
 HAMPIONONA AHY RAHOVIANA
 
-{instrumental: INTERLUDE BASSE}
-
-{instrumental: FIN INTRO}
+{outro: Basse · Fin intro}

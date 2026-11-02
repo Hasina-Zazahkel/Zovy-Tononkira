@@ -1,10 +1,10 @@
 {title: BAKOMANGA}
 {artist: RAMAFADRAHONA}
 {key: LA}
-{singers: 4 Voix}
-{musicians: Guitare Haja | Batterie Manitra}
+{singers: *=Chœur}
+{musicians: Haja=Guitare, Manitra=Percussion}
 
-{voices: Hasina=choeur, Misa=soprano, Ke=alto}
+{voices: Hasina=Chœur, Misa=Soprano, Ke=Alto}
 E!E!E! RY ILAY BAKOMANGA E E BAKO Ô
 MIVERENA MODIA
 E! ENY FA MANINA ANY AHO E!E!
@@ -35,7 +35,7 @@ O!O! MIVERENA AKY RALALA Ô
 E!E! MIVERENA SOMBIN'NY AIKO ô
 O!O! MIVERENA MIVERENA ô
 
-{instrumental: INTERLUDE INTRO}
+{interlude: Intro}
 
 E!E!E! RY ILAY BAKOMANGA E E BAKO Ô
 MIVERENA MODIA

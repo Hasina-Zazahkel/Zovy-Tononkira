@@ -1,8 +1,8 @@
-name: data
+name: ci
 on:
-  push:
-    paths: ['data/**', 'src/model/**', 'scripts/**', 'tests/**', 'package*.json']
   pull_request:
+  push:
+    branches-ignore: [main]
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -14,3 +14,4 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run data:check
+      - run: npm run build

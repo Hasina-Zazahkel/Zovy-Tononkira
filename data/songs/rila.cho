@@ -2,10 +2,10 @@
 {artist: BILO}
 {key: DO}
 
-{voices: Hasina=bas, Misa=lead, Ke=haut}
+{voices: Hasina=Alto, Misa=Lead, Ke=Soprano}
+{repeat: 2}
 E ril'e e e e agnay tsa ho agny
 fa handry eto e
-x2
 
 Ny kalakely tsy mahay manetsa e
 mbola hianatsa ihany e,
@@ -13,13 +13,13 @@ Tagnako malemilemy toy
 tsa hoferiko manoto vary laigna,
 Babeonareo manan-damba
 i zanako toy e fa manara an
-an an an (x2)
+an an an [×2]
 
-{instrumental: interlude}
+{interlude}
 
 Ny ganagana mandro misitrika ny voky e
 anay ro sasa-miandry nareo tsa mipotse
-napetrany eto ny lambany e, aiza e? x2
+napetrany eto ny lambany e, aiza e? [×2]
 
 E veloma e! asabotsy mifankahita a
 Dia veloma ry neny e! asabotsy mifankahita a
@@ -33,7 +33,7 @@ tamboho (x2) tamboho be no misy ny dokotera e
 manondrotsondrotra hazo voa e
 sekretera
 
-E veloma ry baba! asabotsy mifankahita a x2
+E veloma ry baba! asabotsy mifankahita a [×2]
 Dia veloma ry neny e! asabotsy mifankahita a
 anay zao e, tara Fianarantsoa
 any Ambony avaratsa ry baba
@@ -45,9 +45,9 @@ tamboho (x2) tamboho be no misy ny dokotera e
 manondrotsondrotra hazo voa e
 sekretera
 
-{instrumental: INTERLUDE -- O RILA RE -- (FA)}
+{interlude: O rila re (fa)}
 
-{voices: Hasina=tenor, Misa=lead, Ke=alto}
+{voices: Hasina=Ténor, Misa=Lead, Ke=Alto}
 O RILA RE E
 O RILA A A A
 O RILA RE E
@@ -100,7 +100,6 @@ AIA RA GOMA
 O RILA A
 TSA MIVIDY FOA RA PROJET
 O RILA A
-
 (FOLAKA)
 
 O RILA RE E

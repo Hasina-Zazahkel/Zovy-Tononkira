@@ -1,8 +1,8 @@
 {title: TOMPON-DAKA}
 {artist: SAMOELA}
 {key: SOL}
-{singers: Lead Toky | Choeur 3 voix}
-{musicians: Guitare Toky | Basse Haja | Batterie Tofa}
+{singers: Toky=Lead, *=Chœur}
+{musicians: Toky=Guitare, Haja=Guitare basse, Tofa=Percussion}
 
 FIALONANA LAVA TY RE MBA FEPERO KELY.
 SAO KOFINA RERY EO VO TSISY MPIJERY.
@@ -61,7 +61,7 @@ MIARITRA KELY DE OMBY.
 NY OMBY BE TSY LANIN'LA
 FA TONGA DE MAAAN.
 
-{instrumental: INTERLUDE + FOLAKA}
+{interlude: + folaka}
 
 ZAY MAHARI-PERY NO IZY EE.
 ZAY MIARITRA IHANY NO TAFA.
@@ -79,4 +79,4 @@ TOMPON-DAKA MANDIDY MANJAKA.
 ZAY MIARITRA IHANY NO IZY
 MIARITRA KELY DE OMBY.
 NY OMBY BE TSY LANIN'LA
-FA TONGA DE MAAAN X4
+FA TONGA DE MAAAN [×4]

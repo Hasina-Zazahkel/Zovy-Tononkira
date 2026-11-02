@@ -1,8 +1,8 @@
 {title: ANAO TIAKO}
 {artist: BABAIQUE & CYNTHIA}
 {key: SI}
-{singers: 4 Voix}
-{musicians: Clavier Haja +6 (fa | re) | Guitare Toky}
+{singers: *=Chœur}
+{musicians: Haja=Clavier, Toky=Guitare}
 
 Nitsanganako teto
 rango marandraigny
@@ -31,7 +31,7 @@ Volagna raha tianao fa amiako
 Marary aminao itaraignako
 Miaraka aminao zaho mahery
 
-{instrumental: Interlude}
+{interlude}
 
 Andra ino eky niany,
 andra ino

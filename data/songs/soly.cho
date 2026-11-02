@@ -1,8 +1,8 @@
 {title: SOLY}
 {artist: SAMOELA}
 {key: SOL}
-{singers: Lead Toky | Choeur 3 voix}
-{musicians: Guitare Haja | Basse Toky | Batterie Tofa}
+{singers: Toky=Lead, *=Chœur}
+{musicians: Haja=Guitare, Toky=Guitare basse, Tofa=Percussion}
 
 Dinta kely miraikitra
 anatin’ny loha

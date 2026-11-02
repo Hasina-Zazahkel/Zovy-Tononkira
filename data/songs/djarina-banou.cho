@@ -1,8 +1,8 @@
 {title: DJARINA BANOU}
 {artist: EJEMA}
 {key: SOL}
-{singers: Ketaka & Toky, Misa}
-{musicians: Guitare Toky | Clavier Haja}
+{singers: Ketaka, Toky, Misa}
+{musicians: Toky=Guitare, Haja=Clavier}
 
 Djarinako zey Zagnahary
 Natokisako eky e e e
@@ -31,7 +31,7 @@ K’ianao k’hivarilavo ô
 Tsy mampagnin’ô ô ô
 Tantikô ô ô ia
 
-{instrumental: interlude}
+{interlude}
 
 Ranomaso nameno "mouchoir" e
 Valin-kasambarako ô

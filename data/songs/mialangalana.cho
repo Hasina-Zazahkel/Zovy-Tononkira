@@ -1,8 +1,9 @@
 {title: MIALANGALANA}
 {artist: SAMOELA}
 {key: RE}
-{singers: Lead Toky | Choeur 3 voix}
-{musicians: Intro SAX | Guitare Haja | Basse Toky | Sax Tofa | Batterie Manitra}
+{singers: Toky=Lead, *=Chœur}
+{musicians: Haja=Guitare, Toky=Guitare basse, Tofa=Sax, Manitra=Percussion}
+{notes: Intro SAX}
 
 Misy ny akama
 vô sendra sampanana
@@ -71,4 +72,4 @@ Irery tavel’ao lan’ny trano
 (Apoay Apoay zestanao ’zany)
 Ra’dizina ’rery aho idiran’angano
 
-[(Very any iny eh !) x 3] x 4
+[(Very any iny eh !) x 3] [×4]

@@ -2,7 +2,7 @@
 {artist: MIKAHELY}
 {key: DO}
 
-{voices: Toky=lead, Misa=haut, Ke=bas}
+{voices: Toky=Lead, Misa=Soprano, Ke=Alto}
 E E E
 AN AN AN
 TSY HANEKE ZA
@@ -21,7 +21,7 @@ E ZARO MANA NAMANY E
 SÖROGNO RANO MALAKIA
 E ZARO MANA NAMANY E
 
-{instrumental: INTERLUDE Intro}
+{interlude: Intro}
 
 E E E
 AN AN AN

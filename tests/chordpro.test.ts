@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parseChordPro, serializeChordPro, parseKey } from '../src/model/chordpro';
+import { cleanupSong } from '../src/model/cleanup';
 
 const DIR = join(__dirname, '../data/songs');
 
@@ -15,9 +16,10 @@ describe('parseChordPro', () => {
   const src = `{title: T}
 {artist: A}
 {key: SIb}
-{singers: Lead Toky | Choeur 3 voix}
+{singers: Hasina=lead, Misa=1ère voix, Ke=2ème voix, Toky=ténor}
+{musicians: Haja=guitare basse, Toky=guitare classique}
 
-{instrumental: Intro}
+{intro}
 
 l1
 l2
@@ -35,13 +37,16 @@ l5
   it('sans avertissement', () => expect(warnings).toEqual([]));
   it('métadonnées', () => {
     expect(song.key).toEqual({ root: 'SI', accidental: 'b' });
-    expect(song.singers).toEqual(['Lead Toky', 'Choeur 3 voix']);
+    expect(song.singers).toEqual([
+      { member: 'Hasina', role: 'lead' }, { member: 'Misa', role: '1ère voix' },
+      { member: 'Ke', role: '2ème voix' }, { member: 'Toky', role: 'ténor' }]);
+    expect(song.musicians).toEqual([{ member: 'Haja', role: 'guitare basse' }, { member: 'Toky', role: 'guitare classique' }]);
   });
   it('sections et strophes', () => {
     expect(song.sections.map((s) => [s.id, s.kind, s.label ?? null])).toEqual([
-      ['s0', 'instrumental', 'Intro'], ['s1', 'lyrics', null], ['s2', 'lyrics', null], ['s3', 'lyrics', 'ZOMA']]);
+      ['s0', 'instrumental', null], ['s1', 'lyrics', null], ['s2', 'lyrics', null], ['s3', 'lyrics', 'ZOMA']]);
     expect(song.sections[1].stanzas).toEqual([['l1', 'l2'], ['l3']]);
-    expect(song.sections[2].voices).toEqual([{ member: 'Hasina', part: 'lead' }, { member: '*', part: 'choeur' }]);
+    expect(song.sections[2].voices).toEqual([{ member: 'Hasina', role: 'lead' }, { member: '*', role: 'choeur' }]);
   });
   it('{voices} après des paroles ouvre une nouvelle section', () => {
     const r = parseChordPro('x', '{title: a}\n{artist: b}\nl1\n{voices: Ke=bas}\nl2\n').song;
@@ -59,5 +64,6 @@ describe('catalogue réel', () => {
     expect(warnings).toEqual([]);
     expect(serializeChordPro(song)).toBe(raw);
     expect(parseChordPro(song.id, serializeChordPro(song)).song).toEqual(song);
+    expect(serializeChordPro(cleanupSong(song))).toBe(raw); // données déjà nettoyées
   });
 });
