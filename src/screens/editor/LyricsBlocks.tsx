@@ -2,7 +2,7 @@ import { CUE_LABEL, CUE_TYPES } from '../../model/cues';
 import {
   insertAt, keyed, mergeWithPrevious, move, removeAt, removeLine, replaceAt, splitStanza, type Item, type Keyed,
 } from '../../model/edit';
-import { formatLine, groupLines, parseLine, setGroup, ungroupWhere, viewLines } from '../../model/repeat';
+import { formatLine, groupLines, HL_COLORS, parseLine, setGroup, ungroupWhere, viewLines } from '../../model/repeat';
 import type { Assignment, CueType } from '../../model/types';
 import { Chips } from '../Stage';
 import { RoleRows, fromRows, toRows } from './RoleRows';
@@ -110,10 +110,10 @@ export function LyricsBlocks({ items, onChange }: { items: KItem[]; onChange: (i
                     <button role="radio" aria-checked={pick.mode === 'repeat'} class={`chip-btn${pick.mode === 'repeat' ? ' on' : ''}`}
                       onClick={() => setPick({ ...pick, mode: 'repeat' })}>↻ Répéter</button>
                     <button role="radio" aria-checked={pick.mode === 'note'} class={`chip-btn${pick.mode === 'note' ? ' on' : ''}`}
-                      onClick={() => setPick({ ...pick, mode: 'note' })}>💬 Commentaire</button>
+                      onClick={() => setPick({ ...pick, mode: 'note' })}>🖍 Surligner / commenter</button>
                   </div>
                   <p class="pick-hint">{pick.start == null
-                    ? `Touche la 1re ligne ${pick.mode === 'repeat' ? 'à répéter' : 'à commenter'}…`
+                    ? `Touche la 1re ligne ${pick.mode === 'repeat' ? 'à répéter' : 'à surligner'}…`
                     : '…puis la dernière (la même ligne = cette ligne seule).'}</p>
                 </div>
               )}
@@ -123,15 +123,8 @@ export function LyricsBlocks({ items, onChange }: { items: KItem[]; onChange: (i
                   <button class={`ln-pick${a === l ? ' on' : ''}`} key={l} onClick={() => {
                     if (a == null) { setPick({ ...pick, start: l }); return; }
                     if (pick.mode === 'note') {
-                      if (a === l) {
-                        // Une seule ligne : commentaire de la ligne
-                        const nk = `${it.uid}:${l}`;
-                        setNotesOpen((s) => new Set(s).add(nk));
-                        requestAnimationFrame(() => document.querySelector<HTMLInputElement>(`[data-note="${nk}"]`)?.focus());
-                      } else {
-                        set(i, { ...it, lines: groupLines(it.lines, a, l, 1) });
-                        requestAnimationFrame(() => document.querySelector<HTMLInputElement>(`[data-grp-note="${it.uid}:${Math.min(a, l)}"]`)?.focus());
-                      }
+                      set(i, { ...it, lines: groupLines(it.lines, a, l, 1) });
+                      requestAnimationFrame(() => document.querySelector<HTMLInputElement>(`[data-grp-note="${it.uid}:${Math.min(a, l)}"]`)?.focus());
                     } else set(i, { ...it, lines: groupLines(it.lines, a, l) });
                     setPick(null);
                   }}>{v.text || '…'}</button>
@@ -151,13 +144,21 @@ export function LyricsBlocks({ items, onChange }: { items: KItem[]; onChange: (i
                           {REPEATS.filter((n) => n > 1).map((n) => <option value={n} key={n}>×{n}</option>)}
                         </select>
                       </>
-                    ) : <span>💬 Commentaire</span>}
+                    ) : (
+                      <span class="hl-swatches" role="radiogroup" aria-label="Couleur du surlignage">
+                        {HL_COLORS.map((c) => (
+                          <button key={c} role="radio" aria-checked={g.color === c} aria-label={c} title={c}
+                            class={`swatch hl-${c}${g.color === c ? ' on' : ''}`}
+                            onClick={() => set(i, { ...it, lines: setGroup(it.lines, l, { color: c }) })} />
+                        ))}
+                      </span>
+                    )}
                     <DraftInput class="in grp-note-in" value={g.note} maxLength={60} data-grp-note={`${it.uid}:${l}`}
-                      placeholder={g.times > 1 ? 'Commentaire (ex. chœur seul)' : 'Commentaire de ces lignes (ex. Misa seule)'}
+                      placeholder={g.times > 1 ? 'Commentaire (ex. chœur seul)' : 'Commentaire facultatif (ex. Misa seule)'}
                       aria-label={g.times > 1 ? 'Commentaire du groupe' : 'Commentaire des lignes'}
                       onValue={(x) => set(i, { ...it, lines: setGroup(it.lines, l, { note: x }) })} />
                     <button class="mini red" onClick={() => set(i, { ...it, lines: ungroupWhere(it.lines, (id) => id === g.id) })}
-                      aria-label={g.times > 1 ? 'Ne plus répéter ces lignes' : 'Retirer le commentaire de ces lignes'}>✕</button>
+                      aria-label={g.times > 1 ? 'Ne plus répéter ces lignes' : 'Retirer le surlignage'}>✕</button>
                   </div>
                 ) : null;
                 const { text, times, note } = lp;
@@ -165,7 +166,7 @@ export function LyricsBlocks({ items, onChange }: { items: KItem[]; onChange: (i
                 const showNote = !!note || notesOpen.has(nk);
                 const setLine = (patch: Partial<typeof lp>) => set(i, { ...it, lines: replaceAt(it.lines, l, formatLine({ ...lp, ...patch })) });
                 return (
-                  <div class={`ln-wrap${g ? ' in-grp' : ''}${g && g.times <= 1 ? ' note-only' : ''}${g?.last ? ' grp-end' : ''}`} key={l}>
+                  <div class={`ln-wrap${g ? (g.times > 1 ? ' in-grp' : ` in-hl hl-${g.color}`) : ''}${g?.last ? ' grp-end' : ''}`} key={l}>
                     {gHead}
                     <div class="ln-row">
                       <DraftInput class="ln-in" value={text} data-line={`${it.uid}:${l}`} aria-label={`Ligne ${l + 1}`}

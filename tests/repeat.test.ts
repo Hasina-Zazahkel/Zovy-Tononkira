@@ -91,24 +91,28 @@ describe('groupe de lignes répété', () => {
   });
 });
 
-describe('commentaire sur plusieurs lignes (groupe sans répétition)', () => {
+describe('surlignage (groupe sans répétition)', () => {
   it('lecture / écriture', () => {
-    const st = ['A', '[«Misa seule» B', 'C]', 'D'];
+    const st = ['A', '[vert «Misa seule» B', 'C]', 'D'];
     expect(st.map((l) => formatLine(parseLine(l)))).toEqual(st);
     const v = viewLines(st);
-    expect(v[1].group).toEqual({ id: 0, times: 1, note: 'Misa seule', first: true, last: false });
-    expect(v[2].group?.last).toBe(true);
+    expect(v[1].group).toEqual({ id: 0, times: 1, note: 'Misa seule', color: 'vert', first: true, last: false });
+    expect(formatLine(parseLine('[«x» B'))).toBe('[bleu «x» B');
+    expect(formatLine(parseLine('[Rose B'))).toBe('[rose B');
+    expect(parseLine('[vertigo]').open).toBeUndefined();
   });
-  it('création, puis normalisation', () => {
-    expect(groupLines(['A', 'B', 'C'], 0, 1, 1)).toEqual(['[«» A', 'B]', 'C']);
-    expect(normalizeGroups(['[«» A', 'B]', 'C'])).toEqual(['A', 'B', 'C']);
-    expect(normalizeGroups(['[«piano» A]', 'B'])).toEqual(['A // piano', 'B']);
-    expect(setGroup(['[«» A', 'B]'], 0, { note: 'Misa seule' })).toEqual(['[«Misa seule» A', 'B]']);
+  it('création, une seule ligne, sans commentaire', () => {
+    expect(groupLines(['A', 'B', 'C'], 0, 1, 1)).toEqual(['[bleu A', 'B]', 'C']);
+    expect(groupLines(['A', 'B'], 1, 1, 1, '', 'rose')).toEqual(['A', '[rose B]']);
+    expect(normalizeGroups(['[bleu A', 'B]', 'C'])).toEqual(['[bleu A', 'B]', 'C']);
+    expect(normalizeGroups(['[rose «piano» A]', 'B'])).toEqual(['[rose «piano» A]', 'B']);
+    expect(normalizeGroups(['[vert A', 'B'])).toEqual(['[vert A', 'B]']);
+    expect(setGroup(['[bleu A', 'B]'], 0, { note: 'Misa seule', color: 'violet' })).toEqual(['[violet «Misa seule» A', 'B]']);
   });
   it('import', async () => {
     const { parseImport } = await import('../src/model/importText');
-    const [r] = parseImport('Titre : A\nArtiste : B\n\nl1\n[«Misa seule» l2\nl3]\n');
-    expect(r.song.sections[0].stanzas[0]).toEqual(['l1', '[«Misa seule» l2', 'l3]']);
-    expect(r.found).toContain('1 commentaire sur plusieurs lignes');
+    const [r] = parseImport('Titre : A\nArtiste : B\n\nl1\n[vert «Misa seule» l2\nl3]\n[rose l4]\n');
+    expect(r.song.sections[0].stanzas[0]).toEqual(['l1', '[vert «Misa seule» l2', 'l3]', '[rose l4]']);
+    expect(r.found).toContain('2 surlignages');
   });
 });

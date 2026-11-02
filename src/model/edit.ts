@@ -67,7 +67,7 @@ export const TEXT_HELP = [
   ['… // commentaire', 'en fin de ligne : commentaire discret pour cette ligne'],
   ['[×2]', 'seul, avant un paragraphe : paragraphe répété'],
   ['[×2 … ]', 'quelques lignes répétées : « [×2 » au début de la 1re, « ] » à la fin de la dernière ; commentaire : [×2 «chœur seul» …'],
-  ['[«…» … ]', 'commentaire sur plusieurs lignes (sans répétition) : [«Misa seule» 1re ligne … dernière ligne]'],
+  ['[vert «…» … ]', 'lignes surlignées (jaune, vert, bleu, rose, violet) + commentaire facultatif : [vert «Misa seule» 1re ligne … dernière ligne]'],
   ['[intro: …] [interlude: …] [outro: …]', 'repère instrumental + commentaire'],
   ['[section: NOM]', 'nouvelle section'],
   ['[voix: Hasina=Lead, Misa=Soprano]', 'voix de la section'],

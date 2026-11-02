@@ -323,7 +323,8 @@ export function UnitView({ u }: { u: Unit }) {
             </div>
           );
         });
-        return run.group != null ? <div class={`grp${run.lines[0].group!.times <= 1 ? ' grp-note-only' : ''}`} key={r}>{lines}</div> : <Fragment key={r}>{lines}</Fragment>;
+        const g0 = run.lines[0].group;
+        return g0 ? <div class={g0.times > 1 ? 'grp' : `hl hl-${g0.color ?? 'bleu'}`} key={r}>{lines}</div> : <Fragment key={r}>{lines}</Fragment>;
       })}
       {rep && !u.continued && <span class="rep-pill para" aria-label={`paragraphe répété ${u.repeat} fois`}>×{u.repeat}</span>}
     </div>

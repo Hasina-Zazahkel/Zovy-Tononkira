@@ -89,8 +89,8 @@ describe('groupes : couper / supprimer une ligne', () => {
   });
 });
 
-describe('groupe commenté : couper', () => {
-  it('le commentaire reste sur les deux moitiés', () => {
-    expect(cutLines(['[«solo» A', 'B]', 'C'], 0)).toEqual({ first: ['A // solo'], second: ['B // solo', 'C'] });
+describe('surlignage : couper', () => {
+  it('le surlignage reste sur les deux moitiés', () => {
+    expect(cutLines(['[vert «solo» A', 'B]', 'C'], 0)).toEqual({ first: ['[vert «solo» A]'], second: ['[vert «solo» B]', 'C'] });
   });
 });
