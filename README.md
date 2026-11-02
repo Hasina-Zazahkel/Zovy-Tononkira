@@ -100,3 +100,11 @@ Page de lecture → **Mes notes** : toucher la 1re puis la dernière ligne → c
 - Stockées sur l'appareil, par identifiant connecté. Réglages → Mes notes : afficher/masquer, **Exporter** / **Importer** (fichier JSON).
 - Rattachées au texte des lignes : si le morceau publié change, la note suit ses lignes ; sinon elle passe dans « Notes à replacer ».
 - Rendu distinct des surlignages du groupe (liseré pointillé, commentaire 👤 sur sa propre ligne) : les deux cohabitent sans se masquer.
+
+## Vue musicien
+
+Page de lecture → bouton **Chanteur / Musicien** (choix retenu sur l'appareil). Portrait ou paysage.
+- Texte plus petit (taille propre, A− / A+), autant de colonnes que la largeur le permet, structure mise en avant ; défilement horizontal.
+- **Structure seule** : 1re ligne de chaque paragraphe. **Masquer des lignes** : toucher une ligne, ou « Replier » un paragraphe.
+- Mes notes : séparées entre vue chanteur et vue musicien (locales).
+- Admin : « Par défaut pour tous les musiciens » (lignes masquées publiées dans `data/musician.json`) ; dans Mes notes, case « Pour tout le monde » = surlignage du groupe.

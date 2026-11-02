@@ -358,3 +358,29 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .pn-panel-foot { display: flex; gap: 8px; justify-content: flex-end; }
 .pn-panel-foot .btn.ghost { margin-right: auto; }
 .notes-io { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
+
+/* ---------- Vue musicien ---------- */
+.m-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; }
+.m-tools .chip-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; }
+.m-forall, .pn-forall { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--fg); }
+.m-forall input, .pn-forall input { width: 22px; height: 22px; accent-color: var(--gold); }
+.view-btn { color: var(--fg); }
+.stage.musicien .view-btn { color: #9dbbe0; border-color: #4a5f7a; }
+.stage.musicien .sec-label { font-size: 1.05em; color: var(--gold); }
+.stage.musicien .sec-head { border-bottom: 1px solid var(--line); padding-bottom: .1em; margin-bottom: .15em; }
+.stage.musicien .cue-unit { font-size: .78em; }
+.stage.musicien .rep-pill { font-size: .85em; }
+.stage.musicien .ln { color: #d8d2c4; }
+.stage.musicien .page.two { background: none; }
+.stage.musicien .col { border-right: 1px solid var(--line); padding-right: 12px; }
+.stage.musicien .col:last-child { border-right: 0; }
+/* Lignes masquées */
+.ln.hid { height: 0; min-height: 0 !important; overflow: hidden; line-height: 0; }
+.ln.hid-ph { font-family: var(--font); font-size: .55em; line-height: 1.6; min-height: 0 !important; color: var(--fg-dim); letter-spacing: .05em; text-transform: none; }
+.ln.hid-on { opacity: .35; text-decoration: line-through; }
+.unit { position: relative; }
+.collapse-btn { position: absolute; top: 0; right: 0; z-index: 2; font-family: var(--font); font-size: 13px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); color: var(--gold); text-transform: none; }
+@media (max-width: 600px) { .view-btn { padding: 0 11px; } }
+/* Barre d'outils musicien : toujours sur sa propre ligne */
+.stage-head:not(.mini) { flex-wrap: wrap; }
+.m-tools { flex-basis: 100%; }

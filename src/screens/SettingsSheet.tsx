@@ -9,14 +9,15 @@ import { adminSession, currentMembers, loginRequired, logout, markMembersPublish
 import { SESSION_DAYS } from '../model/members';
 import { MembersSection } from './MembersSection';
 import { MyNotesSection } from './MyNotesSection';
+import { currentDefaultHides, dropHidesOverride, hidesOverride, hidesUnpublished, markHidesPublished } from '../lib/personal';
 import { IconClose } from '../ui/icons';
 
 const TOKEN_URL = `https://github.com/settings/personal-access-tokens/new?name=Zovy+Tononkira&description=Publication+depuis+la+tablette&target_name=${REPO.owner}&contents=write`;
 
 /** Bandeau d'accueil : modifs locales en attente. */
 export function PendingBar({ onOpen }: { onOpen: () => void }) {
-  const n = unpublished.value.length + (setlistUnpublished.value ? 1 : 0) + (membersUnpublished.value ? 1 : 0);
-  const sent = Object.values(overrides.value).length + (setlistOverride.value ? 1 : 0) + (membersOverride.value ? 1 : 0) - n;
+  const n = unpublished.value.length + (setlistUnpublished.value ? 1 : 0) + (membersUnpublished.value ? 1 : 0) + (hidesUnpublished.value ? 1 : 0);
+  const sent = Object.values(overrides.value).length + (setlistOverride.value ? 1 : 0) + (membersOverride.value ? 1 : 0) + (hidesOverride.value ? 1 : 0) - n;
   if (!n && !sent) return null;
   return (
     <button class="pending" onClick={onOpen}>
@@ -52,7 +53,8 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
   const pending = unpublished.value;
   const slOv = setlistOverride.value;
   const slPending = setlistUnpublished.value;
-  const nPending = pending.length + (slPending ? 1 : 0) + (mPending ? 1 : 0);
+  const hPending = hidesUnpublished.value;
+  const nPending = pending.length + (slPending ? 1 : 0) + (mPending ? 1 : 0) + (hPending ? 1 : 0);
 
   const saveToken = async () => {
     setBusy(true); setMsg(null);
@@ -78,10 +80,12 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
     try {
       const t = await getToken();
       if (!t) throw new PublishError('aucun jeton configuré');
-      const r = await publish(t, pending, slPending ? slOv!.setlist : undefined, mPending ? currentMembers.value : undefined);
+      const r = await publish(t, pending, slPending ? slOv!.setlist : undefined, mPending ? currentMembers.value : undefined,
+        hPending ? currentDefaultHides.value : undefined);
       await markPublished(pending.map((o) => o.songId));
       if (slPending) await markSetlistPublished();
       if (mPending) await markMembersPublished();
+      if (hPending) await markHidesPublished();
       setMsg({
         kind: 'ok',
         text: r.files
@@ -103,11 +107,11 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
       <div class="sheet-body">
         <h3 class="sheet-h">Affichage</h3>
         <div class="set-row static">
-          <span class="set-l">Taille du texte<small>Paroles en vue scène</small></span>
+          <span class="set-l">Taille du texte<small>Vue chanteur (la vue musicien a sa propre taille : A− / A+ en lecture)</small></span>
           <span class="stepper">
-            <button class="font-btn" onClick={() => bumpFont(-1)} disabled={st.fontSize <= FONT_MIN} aria-label="Réduire le texte"><small>A</small>−</button>
+            <button class="font-btn" onClick={() => bumpFont(-1, 'chanteur')} disabled={st.fontSize <= FONT_MIN} aria-label="Réduire le texte"><small>A</small>−</button>
             <b>{st.fontSize}</b>
-            <button class="font-btn" onClick={() => bumpFont(1)} disabled={st.fontSize >= FONT_MAX} aria-label="Agrandir le texte">A+</button>
+            <button class="font-btn" onClick={() => bumpFont(1, 'chanteur')} disabled={st.fontSize >= FONT_MAX} aria-label="Agrandir le texte">A+</button>
           </span>
         </div>
         <div class={`preview${st.uppercase ? ' upper' : ''}`} style={{ fontSize: `${Math.min(st.fontSize, 44)}px` }}>Ilay tsiky avy aminao</div>
@@ -118,7 +122,17 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
         {hasToken && <Toggle label="Paroles en majuscules" on={st.uppercase} onChange={(v) => update({ uppercase: v })} />}
 
         {hasToken && <h3 class="sheet-h voice">Modifications à publier</h3>}
-        {hasToken && !all.length && !slOv && <p class="hint">Aucune modification en attente.</p>}
+        {hasToken && !all.length && !slOv && !hidesOverride.value && <p class="hint">Aucune modification en attente.</p>}
+        {hasToken && hidesOverride.value && (
+          <div class="mod">
+            <span class="mod-t">Vue musicien : lignes masquées par défaut</span>
+            <span class={`mod-s${hPending ? '' : ' sent'}`}>{hPending ? 'à publier' : 'envoyé'}</span>
+            <button class="icon-btn del" aria-label="Annuler les lignes masquées par défaut"
+              onClick={() => { if (confirm('Annuler les lignes masquées par défaut modifiées sur cet appareil ?')) void dropHidesOverride(); }}>
+              <IconClose size={24} />
+            </button>
+          </div>
+        )}
         {hasToken && slOv && (
           <div class="mod">
             <a href="#/repertoire" onClick={onClose} class="mod-t">Répertoire</a>

@@ -1,11 +1,14 @@
 import { useRef, useState } from 'preact/hooks';
-import { exportNotes, importNotes, personalNotes } from '../lib/personal';
+import { exportNotes, importNotes, personalBooks } from '../lib/personal';
 import { settings, update } from '../lib/settings';
-import { countNotes, parseNotesFile } from '../model/personal';
+import { countNotes, parseNotesExport } from '../model/personal';
+import type { PersonalHide } from '../model/hide';
 
 /** Réglages → Mes notes : affichage, sauvegarde et restauration (fichier). Pour tous les membres. */
 export function MyNotesSection() {
-  const n = countNotes(personalNotes.value);
+  const nc = countNotes(personalBooks.value.chanteur);
+  const nm = countNotes(personalBooks.value.musicien);
+  const n = nc + nm;
   const on = settings.value.showPersonal;
   const file = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
@@ -24,9 +27,11 @@ export function MyNotesSection() {
 
   const doImport = async (f: File) => {
     try {
-      const book = parseNotesFile(JSON.parse(await f.text()));
-      await importNotes(book);
-      setMsg({ kind: 'ok', text: `Notes importées (${countNotes(book)}). Les notes déjà présentes sont conservées.` });
+      const raw = JSON.parse(await f.text());
+      const books = parseNotesExport(raw);
+      const hidden = raw && typeof raw === 'object' && raw.hidden && typeof raw.hidden === 'object' ? (raw.hidden as Record<string, PersonalHide>) : undefined;
+      await importNotes(books, hidden);
+      setMsg({ kind: 'ok', text: `Notes importées (${countNotes(books.chanteur) + countNotes(books.musicien)}). Les notes déjà présentes sont conservées.` });
     } catch {
       setMsg({ kind: 'err', text: 'Fichier non reconnu : choisis un fichier « zovy-notes-….json ».' });
     }
@@ -36,11 +41,11 @@ export function MyNotesSection() {
     <>
       <h3 class="sheet-h">Mes notes</h3>
       <p class="hint">
-        Surlignages et commentaires personnels, ajoutés avec <b>👤 Mes notes</b> sur la page de lecture.
-        Ils restent sur cet appareil et ne sont jamais envoyés au groupe.
+        Surlignages et commentaires personnels (séparés pour la vue chanteur et la vue musicien) et lignes masquées
+        en vue musicien. Ils restent sur cet appareil et ne sont jamais envoyés au groupe ; l'export les sauvegarde tous.
       </p>
       <button class="set-row" role="switch" aria-checked={on} onClick={() => update({ showPersonal: !on })}>
-        <span class="set-l">Afficher mes notes<small>{n ? `${n} note${n > 1 ? 's' : ''} sur cet appareil` : 'Aucune note pour l\'instant'}</small></span>
+        <span class="set-l">Afficher mes notes<small>{n ? `Vue chanteur : ${nc} · vue musicien : ${nm}` : 'Aucune note pour l\'instant'}</small></span>
         <span class={`switch${on ? ' on' : ''}`}><i /></span>
       </button>
       <div class="row notes-io">

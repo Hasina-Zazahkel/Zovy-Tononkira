@@ -7,6 +7,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { join } from 'node:path';
 import { parseChordPro, serializeChordPro } from '../src/model/chordpro';
 import { hasAdmin, parseMembers, type Member } from '../src/model/members';
+import { parseHideBook, type HideBook } from '../src/model/hide';
 import { INSTRUMENT_ROLES, VOICE_ROLES } from '../src/model/roles';
 import type { Catalog, Setlist, Song } from '../src/model/types';
 
@@ -63,6 +64,16 @@ if (existsSync(MEMBERS_FILE)) {
   } catch (e) { errors.push(String(e instanceof Error ? e.message : e)); }
 }
 
+// Vue musicien : lignes masquées par défaut (facultatif)
+let musician: HideBook = {};
+const MUSICIAN_FILE = join(ROOT, 'data/musician.json');
+if (existsSync(MUSICIAN_FILE)) {
+  try {
+    musician = parseHideBook(JSON.parse(readFileSync(MUSICIAN_FILE, 'utf8')));
+    for (const id of Object.keys(musician)) if (!ids.has(id)) warnings.push(`musician.json : "${id}" introuvable (ignoré)`);
+  } catch (e) { errors.push(String(e instanceof Error ? e.message : e)); }
+}
+
 warnings.forEach((w) => console.warn(`⚠ ${w}`));
 errors.forEach((e) => console.error(`✖ ${e}`));
 console.log(`${songs.length} morceaux, ${setlists.length} setlist(s), ${warnings.length} avertissement(s), ${errors.length} erreur(s)` +
@@ -75,5 +86,6 @@ if (!args.has('--check')) {
   writeFileSync(join(OUT_DIR, 'songs.json'), JSON.stringify(catalog));
   writeFileSync(join(OUT_DIR, 'setlists.json'), JSON.stringify(setlists));
   writeFileSync(join(OUT_DIR, 'members.json'), JSON.stringify(members));
+  writeFileSync(join(OUT_DIR, 'musician.json'), JSON.stringify(musician));
   console.log(`→ public/data/songs.json (${(JSON.stringify(catalog).length / 1024).toFixed(0)} Ko)`);
 }
