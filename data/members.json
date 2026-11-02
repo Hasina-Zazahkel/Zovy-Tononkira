@@ -1,0 +1,33 @@
+[
+  {
+    "id": "haja",
+    "salt": "FbOBm4EbeFpEN8jVC9S+jA==",
+    "hash": "aYgaz71v5nG7y/OtSKN/qxjhWxfbd0QpjVOySoozPo4=",
+    "iter": 210000
+  },
+  {
+    "id": "hasina",
+    "admin": true,
+    "salt": "6Lxq+tbyrhMnc3qTKaZ4lg==",
+    "hash": "1xifi7D3W7HqgAlc7HITgrBVc1+9eMY1ybp7HbCSRpc=",
+    "iter": 210000
+  },
+  {
+    "id": "ketaka",
+    "salt": "b0zhC9iWhyHylqwp9VqFhQ==",
+    "hash": "iVdAXvWqkKTqWBQ8+NbUJkxeGKiLW7qeh9CkJUcEUVg=",
+    "iter": 210000
+  },
+  {
+    "id": "misa",
+    "salt": "oe+YVyT1DzZO03RTnGPTWQ==",
+    "hash": "N18u8MGI2eBAiKu0c7t19oZ4fsThuNRlzYqeNLNOG80=",
+    "iter": 210000
+  },
+  {
+    "id": "toky",
+    "salt": "SoinnXatP4sflVzKxhIdnQ==",
+    "hash": "Yn1OmA286ScPoqEoxw70+Cqnv5tLEmFolKtLYnHBARk=",
+    "iter": 210000
+  }
+]
