@@ -14,7 +14,6 @@ Iza re,
 Iza iza no afaka
 Hanambara fa olona sambatra
 
-{section}
 Iza ary no mba afaka
 Hilaza fa hoe tena sambatra
 amin’ity fiainana
@@ -25,7 +24,6 @@ Iza re,
 Iza iza no afaka
 Hanambara fa olona sambatra
 
-{section}
 N’aiza n’aiza ary no haleha
 Dia tsy maintsy mikaroka foana
 Amin’ity fiainana
@@ -33,6 +31,7 @@ k’aza dia mba variana loatra re
 
 La ! La ! La ! La !
 
+{section: LASAN'OLON-KAFA}
 Lasagn’aiza koa rô
 Olona araik’iny
 Tsy mbô takatra an-dragno
@@ -43,13 +42,11 @@ Tsy nagnamia veloma
 Daonko tsy nainga aby izy ireny
 Fô marigny akeo ô !
 
-{section: REFRAIN}
 mbola ho avy ê ! Izy iny
 fô tsy lasan-davitra arô
 mbola ho avy ê izy iny
 antignay koa izy arô atsia
 
-{section}
 Tsy aviavy teny ianao
 Fa raha lalako
 Manin’olona tsy tia
@@ -79,6 +76,7 @@ Zaho koa lahôsanao
 manambitamby lava tô
 Tsy dignin’ôlo [×2]
 
+{section: TSY DINIKO}
 Tsy diniko arô,
 tsy diniko eky e
 Ny tsy ahita anao
@@ -89,7 +87,6 @@ K’izagny no mahatonga zaho
 Hamangivangy anao matetika
 Mafy ny fitiavako anao arô
 
-{section: REFRAIN}
 HItanao fa na
 dia maizigna ny andro
 Ny kotro-baratra,
@@ -99,7 +96,7 @@ tsy andeha atôy
 Fa toy ny tsy tantin’ny foko,
 F’aminao foana ny eritreritro
 
-{section}
+{section: LOSOGNO ANAO}
 Losogno anao,
 Nandeha tsy nimpody e
 Zaho raika foagna ato ie
