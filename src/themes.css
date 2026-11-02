@@ -400,3 +400,16 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .yt-open { color: #f28b82; }
 .yt-open.on { background: #f28b82; color: #111; }
 .pill-btn { white-space: nowrap; }
+/* Lecteur : grand / mini (taille minimale autorisée par YouTube : 200 px de haut), haut / bas */
+.yt-panel { width: min(560px, calc(100% - 16px)); }
+.yt-panel.mini { width: min(356px, calc(100% - 16px)); }
+.yt-panel.mini .yt-video { aspect-ratio: auto; height: 200px; min-height: 200px; }
+.yt-panel.bottom { top: auto; bottom: 8px; }
+.yt-panel.mini .yt-ctl { gap: 6px; padding: 6px 8px; }
+.yt-panel.mini .yt-btn { min-width: 52px; height: 40px; font-size: 14px; }
+.yt-panel.mini .yt-btn.play { min-width: 46px; }
+.yt-panel.mini .yt-time { font-size: 13px; }
+.yt-mini-btn { flex: none; width: 40px; height: 40px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--line); color: var(--fg); font-size: 18px; }
+.yt-panel.mini .yt-close { width: 40px; height: 40px; }
+.yt-time { white-space: nowrap; }
+.yt-panel.mini .yt-dur { display: none; }

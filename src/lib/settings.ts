@@ -18,6 +18,9 @@ export interface Settings {
   fontSizeM: number;
   /** Vue musicien : seulement la 1re ligne de chaque paragraphe. */
   structureOnly: boolean;
+  /** Lecteur de l'original : taille réduite, position haut / bas. */
+  ytMini: boolean;
+  ytBottom: boolean;
 }
 
 export const FONT_MIN = 22;
@@ -28,7 +31,7 @@ const KEY = 'zovy.settings.v1';
 // Téléphone : texte plus petit par défaut (ajustable avec A-/A+)
 const narrow = typeof window !== 'undefined' && Math.min(window.innerWidth, window.innerHeight) < 600;
 const DEFAULTS: Settings = { fontSize: narrow ? 24 : 34, uppercase: true, keepAwake: true, headerCollapsed: false, editorOn: true, showPersonal: true,
-  view: 'chanteur', fontSizeM: narrow ? 18 : 24, structureOnly: false };
+  view: 'chanteur', fontSizeM: narrow ? 18 : 24, structureOnly: false, ytMini: true, ytBottom: false };
 
 function load(): Settings {
   try {

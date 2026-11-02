@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { settings, update } from '../lib/settings';
 import { IconClose } from './icons';
 
 /* Lecteur YouTube officiel (IFrame API) : lecture / pause, ±10 s. Nécessite le réseau. */
@@ -71,8 +72,9 @@ export function YoutubePlayer({ id, onClose }: { id: string; onClose: () => void
   };
   const toggle = () => { const p = player.current; if (!p) return; if (playing) p.pauseVideo(); else p.playVideo(); };
 
+  const { ytMini: mini, ytBottom: bottom } = settings.value;
   return (
-    <div class="yt-panel" role="region" aria-label="Lecteur de l'original">
+    <div class={`yt-panel${mini ? ' mini' : ''}${bottom ? ' bottom' : ''}`} role="region" aria-label="Lecteur de l'original">
       <div class="yt-video" ref={host}>
         {state !== 'ready' && (
           <div class="yt-msg">{state === 'offline' ? 'Pas de connexion : le lecteur a besoin du réseau.' : 'Chargement…'}</div>
@@ -82,7 +84,11 @@ export function YoutubePlayer({ id, onClose }: { id: string; onClose: () => void
         <button class="yt-btn" onClick={() => seek(-10)} disabled={state !== 'ready'} aria-label="Reculer de 10 secondes">−10 s</button>
         <button class="yt-btn play" onClick={toggle} disabled={state !== 'ready'} aria-label={playing ? 'Pause' : 'Lecture'}>{playing ? '❚❚' : '▶'}</button>
         <button class="yt-btn" onClick={() => seek(10)} disabled={state !== 'ready'} aria-label="Avancer de 10 secondes">+10 s</button>
-        <span class="yt-time">{fmt(t.cur)}{t.dur ? ` / ${fmt(t.dur)}` : ''}</span>
+        <span class="yt-time">{fmt(t.cur)}{t.dur ? <span class="yt-dur"> / {fmt(t.dur)}</span> : null}</span>
+        <button class="yt-mini-btn" onClick={() => update({ ytBottom: !bottom })} aria-label={bottom ? 'Placer le lecteur en haut' : 'Placer le lecteur en bas'}
+          title={bottom ? 'En haut' : 'En bas'}>{bottom ? '⤒' : '⤓'}</button>
+        <button class="yt-mini-btn" onClick={() => update({ ytMini: !mini })} aria-label={mini ? 'Agrandir le lecteur' : 'Réduire le lecteur'}
+          title={mini ? 'Agrandir' : 'Réduire'}>{mini ? '⤢' : '⤡'}</button>
         <button class="icon-btn yt-close" onClick={onClose} aria-label="Fermer le lecteur"><IconClose size={22} /></button>
       </div>
     </div>
