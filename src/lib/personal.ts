@@ -4,6 +4,7 @@ import { parseHideBook, serializeHideBook } from '../model/hide';
 import { countNotes, mergeBooks, type NotesBook, type NotesByView, type PersonalNote, type StageMode } from '../model/personal';
 import { authReady, session } from './members';
 import { kvDel, kvGet, kvSet } from './store';
+import { EDITION } from '../edition';
 
 /**
  * Données personnelles de l'utilisateur connecté (ou de l'appareil sans connexion) — jamais publiées :
@@ -113,9 +114,9 @@ export const notesCount = () => countNotes(personalBooks.value.chanteur) + count
 export function exportNotes(): { name: string; json: string } {
   const d = new Date().toISOString().slice(0, 10);
   return {
-    name: `zovy-notes-${owner()}-${d}.json`,
+    name: `${EDITION.storage}-notes-${owner()}-${d}.json`,
     json: JSON.stringify({
-      app: 'zovy-tononkira', kind: 'notes', version: 2, owner: owner(), exportedAt: new Date().toISOString(),
+      app: EDITION.id, kind: 'notes', version: 2, owner: owner(), exportedAt: new Date().toISOString(),
       notes: personalBooks.value, hidden: personalHides.value,
     }, null, 2),
   };

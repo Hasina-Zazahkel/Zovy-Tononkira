@@ -12,10 +12,11 @@ import { hasAdmin, serializeMembers, type Member } from '../model/members';
 import { serializeHideBook, type HideBook } from '../model/hide';
 import { adminSession } from './members';
 import { DEMO } from './demo';
+import { EDITION } from '../edition';
 import { settings, update } from './settings';
 import { kvDel, kvGet, kvSet } from './store';
 
-export const REPO = { owner: 'Hasina-Zazahkel', repo: 'Zovy-Tononkira', branch: 'main' };
+export const REPO = EDITION.repo;
 const API = 'https://api.github.com';
 const TOKEN_KEY = 'github.token';
 

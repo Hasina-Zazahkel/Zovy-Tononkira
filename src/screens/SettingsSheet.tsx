@@ -1,3 +1,4 @@
+import { EDITION } from '../edition';
 import { useState } from 'preact/hooks';
 import { dropOverride, liveCatalog, markPublished, overrides, unpublished } from '../lib/overrides';
 import { catalog } from '../lib/catalog';
@@ -12,7 +13,7 @@ import { MyNotesSection } from './MyNotesSection';
 import { currentDefaultHides, dropHidesOverride, hidesOverride, hidesUnpublished, markHidesPublished } from '../lib/personal';
 import { IconClose } from '../ui/icons';
 
-const TOKEN_URL = `https://github.com/settings/personal-access-tokens/new?name=Zovy+Tononkira&description=Publication+depuis+la+tablette&target_name=${REPO.owner}&contents=write`;
+const TOKEN_URL = `https://github.com/settings/personal-access-tokens/new?name=${encodeURIComponent(EDITION.name)}&description=Publication+depuis+la+tablette&target_name=${REPO.owner}&contents=write`;
 
 /** Bandeau d'accueil : modifs locales en attente. */
 export function PendingBar({ onOpen }: { onOpen: () => void }) {
@@ -114,7 +115,7 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
             <button class="font-btn" onClick={() => bumpFont(1, 'chanteur')} disabled={st.fontSize >= FONT_MAX} aria-label="Agrandir le texte">A+</button>
           </span>
         </div>
-        <div class={`preview${st.uppercase ? ' upper' : ''}`} style={{ fontSize: `${Math.min(st.fontSize, 44)}px` }}>Ilay tsiky avy aminao</div>
+        <div class={`preview${st.uppercase ? ' upper' : ''}`} style={{ fontSize: `${Math.min(st.fontSize, 44)}px` }}>{EDITION.sampleLine}</div>
         <Toggle label="Écran toujours allumé" hint="Empêche la mise en veille quand l'app est au premier plan"
           on={st.keepAwake} onChange={(v) => update({ keepAwake: v })} />
         {st.keepAwake && <WakeStatus />}

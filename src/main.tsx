@@ -7,11 +7,13 @@ import { loadAuth } from './lib/members';
 import { loadMusicianDefaults } from './lib/personal';
 import { loadSetlistOverride } from './lib/setlistEdit';
 import { initWakeLock } from './lib/wakeLock';
+import { applyTheme } from './edition';
 import './lib/demo';
 import './styles.css';
 import './themes.css';
 
 
+applyTheme();
 initWakeLock();
 void initEditor();
 void loadAuth();

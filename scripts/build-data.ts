@@ -4,17 +4,21 @@
  *   --check  : valide sans écrire (CI), code de sortie 1 si erreur
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { parseChordPro, serializeChordPro } from '../src/model/chordpro';
 import { hasAdmin, parseMembers, type Member } from '../src/model/members';
+import { EDITIONS } from '../src/edition';
 import { parseHideBook, type HideBook } from '../src/model/hide';
 import { INSTRUMENT_ROLES, VOICE_ROLES } from '../src/model/roles';
 import type { Catalog, Setlist, Song } from '../src/model/types';
 
 const ROOT = new URL('..', import.meta.url).pathname;
-const SONGS_DIR = join(ROOT, 'data/songs');
-const SETLISTS_DIR = join(ROOT, 'data/setlists');
-const OUT_DIR = join(ROOT, 'public/data');
+// Édition et dossier de données (le dépôt d'une autre édition peut fournir ses propres données)
+const EDITION = EDITIONS[process.env.EDITION ?? 'zovy'] ?? EDITIONS.zovy;
+const DATA_DIR = process.env.DATA_DIR ? resolve(process.env.DATA_DIR) : join(ROOT, 'data');
+const SONGS_DIR = join(DATA_DIR, 'songs');
+const SETLISTS_DIR = join(DATA_DIR, 'setlists');
+const OUT_DIR = join(ROOT, EDITION.publicDir, 'data');
 const args = new Set(process.argv.slice(2));
 const ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -23,7 +27,7 @@ const warnings: string[] = [];
 const songs: Song[] = [];
 let formatted = 0;
 
-for (const file of readdirSync(SONGS_DIR).filter((f) => f.endsWith('.cho')).sort()) {
+for (const file of (existsSync(SONGS_DIR) ? readdirSync(SONGS_DIR) : []).filter((f) => f.endsWith('.cho')).sort()) {
   const id = file.slice(0, -4);
   if (!ID_RE.test(id)) errors.push(`${file} : nom de fichier invalide (slug a-z0-9-)`);
   const raw = readFileSync(join(SONGS_DIR, file), 'utf8');
@@ -43,7 +47,7 @@ for (const file of readdirSync(SONGS_DIR).filter((f) => f.endsWith('.cho')).sort
 }
 
 const ids = new Set(songs.map((s) => s.id));
-const setlists: Setlist[] = readdirSync(SETLISTS_DIR)
+const setlists: Setlist[] = (existsSync(SETLISTS_DIR) ? readdirSync(SETLISTS_DIR) : [])
   .filter((f) => f.endsWith('.json'))
   .sort()
   .map((f) => {
@@ -56,7 +60,7 @@ const setlists: Setlist[] = readdirSync(SETLISTS_DIR)
 
 // Membres (connexion) : facultatif ; liste vide = pas de page de connexion
 let members: Member[] = [];
-const MEMBERS_FILE = join(ROOT, 'data/members.json');
+const MEMBERS_FILE = join(DATA_DIR, 'members.json');
 if (existsSync(MEMBERS_FILE)) {
   try {
     members = parseMembers(JSON.parse(readFileSync(MEMBERS_FILE, 'utf8')));
@@ -66,7 +70,7 @@ if (existsSync(MEMBERS_FILE)) {
 
 // Vue musicien : lignes masquées par défaut (facultatif)
 let musician: HideBook = {};
-const MUSICIAN_FILE = join(ROOT, 'data/musician.json');
+const MUSICIAN_FILE = join(DATA_DIR, 'musician.json');
 if (existsSync(MUSICIAN_FILE)) {
   try {
     musician = parseHideBook(JSON.parse(readFileSync(MUSICIAN_FILE, 'utf8')));

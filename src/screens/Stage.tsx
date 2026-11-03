@@ -24,6 +24,7 @@ import { makeNote, resolveNotes, type PersonalNote, type PnMark } from '../model
 import { groupLines, HL_COLORS, HL_DEFAULT, ungroupWhere, type HlColor } from '../model/repeat';
 import { DraftInput } from '../ui/DraftInput';
 import { YoutubePlayer } from '../ui/YoutubePlayer';
+import { FEATURES } from '../edition';
 import { IconBack, IconPlay, IconGuitar, IconMic, IconNote, IconEyeOff, IconCollapse, IconEdit, IconExpand, IconInfo, IconMoon, IconNext, IconPrev, IconSun } from '../ui/icons';
 
 interface Props { id: string; setlistId?: string; pos?: number }
@@ -71,7 +72,9 @@ type Nav = {
 } | null;
 
 function StageView({ song, base, local, nav, fallback }: { song: Song; base: Song; local: boolean; nav: Nav; fallback: string }) {
-  const { uppercase, keepAwake, headerCollapsed, view: mode, structureOnly } = settings.value;
+  const { uppercase, keepAwake, headerCollapsed, structureOnly } = settings.value;
+  // Vue musicien : seulement si l'édition la propose
+  const mode = FEATURES.musicianView ? settings.value.view : 'chanteur';
   const musician = mode === 'musicien';
   const fontSize = musician ? settings.value.fontSizeM : settings.value.fontSize;
   const [editing, setEditing] = useState<false | 'header' | 'lyrics'>(false);
@@ -343,15 +346,15 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
                 <IconInfo size={22} /><span>Infos</span>
               </button>
             )}
-            {song.youtube && (
+            {FEATURES.youtube && song.youtube && (
               <button class={`pill-btn yt-open${ytOpen ? ' on' : ''}`} onClick={() => setYtOpen(!ytOpen)} aria-pressed={ytOpen} aria-label="Écouter l'original">
                 <IconPlay size={20} /><span>Original</span>
               </button>
             )}
-            <button class="pill-btn view-btn" onClick={() => { update({ view: musician ? 'chanteur' : 'musicien' }); setHideMode(false); setPanel(null); setPick(null); }}
+            {FEATURES.musicianView && <button class="pill-btn view-btn" onClick={() => { update({ view: musician ? 'chanteur' : 'musicien' }); setHideMode(false); setPanel(null); setPick(null); }}
               aria-label={`Vue ${mode} (changer)`} title="Changer de vue">
               {musician ? <IconGuitar size={22} /> : <IconMic size={22} />}<span>{musician ? 'Musicien' : 'Chanteur'}</span>
-            </button>
+            </button>}
             <button class={`pill-btn pn-btn${annot ? ' on' : ''}`} onClick={() => { setAnnot(!annot); setHideMode(false); setPick(null); setReplacing(null); setInfoOpen(false); }}
               aria-pressed={annot} aria-label="Mes notes">
               <IconNote size={22} /><span class="pn-lbl">Mes notes</span>

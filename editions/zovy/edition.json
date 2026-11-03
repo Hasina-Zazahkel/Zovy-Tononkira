@@ -1,0 +1,52 @@
+{
+  "id": "zovy",
+  "name": "Zovy Tononkira",
+  "shortName": "Tononkira",
+  "description": "Paroles du groupe Zovy — scène et répétition",
+  "basePath": "/Zovy-Tononkira/",
+  "publicDir": "public",
+  "repo": {
+    "owner": "Hasina-Zazahkel",
+    "repo": "Zovy-Tononkira",
+    "branch": "main"
+  },
+  "storage": "zovy",
+  "logo": {
+    "src": "img/logo-zovy-crop.png",
+    "alt": "Zovy",
+    "width": 627,
+    "height": 194
+  },
+  "theme": {
+    "gold": "#ffc000",
+    "goldDim": "#b38700",
+    "goldRgb": "255 192 0",
+    "goldHi": "#ffd54a"
+  },
+  "admin": "Hasina",
+  "groupWord": "groupe",
+  "searchPlaceholder": "Hira tianao… (titre, artiste, paroles)",
+  "sampleLine": "Ilay tsiky avy aminao",
+  "voices": [
+    "Soprano",
+    "Alto",
+    "Ténor",
+    "Basse",
+    "Lead",
+    "Chœur"
+  ],
+  "instruments": [
+    "Guitare",
+    "Guitare basse",
+    "Percussion",
+    "Korintsana",
+    "Clavier",
+    "Sax"
+  ],
+  "features": {
+    "musicianView": true,
+    "instruments": true,
+    "youtube": true,
+    "audio": false
+  }
+}

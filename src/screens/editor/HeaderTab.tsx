@@ -1,5 +1,6 @@
 import type { Accidental, Key, NoteRoot } from '../../model/types';
 import { parseYoutube, youtubeUrl } from '../../model/youtube';
+import { FEATURES } from '../../edition';
 import { RoleRows, type Row } from './RoleRows';
 
 export interface HeaderDraft {
@@ -45,6 +46,7 @@ export function HeaderTab({ d, set }: { d: HeaderDraft; set: (p: Partial<HeaderD
       <input id="ed-notes" class="in" value={d.notes} maxLength={80} placeholder="Ex. Capo 5 · Intro sax · Tempo lent"
         onInput={(e) => set({ notes: (e.target as HTMLInputElement).value })} />
 
+      {FEATURES.youtube && <>
       <label class="ed-l" for="ed-yt">Original (lien YouTube)</label>
       <input id="ed-yt" class="in" value={d.youtube} inputMode="url" autoCapitalize="none" spellcheck={false}
         placeholder="https://youtu.be/…  ou  https://www.youtube.com/watch?v=…"
@@ -54,11 +56,14 @@ export function HeaderTab({ d, set }: { d: HeaderDraft; set: (p: Partial<HeaderD
           : parseYoutube(d.youtube) ? <>Vidéo reconnue : <a href={youtubeUrl(parseYoutube(d.youtube)!)} target="_blank" rel="noopener">vérifier sur YouTube</a></>
           : 'Lien non reconnu : colle l\'adresse d\'une vidéo YouTube.'}
       </p>
+      </>}
 
       <h3 class="sheet-h voice">Chanteurs</h3>
       <RoleRows rows={d.singers} kind="voice" onChange={(singers) => set({ singers })} addLabel="Ajouter un chanteur" />
-      <h3 class="sheet-h inst">Musiciens</h3>
-      <RoleRows rows={d.musicians} kind="inst" onChange={(musicians) => set({ musicians })} addLabel="Ajouter un musicien" />
+      {FEATURES.instruments && <>
+        <h3 class="sheet-h inst">Musiciens</h3>
+        <RoleRows rows={d.musicians} kind="inst" onChange={(musicians) => set({ musicians })} addLabel="Ajouter un musicien" />
+      </>}
     </div>
   );
 }
