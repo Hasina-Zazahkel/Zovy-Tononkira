@@ -12,7 +12,7 @@ import { EDITIONS } from '../src/edition';
 import { parseHideBook, type HideBook } from '../src/model/hide';
 import { INSTRUMENT_ROLES, VOICE_ROLES } from '../src/model/roles';
 import type { Catalog, Setlist, Song } from '../src/model/types';
-import { parseTrackFile, sortTracks, trackNames, type AudioTrack } from '../src/model/audio';
+import { parseTrackFile, sortTracks, trackNames, trackSlug, type AudioTrack } from '../src/model/audio';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 // Édition et dossier de données (le dépôt d'une autre édition peut fournir ses propres données)
