@@ -84,7 +84,7 @@ if (existsSync(AUDIO_DIR)) {
     for (const f of readdirSync(dir).sort()) {
       if (f.startsWith('.')) continue;
       const t = parseTrackFile(f, names);
-      if (!t) { warnings.push(`audio/${id}/${f} : piste inconnue (attendu ${names.map((n) => n.toLowerCase()).join(', ')})`); continue; }
+      if (!t) { warnings.push(`audio/${id}/${f} : piste inconnue (attendu ${names.map((n) => `${trackSlug(n)}.mp3`).join(', ')})`); continue; }
       if (tracks.some((x) => x.track === t.track)) { warnings.push(`audio/${id}/${f} : piste ${t.track} en double (ignorée)`); continue; }
       const buf = readFileSync(join(dir, f));
       const file = `data/audio/${id}/${f}`;
