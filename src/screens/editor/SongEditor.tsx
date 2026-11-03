@@ -164,7 +164,7 @@ export function SongEditor({ base, onClose, tab: initialTab = 'lyrics', create =
       {warnings.length > 0 && <div class="msg err ed-msg">{warnings.map((w) => <div key={w}>{w}</div>)}</div>}
 
       <div class="sheet-body ed-body">
-        {tab === 'header' && <HeaderTab d={head} set={(p) => setHead((h) => ({ ...h, ...p }))} />}
+        {tab === 'header' && <HeaderTab d={head} set={(p) => setHead((h) => ({ ...h, ...p }))} songId={create ? undefined : base.id} />}
         {tab === 'lyrics' && mode === 'blocks' && <LyricsBlocks items={items} onChange={setItems} />}
         {tab === 'lyrics' && mode === 'text' && (
           <div class="ed-text">

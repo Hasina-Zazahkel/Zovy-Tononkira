@@ -419,3 +419,26 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .login { background: radial-gradient(120% 80% at 50% 0%, rgb(var(--gold-rgb) / .14) 0%, var(--bg) 60%); }
 /* Logo très allongé (édition) : limité dans l'en-tête */
 .top .logo { max-width: min(36vw, 300px); height: auto; }
+
+/* ---------- Lecteur audio par pupitre (édition chorale) ---------- */
+.au-panel { padding-top: 10px; }
+.au-tracks { display: flex; gap: 6px; padding: 0 10px; overflow-x: auto; scrollbar-width: none; }
+.au-track { flex: 1 0 auto; min-height: 40px; padding: 0 10px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); color: var(--fg); font-weight: 800; font-size: 15px; }
+.au-track.on { background: var(--gold); border-color: var(--gold); color: #111; }
+.au-track i { font-style: normal; color: var(--gold); }
+.au-track.on i { color: #111; }
+.au-seek { display: block; width: calc(100% - 20px); margin: 10px 10px 0; accent-color: var(--gold); height: 28px; }
+.au-msg { padding: 4px 12px 0; color: #f28b82; font-size: 14px; }
+.au-panel { width: min(430px, calc(100% - 16px)); }
+.au-off { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 0 10px 10px 12px; color: var(--fg-dim); font-size: 14px; }
+.au-off.ok { color: #7ee2a0; }
+.au-off .err { color: #f28b82; }
+.au-dl { color: var(--gold); }
+.au-open { color: var(--gold); }
+.au-open.on { background: var(--gold); color: #111; }
+.au-ed { display: grid; gap: 2px; }
+.au-ed-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; min-height: 56px; border-bottom: 1px solid var(--line); }
+.au-ed-t { font-size: 18px; font-weight: 800; display: flex; flex-direction: column; }
+.au-ed-t small { font-size: 13px; font-weight: 600; color: var(--fg-dim); }
+.au-ed-t small.pend { color: var(--gold); }
+.au-ed-pick { cursor: pointer; display: inline-flex; align-items: center; }

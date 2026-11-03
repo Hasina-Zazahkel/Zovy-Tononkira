@@ -7,6 +7,8 @@ import { loadAuth } from './lib/members';
 import { loadMusicianDefaults } from './lib/personal';
 import { loadSetlistOverride } from './lib/setlistEdit';
 import { initWakeLock } from './lib/wakeLock';
+import { loadAudioPending } from './lib/audio';
+import { FEATURES } from './edition';
 import { applyTheme } from './edition';
 import './lib/demo';
 import './styles.css';
@@ -19,6 +21,6 @@ void initEditor();
 void loadAuth();
 void loadMusicianDefaults();
 void loadCatalog()
-  .then(() => Promise.all([loadOverrides(), loadSetlistOverride()]))
+  .then(() => Promise.all([loadOverrides(), loadSetlistOverride(), FEATURES.audio ? loadAudioPending() : undefined]))
   .finally(() => { overridesReady.value = true; });
 render(<App />, document.getElementById('app')!);

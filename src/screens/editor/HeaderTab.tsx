@@ -2,6 +2,7 @@ import type { Accidental, Key, NoteRoot } from '../../model/types';
 import { parseYoutube, youtubeUrl } from '../../model/youtube';
 import { FEATURES } from '../../edition';
 import { RoleRows, type Row } from './RoleRows';
+import { AudioTracks } from './AudioTracks';
 
 export interface HeaderDraft {
   title: string;
@@ -19,7 +20,7 @@ const ROOTS: { v: NoteRoot; l: string }[] = [
 ];
 const ACC: { v?: Accidental; l: string; a: string }[] = [{ v: 'b', l: '♭', a: 'bémol' }, { v: undefined, l: '♮', a: 'naturel' }, { v: '#', l: '♯', a: 'dièse' }];
 
-export function HeaderTab({ d, set }: { d: HeaderDraft; set: (p: Partial<HeaderDraft>) => void }) {
+export function HeaderTab({ d, set, songId }: { d: HeaderDraft; set: (p: Partial<HeaderDraft>) => void; songId?: string }) {
   const k = d.key;
   return (
     <div class="ed-form">
@@ -64,6 +65,7 @@ export function HeaderTab({ d, set }: { d: HeaderDraft; set: (p: Partial<HeaderD
         <h3 class="sheet-h inst">Musiciens</h3>
         <RoleRows rows={d.musicians} kind="inst" onChange={(musicians) => set({ musicians })} addLabel="Ajouter un musicien" />
       </>}
+      {FEATURES.audio && <AudioTracks songId={songId} />}
     </div>
   );
 }

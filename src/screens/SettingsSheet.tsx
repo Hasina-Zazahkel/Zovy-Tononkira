@@ -1,5 +1,5 @@
 import { EDITION } from '../edition';
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { dropOverride, liveCatalog, markPublished, overrides, unpublished } from '../lib/overrides';
 import { catalog } from '../lib/catalog';
 import { canEdit, hasToken as tokenSignal, checkToken, getToken, publish, PublishError, REPO, setToken } from '../lib/publish';
@@ -12,13 +12,20 @@ import { MembersSection } from './MembersSection';
 import { MyNotesSection } from './MyNotesSection';
 import { currentDefaultHides, dropHidesOverride, hidesOverride, hidesUnpublished, markHidesPublished } from '../lib/personal';
 import { IconClose } from '../ui/icons';
+import { FEATURES } from '../edition';
+import { audioPending, audioPublishList, audioUnpublished, cancelTrack, clearOffline, markAudioPublished, offlineUsage } from '../lib/audio';
+import { fmtSize } from '../model/audio';
+
+const ALL_WORD = EDITION.groupWord === 'chorale' ? 'TOUTE LA CHORALE' : 'TOUT LE GROUPE';
 
 const TOKEN_URL = `https://github.com/settings/personal-access-tokens/new?name=${encodeURIComponent(EDITION.name)}&description=Publication+depuis+la+tablette&target_name=${REPO.owner}&contents=write`;
 
 /** Bandeau d'accueil : modifs locales en attente. */
 export function PendingBar({ onOpen }: { onOpen: () => void }) {
-  const n = unpublished.value.length + (setlistUnpublished.value ? 1 : 0) + (membersUnpublished.value ? 1 : 0) + (hidesUnpublished.value ? 1 : 0);
-  const sent = Object.values(overrides.value).length + (setlistOverride.value ? 1 : 0) + (membersOverride.value ? 1 : 0) + (hidesOverride.value ? 1 : 0) - n;
+  const n = unpublished.value.length + (setlistUnpublished.value ? 1 : 0) + (membersUnpublished.value ? 1 : 0) + (hidesUnpublished.value ? 1 : 0)
+    + audioUnpublished.value.length;
+  const sent = Object.values(overrides.value).length + (setlistOverride.value ? 1 : 0) + (membersOverride.value ? 1 : 0) + (hidesOverride.value ? 1 : 0)
+    + Object.keys(audioPending.value).length - n;
   if (!n && !sent) return null;
   return (
     <button class="pending" onClick={onOpen}>
@@ -55,7 +62,9 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
   const slOv = setlistOverride.value;
   const slPending = setlistUnpublished.value;
   const hPending = hidesUnpublished.value;
-  const nPending = pending.length + (slPending ? 1 : 0) + (mPending ? 1 : 0) + (hPending ? 1 : 0);
+  const auAll = Object.values(audioPending.value);
+  const auPending = audioUnpublished.value;
+  const nPending = pending.length + (slPending ? 1 : 0) + (mPending ? 1 : 0) + (hPending ? 1 : 0) + auPending.length;
 
   const saveToken = async () => {
     setBusy(true); setMsg(null);
@@ -82,11 +91,12 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
       const t = await getToken();
       if (!t) throw new PublishError('aucun jeton configuré');
       const r = await publish(t, pending, slPending ? slOv!.setlist : undefined, mPending ? currentMembers.value : undefined,
-        hPending ? currentDefaultHides.value : undefined);
+        hPending ? currentDefaultHides.value : undefined, audioPublishList());
       await markPublished(pending.map((o) => o.songId));
       if (slPending) await markSetlistPublished();
       if (mPending) await markMembersPublished();
       if (hPending) await markHidesPublished();
+      if (auPending.length) await markAudioPublished();
       setMsg({
         kind: 'ok',
         text: r.files
@@ -119,11 +129,25 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
         <Toggle label="Écran toujours allumé" hint="Empêche la mise en veille quand l'app est au premier plan"
           on={st.keepAwake} onChange={(v) => update({ keepAwake: v })} />
         {st.keepAwake && <WakeStatus />}
+        {FEATURES.audio && <OfflineAudio />}
         <MyNotesSection />
         {hasToken && <Toggle label="Paroles en majuscules" on={st.uppercase} onChange={(v) => update({ uppercase: v })} />}
 
         {hasToken && <h3 class="sheet-h voice">Modifications à publier</h3>}
-        {hasToken && !all.length && !slOv && !hidesOverride.value && <p class="hint">Aucune modification en attente.</p>}
+        {hasToken && !all.length && !slOv && !hidesOverride.value && !auAll.length && <p class="hint">Aucune modification en attente.</p>}
+        {hasToken && auAll.map((p) => {
+          const title = songs.get(p.songId)?.title ?? p.songId;
+          return (
+            <div class="mod" key={`${p.songId}/${p.track}`}>
+              <a href={`#/song/${p.songId}`} onClick={onClose} class="mod-t">{title} · ♪ {p.track}</a>
+              <span class={`mod-s${p.publishedAt ? ' sent' : ''}`}>{p.blob ? `audio ${fmtSize(p.blob.size)}` : 'retrait audio'} · {p.publishedAt ? 'envoyé' : 'à publier'}</span>
+              <button class="icon-btn del" aria-label={`Annuler : ${title} ${p.track}`}
+                onClick={() => { if (confirm(`Annuler la piste ${p.track} de « ${title} » sur cet appareil ?`)) void cancelTrack(p.songId, p.track); }}>
+                <IconClose size={24} />
+              </button>
+            </div>
+          );
+        })}
         {hasToken && hidesOverride.value && (
           <div class="mod">
             <span class="mod-t">Vue musicien : lignes masquées par défaut</span>
@@ -171,7 +195,7 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
           <>
             {hasToken && (
               <button class="btn primary wide" disabled={busy || !nPending} onClick={run}>
-                {busy ? 'Publication…' : nPending ? `PUBLIER POUR TOUT LE GROUPE (${nPending})` : 'Tout est publié'}
+                {busy ? 'Publication…' : nPending ? `PUBLIER POUR ${ALL_WORD} (${nPending})` : 'Tout est publié'}
               </button>
             )}
             {msg && <p class={`msg ${msg.kind}`}>{msg.text} {msg.url && <a href={msg.url} target="_blank" rel="noopener">Voir sur GitHub</a>}</p>}
@@ -210,6 +234,22 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+/** Audio téléchargé pour le hors ligne : place occupée + libération. */
+function OfflineAudio() {
+  const [u, setU] = useState<{ bytes: number; songs: number } | null>(null);
+  useEffect(() => { void offlineUsage().then(setU); }, []);
+  return (
+    <div class="set-row static">
+      <span class="set-l">Audio hors ligne
+        <small>{!u ? '…' : u.songs ? `${u.songs} morceau${u.songs > 1 ? 'x' : ''} · ${fmtSize(u.bytes)} sur cet appareil` : 'Aucun morceau téléchargé (bouton ⬇ du lecteur)'}</small>
+      </span>
+      {!!u?.songs && (
+        <button class="chip-btn" onClick={async () => { if (confirm('Supprimer tout l\'audio téléchargé sur cet appareil ?')) { await clearOffline(); setU(await offlineUsage()); } }}>Libérer</button>
+      )}
     </div>
   );
 }
