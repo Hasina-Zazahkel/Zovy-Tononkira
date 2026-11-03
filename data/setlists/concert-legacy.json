@@ -5,52 +5,22 @@
     {
       "name": "Première partie",
       "songIds": [
-        "itondray",
-        "ravoravo",
-        "vorombe-tsaradia",
-        "tsaiky-joby-baba",
+        "salakao",
+        "androy-tane-mileven-drano",
+        "mandry-ve",
+        "zaranangady",
         "zakeliny-mama",
-        "hirandrozy",
-        "bakomanga",
-        "baokilitsy",
-        "ny-hakamoako",
-        "miavonavona-tokoa",
-        "folaka-ihany",
-        "ravorondreo",
-        "lekaoma",
-        "miolakolaka",
-        "ampazahoy",
-        "mavitazy"
+        "voandalana",
+        "hanina-ny-taniko"
       ]
     },
     {
       "name": "Deuxième partie",
-      "songIds": [
-        "izany-no-malaza",
-        "halako",
-        "rila",
-        "sesily",
-        "mandry-ve",
-        "nilefa-i-man",
-        "floara",
-        "hoy-aba",
-        "medley-chachacha",
-        "medley-reggae",
-        "tsaiky-joby",
-        "medley-raozy-mavokely",
-        "raha-manina",
-        "medley-sud",
-        "bal-kabosy"
-      ]
+      "songIds": []
     },
     {
       "name": "Réserve",
-      "songIds": [
-        "kivarivary",
-        "ramaloya",
-        "voasary",
-        "toriny"
-      ]
+      "songIds": []
     }
   ]
 }
