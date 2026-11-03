@@ -79,7 +79,7 @@ export async function markAudioPublished(at = Date.now()) {
 
 export const pendingFor = (songId: string, track: string): PendingAudio | undefined => audioPending.value[keyOf(songId, track)];
 
-/** Pistes du morceau, modifications locales comprises, dans l'ordre Tutti / pupitres. */
+/** Pistes du morceau, modifications locales comprises, dans l'ordre des pupitres. */
 export function tracksFor(songId: string): PlayableTrack[] {
   const map = new Map<string, PlayableTrack>();
   for (const t of published(songId)) map.set(t.track, { track: t.track, size: t.size, published: t });

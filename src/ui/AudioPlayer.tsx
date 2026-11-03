@@ -7,8 +7,8 @@ import type { Song } from '../model/types';
 import { IconClose } from './icons';
 
 /*
- * Lecteur des pistes par pupitre : Tutti / Soprano / Alto / Ténor / Basse.
- * Changer de piste garde la position (on passe du Tutti à sa voix au même endroit).
+ * Lecteur des pistes par pupitre : Soprano / Alto / Ténor / Basse.
+ * Changer de piste garde la position (on passe d'une voix à l'autre au même endroit).
  * Lecture en arrière-plan + contrôles de l'écran verrouillé (Media Session).
  */
 

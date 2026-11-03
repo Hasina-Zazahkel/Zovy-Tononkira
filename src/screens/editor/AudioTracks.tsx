@@ -9,7 +9,7 @@ export function AudioTracks({ songId }: { songId?: string }) {
   if (!songId) return (
     <>
       <h3 class="sheet-h">Pistes audio</h3>
-      <p class="ed-hint">Enregistre d'abord le morceau, puis rouvre-le pour ajouter les pistes Tutti / pupitres.</p>
+      <p class="ed-hint">Enregistre d'abord le morceau, puis rouvre-le pour ajouter les pistes par pupitre.</p>
     </>
   );
   const published = catalog.value?.songs.get(songId)?.audio ?? [];

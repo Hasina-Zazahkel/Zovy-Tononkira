@@ -1,14 +1,13 @@
 /**
  * Pistes audio par pupitre (édition chorale) : un fichier par piste, rangé dans le dépôt sous
- * `data/audio/<idMorceau>/<piste>.<ext>` (ex. data/audio/amazing-grace/tenor.mp3).
+ * `data/audio/<idMorceau>/<pupitre>.<ext>` (ex. data/audio/amazing-grace/tenor.mp3).
  * Fonctions pures : partagées par le script de build et l'app.
  */
 
 export const AUDIO_EXT = ['mp3', 'm4a', 'aac', 'ogg', 'opus', 'wav'] as const;
-export const TUTTI = 'Tutti';
 
 export interface AudioTrack {
-  /** Libellé affiché : Tutti, Soprano, Alto, Ténor, Basse. */
+  /** Libellé affiché : Soprano, Alto, Ténor, Basse. */
   track: string;
   /** Chemin relatif à la racine du site (et du dépôt) : data/audio/<id>/<slug>.<ext>. */
   file: string;
@@ -18,8 +17,8 @@ export interface AudioTrack {
   v: string;
 }
 
-/** Pistes possibles, dans l'ordre d'affichage : Tutti puis les pupitres. */
-export const trackNames = (voices: readonly string[]): string[] => [TUTTI, ...voices];
+/** Pistes possibles, dans l'ordre d'affichage : une par pupitre. */
+export const trackNames = (voices: readonly string[]): string[] => [...voices];
 
 /** « Ténor » → « tenor » (nom de fichier sans accent ni espace). */
 export function trackSlug(label: string): string {
@@ -44,7 +43,7 @@ export function parseTrackFile(name: string, names: readonly string[]): { track:
   return track ? { track, ext } : null;
 }
 
-/** Tri dans l'ordre Tutti, Soprano, Alto, Ténor, Basse. */
+/** Tri dans l'ordre Soprano, Alto, Ténor, Basse. */
 export function sortTracks<T extends { track: string }>(list: T[], names: readonly string[]): T[] {
   return [...list].sort((a, b) => names.indexOf(a.track) - names.indexOf(b.track));
 }
