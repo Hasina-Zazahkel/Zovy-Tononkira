@@ -1,8 +1,9 @@
+import { EDITION } from '../edition';
 /**
  * Clé-valeur IndexedDB minimal (aucune dépendance). Persistant, hors ligne, non limité comme localStorage.
  * Repli en mémoire si IndexedDB est indisponible : l'app ne plante jamais pour une question de stockage.
  */
-const DB = 'zovy';
+const DB = EDITION.storage;
 const STORE = 'kv';
 let dbp: Promise<IDBDatabase> | null = null;
 const memory = new Map<string, unknown>();

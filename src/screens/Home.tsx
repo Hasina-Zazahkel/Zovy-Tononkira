@@ -1,3 +1,4 @@
+import { EDITION } from '../edition';
 import { signal } from '@preact/signals';
 import { useMemo, useState } from 'preact/hooks';
 import { search } from '../lib/catalog';
@@ -57,7 +58,7 @@ export function Home() {
         <IconSearch size={26} />
         <input
           type="search" inputMode="search" enterKeyHint="search" autoComplete="off" spellcheck={false}
-          placeholder="Hira tianao… (titre, artiste, paroles)"
+          placeholder={EDITION.searchPlaceholder}
           value={q.value} onInput={(e) => { q.value = (e.target as HTMLInputElement).value; }}
           aria-label="Rechercher"
         />

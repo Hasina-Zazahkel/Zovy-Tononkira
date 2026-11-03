@@ -24,6 +24,9 @@ import { makeNote, resolveNotes, type PersonalNote, type PnMark } from '../model
 import { groupLines, HL_COLORS, HL_DEFAULT, ungroupWhere, type HlColor } from '../model/repeat';
 import { DraftInput } from '../ui/DraftInput';
 import { YoutubePlayer } from '../ui/YoutubePlayer';
+import { AudioPlayer } from '../ui/AudioPlayer';
+import { tracksFor } from '../lib/audio';
+import { FEATURES } from '../edition';
 import { IconBack, IconPlay, IconGuitar, IconMic, IconNote, IconEyeOff, IconCollapse, IconEdit, IconExpand, IconInfo, IconMoon, IconNext, IconPrev, IconSun } from '../ui/icons';
 
 interface Props { id: string; setlistId?: string; pos?: number }
@@ -71,13 +74,16 @@ type Nav = {
 } | null;
 
 function StageView({ song, base, local, nav, fallback }: { song: Song; base: Song; local: boolean; nav: Nav; fallback: string }) {
-  const { uppercase, keepAwake, headerCollapsed, view: mode, structureOnly } = settings.value;
+  const { uppercase, keepAwake, headerCollapsed, structureOnly } = settings.value;
+  // Vue musicien : seulement si l'édition la propose
+  const mode = FEATURES.musicianView ? settings.value.view : 'chanteur';
   const musician = mode === 'musicien';
   const fontSize = musician ? settings.value.fontSizeM : settings.value.fontSize;
   const [editing, setEditing] = useState<false | 'header' | 'lyrics'>(false);
   const press = useRef<number | undefined>(undefined);
   const [infoOpen, setInfoOpen] = useState(false);
   const [ytOpen, setYtOpen] = useState(false);
+  const [auOpen, setAuOpen] = useState(false);
   const units = useMemo(() => buildUnits(song), [song]);
 
   // Notes personnelles (locales) : mode annotation, sélection, panneau
@@ -343,15 +349,20 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
                 <IconInfo size={22} /><span>Infos</span>
               </button>
             )}
-            {song.youtube && (
+            {FEATURES.youtube && song.youtube && (
               <button class={`pill-btn yt-open${ytOpen ? ' on' : ''}`} onClick={() => setYtOpen(!ytOpen)} aria-pressed={ytOpen} aria-label="Écouter l'original">
                 <IconPlay size={20} /><span>Original</span>
               </button>
             )}
-            <button class="pill-btn view-btn" onClick={() => { update({ view: musician ? 'chanteur' : 'musicien' }); setHideMode(false); setPanel(null); setPick(null); }}
+            {FEATURES.audio && tracksFor(song.id).length > 0 && (
+              <button class={`pill-btn au-open${auOpen ? ' on' : ''}`} onClick={() => setAuOpen(!auOpen)} aria-pressed={auOpen} aria-label="Écouter les pistes audio">
+                <IconPlay size={20} /><span>Écouter</span>
+              </button>
+            )}
+            {FEATURES.musicianView && <button class="pill-btn view-btn" onClick={() => { update({ view: musician ? 'chanteur' : 'musicien' }); setHideMode(false); setPanel(null); setPick(null); }}
               aria-label={`Vue ${mode} (changer)`} title="Changer de vue">
               {musician ? <IconGuitar size={22} /> : <IconMic size={22} />}<span>{musician ? 'Musicien' : 'Chanteur'}</span>
-            </button>
+            </button>}
             <button class={`pill-btn pn-btn${annot ? ' on' : ''}`} onClick={() => { setAnnot(!annot); setHideMode(false); setPick(null); setReplacing(null); setInfoOpen(false); }}
               aria-pressed={annot} aria-label="Mes notes">
               <IconNote size={22} /><span class="pn-lbl">Mes notes</span>
@@ -393,6 +404,7 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
           {units.map((u) => <UnitView u={u} key={u.key} pn={pnFor(u, false)} hide={hideFor(u, false)} />)}
         </div>
         {ytOpen && song.youtube && <YoutubePlayer id={song.youtube} onClose={() => setYtOpen(false)} />}
+        {auOpen && FEATURES.audio && tracksFor(song.id).length > 0 && <AudioPlayer key={song.id} song={song} onClose={() => setAuOpen(false)} />}
         <div class="pages" ref={pagesRef} onScroll={onScroll} onClick={() => infoOpen && setInfoOpen(false)}>
           {pages.map((p, i) => (
             <div class={`page ${lyricsCls}${cols > 1 ? ' two' : ''}`} key={i} aria-hidden={i !== page}>

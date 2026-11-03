@@ -3,18 +3,24 @@
  *   --format : réécrit les .cho au format canonique
  *   --check  : valide sans écrire (CI), code de sortie 1 si erreur
  */
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { join, resolve } from 'node:path';
 import { parseChordPro, serializeChordPro } from '../src/model/chordpro';
 import { hasAdmin, parseMembers, type Member } from '../src/model/members';
+import { EDITIONS } from '../src/edition';
 import { parseHideBook, type HideBook } from '../src/model/hide';
 import { INSTRUMENT_ROLES, VOICE_ROLES } from '../src/model/roles';
 import type { Catalog, Setlist, Song } from '../src/model/types';
+import { parseTrackFile, sortTracks, trackNames, trackSlug, type AudioTrack } from '../src/model/audio';
 
 const ROOT = new URL('..', import.meta.url).pathname;
-const SONGS_DIR = join(ROOT, 'data/songs');
-const SETLISTS_DIR = join(ROOT, 'data/setlists');
-const OUT_DIR = join(ROOT, 'public/data');
+// Édition et dossier de données (le dépôt d'une autre édition peut fournir ses propres données)
+const EDITION = EDITIONS[process.env.EDITION ?? 'zovy'] ?? EDITIONS.zovy;
+const DATA_DIR = process.env.DATA_DIR ? resolve(process.env.DATA_DIR) : join(ROOT, 'data');
+const SONGS_DIR = join(DATA_DIR, 'songs');
+const SETLISTS_DIR = join(DATA_DIR, 'setlists');
+const OUT_DIR = join(ROOT, EDITION.publicDir, 'data');
 const args = new Set(process.argv.slice(2));
 const ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -23,7 +29,7 @@ const warnings: string[] = [];
 const songs: Song[] = [];
 let formatted = 0;
 
-for (const file of readdirSync(SONGS_DIR).filter((f) => f.endsWith('.cho')).sort()) {
+for (const file of (existsSync(SONGS_DIR) ? readdirSync(SONGS_DIR) : []).filter((f) => f.endsWith('.cho')).sort()) {
   const id = file.slice(0, -4);
   if (!ID_RE.test(id)) errors.push(`${file} : nom de fichier invalide (slug a-z0-9-)`);
   const raw = readFileSync(join(SONGS_DIR, file), 'utf8');
@@ -43,7 +49,7 @@ for (const file of readdirSync(SONGS_DIR).filter((f) => f.endsWith('.cho')).sort
 }
 
 const ids = new Set(songs.map((s) => s.id));
-const setlists: Setlist[] = readdirSync(SETLISTS_DIR)
+const setlists: Setlist[] = (existsSync(SETLISTS_DIR) ? readdirSync(SETLISTS_DIR) : [])
   .filter((f) => f.endsWith('.json'))
   .sort()
   .map((f) => {
@@ -56,7 +62,7 @@ const setlists: Setlist[] = readdirSync(SETLISTS_DIR)
 
 // Membres (connexion) : facultatif ; liste vide = pas de page de connexion
 let members: Member[] = [];
-const MEMBERS_FILE = join(ROOT, 'data/members.json');
+const MEMBERS_FILE = join(DATA_DIR, 'members.json');
 if (existsSync(MEMBERS_FILE)) {
   try {
     members = parseMembers(JSON.parse(readFileSync(MEMBERS_FILE, 'utf8')));
@@ -64,9 +70,34 @@ if (existsSync(MEMBERS_FILE)) {
   } catch (e) { errors.push(String(e instanceof Error ? e.message : e)); }
 }
 
+// Pistes audio (facultatif) : data/audio/<id>/<piste>.<ext>, recopiées telles quelles dans le site
+const AUDIO_DIR = join(DATA_DIR, 'audio');
+const audioCopies: { from: string; to: string }[] = [];
+if (existsSync(AUDIO_DIR)) {
+  const names = trackNames(EDITION.voices, EDITION.audioTracks);
+  for (const id of readdirSync(AUDIO_DIR).sort()) {
+    const dir = join(AUDIO_DIR, id);
+    if (!statSync(dir).isDirectory()) continue;
+    const song = songs.find((s) => s.id === id);
+    if (!song) { warnings.push(`audio/${id} : morceau introuvable (ignoré)`); continue; }
+    const tracks: AudioTrack[] = [];
+    for (const f of readdirSync(dir).sort()) {
+      if (f.startsWith('.')) continue;
+      const t = parseTrackFile(f, names);
+      if (!t) { warnings.push(`audio/${id}/${f} : piste inconnue (attendu ${names.map((n) => `${trackSlug(n)}.mp3`).join(', ')})`); continue; }
+      if (tracks.some((x) => x.track === t.track)) { warnings.push(`audio/${id}/${f} : piste ${t.track} en double (ignorée)`); continue; }
+      const buf = readFileSync(join(dir, f));
+      const file = `data/audio/${id}/${f}`;
+      tracks.push({ track: t.track, file, size: buf.length, v: createHash('sha1').update(buf).digest('hex').slice(0, 10) });
+      audioCopies.push({ from: join(dir, f), to: join(ROOT, EDITION.publicDir, file) });
+    }
+    if (tracks.length) song.audio = sortTracks(tracks, names);
+  }
+}
+
 // Vue musicien : lignes masquées par défaut (facultatif)
 let musician: HideBook = {};
-const MUSICIAN_FILE = join(ROOT, 'data/musician.json');
+const MUSICIAN_FILE = join(DATA_DIR, 'musician.json');
 if (existsSync(MUSICIAN_FILE)) {
   try {
     musician = parseHideBook(JSON.parse(readFileSync(MUSICIAN_FILE, 'utf8')));
@@ -87,5 +118,8 @@ if (!args.has('--check')) {
   writeFileSync(join(OUT_DIR, 'setlists.json'), JSON.stringify(setlists));
   writeFileSync(join(OUT_DIR, 'members.json'), JSON.stringify(members));
   writeFileSync(join(OUT_DIR, 'musician.json'), JSON.stringify(musician));
+  rmSync(join(OUT_DIR, 'audio'), { recursive: true, force: true });
+  for (const c of audioCopies) { mkdirSync(join(c.to, '..'), { recursive: true }); copyFileSync(c.from, c.to); }
+  if (audioCopies.length) console.log(`→ ${audioCopies.length} piste(s) audio`);
   console.log(`→ public/data/songs.json (${(JSON.stringify(catalog).length / 1024).toFixed(0)} Ko)`);
 }

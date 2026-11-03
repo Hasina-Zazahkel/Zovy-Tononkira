@@ -1,3 +1,4 @@
+import type { AudioTrack } from './audio';
 /**
  * Modèle de données Zovy Tononkira — v1
  * Source de vérité : data/songs/*.cho (ChordPro allégé), compilé en public/data/songs.json.
@@ -62,6 +63,8 @@ export interface Song {
   notes?: string;
   /** Vidéo YouTube de l'original (identifiant), pour répéter. */
   youtube?: string;
+  /** Pistes audio par pupitre (édition chorale), ajoutées par le build depuis data/audio/<id>/. */
+  audio?: AudioTrack[];
   sections: Section[];
 }
 

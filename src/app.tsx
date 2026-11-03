@@ -1,3 +1,4 @@
+import { EDITION } from './edition';
 import { useState } from 'preact/hooks';
 import { useRegisterSW } from 'virtual:pwa-register/preact';
 import { catalog, catalogError } from './lib/catalog';
@@ -16,7 +17,7 @@ import { Stage } from './screens/Stage';
 import { NewSong } from './screens/NewSong';
 import { IconGear } from './ui/icons';
 
-const logo = `${import.meta.env.BASE_URL}img/logo-zovy-crop.png`;
+const logo = `${import.meta.env.BASE_URL}${EDITION.logo.src}`;
 
 export function App() {
   // Enregistrement du service worker en mode "prompt" : aucune mise à jour sans action explicite.
@@ -38,7 +39,7 @@ export function App() {
       <div class="screen">
         <header class="top">
           <div class="top-row">
-            <img class="logo" src={logo} alt="Zovy" width={627} height={194} />
+            <img class="logo" src={logo} alt={EDITION.logo.alt} width={EDITION.logo.width} height={EDITION.logo.height} />
             <nav class="tabs">
               <a class="tab" href="#/" aria-current={tab === 'home' ? 'page' : undefined}>ARTISTES</a>
               <a class="tab" href="#/repertoire" aria-current={tab === 'setlist' ? 'page' : undefined}>RÉPERTOIRE</a>

@@ -1,6 +1,11 @@
 import { useRef, useState } from 'preact/hooks';
 import { exportNotes, importNotes, personalBooks } from '../lib/personal';
 import { settings, update } from '../lib/settings';
+import { EDITION, FEATURES } from '../edition';
+
+const NOTES_HINT = FEATURES.musicianView
+  ? `Surlignages et commentaires personnels (séparés pour la vue chanteur et la vue musicien) et lignes masquées en vue musicien. Ils restent sur cet appareil et ne sont jamais envoyés ${EDITION.groupWord === 'chorale' ? 'à la chorale' : 'au groupe'} ; l'export les sauvegarde tous.`
+  : `Surlignages et commentaires personnels. Ils restent sur cet appareil et ne sont jamais envoyés ${EDITION.groupWord === 'chorale' ? 'à la chorale' : 'au groupe'} ; l'export les sauvegarde tous.`;
 import { countNotes, parseNotesExport } from '../model/personal';
 import type { PersonalHide } from '../model/hide';
 
@@ -33,7 +38,7 @@ export function MyNotesSection() {
       await importNotes(books, hidden);
       setMsg({ kind: 'ok', text: `Notes importées (${countNotes(books.chanteur) + countNotes(books.musicien)}). Les notes déjà présentes sont conservées.` });
     } catch {
-      setMsg({ kind: 'err', text: 'Fichier non reconnu : choisis un fichier « zovy-notes-….json ».' });
+      setMsg({ kind: 'err', text: `Fichier non reconnu : choisis un fichier « ${EDITION.storage}-notes-….json ».` });
     }
   };
 
@@ -41,11 +46,10 @@ export function MyNotesSection() {
     <>
       <h3 class="sheet-h">Mes notes</h3>
       <p class="hint">
-        Surlignages et commentaires personnels (séparés pour la vue chanteur et la vue musicien) et lignes masquées
-        en vue musicien. Ils restent sur cet appareil et ne sont jamais envoyés au groupe ; l'export les sauvegarde tous.
+        {NOTES_HINT}
       </p>
       <button class="set-row" role="switch" aria-checked={on} onClick={() => update({ showPersonal: !on })}>
-        <span class="set-l">Afficher mes notes<small>{n ? `Vue chanteur : ${nc} · vue musicien : ${nm}` : 'Aucune note pour l\'instant'}</small></span>
+        <span class="set-l">Afficher mes notes<small>{!n ? 'Aucune note pour l\'instant' : FEATURES.musicianView ? `Vue chanteur : ${nc} · vue musicien : ${nm}` : `${n} note${n > 1 ? 's' : ''} sur cet appareil`}</small></span>
         <span class={`switch${on ? ' on' : ''}`}><i /></span>
       </button>
       <div class="row notes-io">

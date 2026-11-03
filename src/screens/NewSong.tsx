@@ -1,3 +1,4 @@
+import { EDITION } from '../edition';
 import { useState } from 'preact/hooks';
 import { liveCatalog, saveCreated } from '../lib/overrides';
 import { goBack, replaceHash, songHref } from '../lib/router';
@@ -9,7 +10,7 @@ import type { Song } from '../model/types';
 import { IconClose } from '../ui/icons';
 import { SongEditor } from './editor/SongEditor';
 
-const DRAFT_KEY = 'zovy.import.draft';
+const DRAFT_KEY = `${EDITION.storage}.import.draft`;
 const readDraft = () => { try { return localStorage.getItem(DRAFT_KEY) ?? ''; } catch { return ''; } };
 const writeDraft = (t: string) => { try { if (t) localStorage.setItem(DRAFT_KEY, t); else localStorage.removeItem(DRAFT_KEY); } catch { /* stockage indisponible */ } };
 
