@@ -17,12 +17,18 @@ export interface Edition {
   storage: string;
   logo: { src: string; alt: string; width: number; height: number };
   loginImage?: string;
-  theme: { gold: string; goldDim: string; goldRgb: string; goldHi: string };
+  theme: { gold: string; goldDim: string; goldRgb: string; goldHi: string; goldLo: string };
+  /** Couleur de la barre système / écran de lancement (manifest). */
+  themeColor: string;
+  /** Identifiant écrit dans les exports de notes. */
+  appId: string;
   admin: string;
   groupWord: string;
   searchPlaceholder: string;
   sampleLine: string;
   voices: string[];
+  /** Pistes audio, dans l'ordre d'affichage (par défaut : les pupitres). */
+  audioTracks?: string[];
   instruments: string[];
   features: { musicianView: boolean; instruments: boolean; youtube: boolean; audio: boolean };
 }
@@ -47,5 +53,7 @@ export function applyTheme(root: HTMLElement = document.documentElement) {
   root.style.setProperty('--gold-dim', t.goldDim);
   root.style.setProperty('--gold-rgb', t.goldRgb);
   root.style.setProperty('--gold-hi', t.goldHi);
+  root.style.setProperty('--gold-lo', t.goldLo);
+  root.dataset.edition = EDITION.id;
   document.title = EDITION.name;
 }

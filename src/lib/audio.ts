@@ -8,7 +8,7 @@ import { catalog } from './catalog';
 import { kvGet, kvSet } from './store';
 import { audioPath, sortTracks, trackNames, type AudioTrack } from '../model/audio';
 
-export const TRACKS = trackNames(EDITION.voices);
+export const TRACKS = trackNames(EDITION.voices, EDITION.audioTracks);
 const KEY = 'audio.pending.v1';
 const CACHE = `${EDITION.storage}-audio`;
 const BASE = import.meta.env.BASE_URL;

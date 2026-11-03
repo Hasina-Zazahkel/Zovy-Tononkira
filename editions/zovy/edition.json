@@ -21,7 +21,8 @@
     "gold": "#ffc000",
     "goldDim": "#b38700",
     "goldRgb": "255 192 0",
-    "goldHi": "#ffd54a"
+    "goldHi": "#ffd54a",
+    "goldLo": "#ffb300"
   },
   "admin": "Hasina",
   "groupWord": "groupe",
@@ -48,5 +49,7 @@
     "instruments": true,
     "youtube": true,
     "audio": false
-  }
+  },
+  "appId": "zovy-tononkira",
+  "themeColor": "#121212"
 }

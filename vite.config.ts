@@ -17,7 +17,7 @@ export default defineConfig({
   define: { __EDITION_ID__: JSON.stringify(editionId) },
   plugins: [
     preact(),
-    { name: 'edition-html', transformIndexHtml: (html: string) => html.replace(/<title>[^<]*<\/title>/, `<title>${edition.name}</title>`) },
+    { name: 'edition-html', transformIndexHtml: (html: string) => html.replace(/<title>[^<]*<\/title>/, `<title>${edition.name}</title>`).replace(/(<meta name="theme-color" content=")[^"]*/, `$1${edition.themeColor}`) },
     VitePWA({
       // 'prompt' : jamais de rechargement automatique (risque en plein morceau).
       registerType: 'prompt',
@@ -31,8 +31,8 @@ export default defineConfig({
         scope: base,
         display: 'standalone',
         orientation: 'any',
-        background_color: '#0b0a08',
-        theme_color: '#0b0a08',
+        background_color: edition.themeColor,
+        theme_color: edition.themeColor,
         icons: [
           { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },

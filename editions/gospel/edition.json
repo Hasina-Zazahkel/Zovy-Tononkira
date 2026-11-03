@@ -22,7 +22,8 @@
     "gold": "#d29a3c",
     "goldDim": "#8f6526",
     "goldRgb": "210 154 60",
-    "goldHi": "#e9b866"
+    "goldHi": "#e9b866",
+    "goldLo": "#b9832f"
   },
   "admin": "Hasina",
   "groupWord": "chorale",
@@ -34,11 +35,20 @@
     "Ténor",
     "Basse"
   ],
+  "audioTracks": [
+    "Tous",
+    "Soprano",
+    "Alto",
+    "Ténor",
+    "Basse"
+  ],
   "instruments": [],
   "features": {
     "musicianView": false,
     "instruments": false,
     "youtube": false,
     "audio": true
-  }
+  },
+  "appId": "gospel-system",
+  "themeColor": "#0b0a08"
 }

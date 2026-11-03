@@ -116,7 +116,7 @@ export function exportNotes(): { name: string; json: string } {
   return {
     name: `${EDITION.storage}-notes-${owner()}-${d}.json`,
     json: JSON.stringify({
-      app: EDITION.id, kind: 'notes', version: 2, owner: owner(), exportedAt: new Date().toISOString(),
+      app: EDITION.appId, kind: 'notes', version: 2, owner: owner(), exportedAt: new Date().toISOString(),
       notes: personalBooks.value, hidden: personalHides.value,
     }, null, 2),
   };

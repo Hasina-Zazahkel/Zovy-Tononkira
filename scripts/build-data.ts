@@ -74,7 +74,7 @@ if (existsSync(MEMBERS_FILE)) {
 const AUDIO_DIR = join(DATA_DIR, 'audio');
 const audioCopies: { from: string; to: string }[] = [];
 if (existsSync(AUDIO_DIR)) {
-  const names = trackNames(EDITION.voices);
+  const names = trackNames(EDITION.voices, EDITION.audioTracks);
   for (const id of readdirSync(AUDIO_DIR).sort()) {
     const dir = join(AUDIO_DIR, id);
     if (!statSync(dir).isDirectory()) continue;

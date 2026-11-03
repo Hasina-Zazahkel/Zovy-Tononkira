@@ -1,11 +1,21 @@
 import { describe, expect, it } from 'vitest';
+import { EDITIONS } from '../src/edition';
 import { audioExt, audioPath, fmtSize, parseTrackFile, sortTracks, trackNames, trackSlug } from '../src/model/audio';
 
 const NAMES = trackNames(['Soprano', 'Alto', 'Ténor', 'Basse']);
 
 describe('pistes audio', () => {
-  it('une piste par pupitre', () => {
+  it('une piste par pupitre par défaut', () => {
     expect(NAMES).toEqual(['Soprano', 'Alto', 'Ténor', 'Basse']);
+  });
+  it('Gospel System : Tous puis les pupitres (tous.mp3)', () => {
+    const g = trackNames(EDITIONS.gospel.voices, EDITIONS.gospel.audioTracks);
+    expect(g).toEqual(['Tous', 'Soprano', 'Alto', 'Ténor', 'Basse']);
+    expect(parseTrackFile('tous.mp3', g)).toEqual({ track: 'Tous', ext: 'mp3' });
+  });
+  it('Zovy : audio désactivé, aucune piste propre', () => {
+    expect(EDITIONS.zovy.features.audio).toBe(false);
+    expect(EDITIONS.zovy.audioTracks).toBeUndefined();
   });
   it('noms de fichiers sans accent', () => {
     expect(trackSlug('Ténor')).toBe('tenor');

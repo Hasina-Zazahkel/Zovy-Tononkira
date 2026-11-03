@@ -4,6 +4,7 @@ import { login } from '../lib/members';
 import { DEMO } from '../lib/demo';
 
 const logo = `${import.meta.env.BASE_URL}${EDITION.logo.src}`;
+const HINT = `Accès réservé aux membres ${EDITION.groupWord === 'chorale' ? 'de la chorale' : 'du groupe'}. Identifiants fournis par ${EDITION.admin}.`;
 const hero = EDITION.loginImage ? `${import.meta.env.BASE_URL}${EDITION.loginImage}` : null;
 
 /** Page de connexion (dès qu'une liste de membres est publiée). Fonctionne hors ligne. */
@@ -46,7 +47,7 @@ export function Login() {
         </label>
         {err && <p class="msg err" role="alert">Identifiant ou mot de passe incorrect.</p>}
         <button class="btn primary wide" type="submit" disabled={busy || !id.trim() || !pw}>{busy ? 'Vérification…' : 'SE CONNECTER'}</button>
-        <p class="login-hint">Accès réservé aux membres {EDITION.groupWord === 'chorale' ? 'de la chorale' : 'du groupe'}. Identifiants fournis par {EDITION.admin}.</p>
+        <p class="login-hint">{HINT}</p>
         {DEMO && <p class="msg warn">Démo : <b>hasina</b> / <b>zovy2026</b> (admin) ou <b>misa</b> / <b>zovy2026</b> (membre). En mode éditeur, n'importe quel jeton est accepté et rien n'est envoyé.</p>}
       </form>
     </main>

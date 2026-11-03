@@ -14,7 +14,7 @@ body {
 .screen, .top { background: transparent; }
 .top { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); background: rgba(11, 10, 8, .55); border-bottom: 1px solid rgb(var(--gold-rgb) / .15); }
 .tab { font-family: var(--display); font-size: calc(var(--tab-fs) + 4px); font-weight: 700; letter-spacing: .1em; background: var(--bg-2); border: 1px solid var(--line); }
-.tab[aria-current='page'] { background: linear-gradient(180deg, var(--gold-hi, #ffd54a), var(--gold)); color: #1a1200; border-color: transparent; box-shadow: 0 0 24px rgb(var(--gold-rgb) / .35); }
+.tab[aria-current='page'] { background: linear-gradient(180deg, var(--gold-hi, #ffd54a), var(--gold-lo, #ffb300)); color: #1a1200; border-color: transparent; box-shadow: 0 0 24px rgb(var(--gold-rgb) / .35); }
 .search { background: var(--bg-2); border: 1px solid var(--line); border-radius: 999px; }
 .scroll .search { box-shadow: none; backdrop-filter: blur(10px); }
 .artist { border-bottom: 1px solid var(--line); }
@@ -416,9 +416,9 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 
 /* Page de connexion : bannière photo de l'édition (si fournie) */
 .login-banner { width: 100%; height: auto; border-radius: 14px; margin-bottom: 18px; box-shadow: 0 10px 40px rgba(0, 0, 0, .6); }
-.login { background: radial-gradient(120% 80% at 50% 0%, rgb(var(--gold-rgb) / .14) 0%, var(--bg) 60%); }
+[data-edition='gospel'] .login { background: radial-gradient(120% 80% at 50% 0%, rgb(var(--gold-rgb) / .14) 0%, var(--bg) 60%); }
 /* Logo très allongé (édition) : limité dans l'en-tête */
-.top .logo { max-width: min(36vw, 300px); height: auto; }
+[data-edition='gospel'] .top .logo { max-width: min(36vw, 300px); height: auto; }
 
 /* ---------- Lecteur audio par pupitre (édition chorale) ---------- */
 .au-panel { padding-top: 10px; }
