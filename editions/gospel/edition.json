@@ -6,7 +6,7 @@
   "basePath": "/Gospel-System/",
   "publicDir": "editions/gospel/public",
   "repo": {
-    "owner": "Hasina-Zazahkel",
+    "owner": "gospelsystem",
     "repo": "Gospel-System",
     "branch": "main"
   },
