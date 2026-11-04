@@ -302,14 +302,13 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .wake-status span:nth-child(2) { flex: 1; }
 
 /* Surlignage de lignes (couleurs douces, lisibles sur noir) */
-.hl-jaune  { --hl: 214 186 120; }
-.hl-vert   { --hl: 120 178 140; }
-.hl-bleu   { --hl: 118 156 206; }
-.hl-rose   { --hl: 214 140 178; }
-.hl-violet { --hl: 158 136 206; }
-/* Surligneur : le fond suit le texte de chaque ligne (et chaque retour à la ligne), pas toute la largeur */
-.ln-t { -webkit-box-decoration-break: clone; box-decoration-break: clone; }
-.hl .ln-t { background: rgb(var(--hl) / .22); padding: 0 .22em 0 0; border-radius: .12em; }
+.hl-jaune  { --hl: 255 214 64; }
+.hl-vert   { --hl: 102 221 136; }
+.hl-bleu   { --hl: 102 178 255; }
+.hl-rose   { --hl: 255 128 191; }
+.hl-violet { --hl: 186 140 255; }
+/* Mise en couleur : les caractères prennent la couleur choisie (partagé : droit ; Mes notes : italique) */
+.hl .ln-t { color: rgb(var(--hl)); }
 .hl .grp-note { color: rgb(var(--hl)); opacity: 1; }
 .hl .grp-note::before { content: '— '; }
 .pick-bar { margin: 4px 0 6px; }
@@ -318,13 +317,12 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .ln-wrap.in-hl + .ln-wrap.in-hl { margin-top: -2px; border-top-left-radius: 0; border-top-right-radius: 0; }
 .grp-head.note-only { color: var(--fg); background: none; }
 .hl-swatches { display: flex; gap: 6px; }
-.swatch { width: 34px; height: 34px; border-radius: 50%; border: 2px solid transparent; background: rgb(var(--hl) / .55); padding: 0; }
+.swatch { width: 34px; height: 34px; border-radius: 50%; border: 2px solid transparent; background: rgb(var(--hl)); padding: 0; }
 .swatch.on { border-color: var(--fg); box-shadow: 0 0 0 2px var(--bg); }
 
 /* ---------- Notes personnelles (locales) ---------- */
-.ln.pn .ln-t { background: rgb(var(--pn) / .12); outline: .08em dotted rgb(var(--pn) / .9); outline-offset: -.02em; padding: 0 .22em 0 0; border-radius: .12em; }
-.hl .ln.pn .ln-t { background: rgb(var(--hl) / .22); }
-.pn-jaune { --pn: 214 186 120; } .pn-vert { --pn: 120 178 140; } .pn-bleu { --pn: 118 156 206; } .pn-rose { --pn: 214 140 178; } .pn-violet { --pn: 158 136 206; }
+.ln.pn .ln-t, .hl .ln.pn .ln-t { color: rgb(var(--pn)); font-style: italic; }
+.pn-jaune { --pn: 255 214 64; } .pn-vert { --pn: 102 221 136; } .pn-bleu { --pn: 102 178 255; } .pn-rose { --pn: 255 128 191; } .pn-violet { --pn: 186 140 255; }
 .pn-note { display: block; font-family: var(--font); font-style: italic; font-weight: 600; font-size: .5em; line-height: 1.5; letter-spacing: 0; text-transform: none; color: rgb(var(--pn)); padding-top: .15em; }
 .ln.pickable { cursor: pointer; border-radius: .15em; }
 .ln.pickable:hover { background: rgba(255, 255, 255, .04); }
