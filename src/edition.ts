@@ -22,6 +22,8 @@ export interface Edition {
   themeColor: string;
   /** Identifiant écrit dans les exports de notes. */
   appId: string;
+  /** Identifiant d'app du manifeste (installation). Ne jamais changer une fois l'app installée chez les membres. */
+  manifestId?: string;
   admin: string;
   groupWord: string;
   searchPlaceholder: string;

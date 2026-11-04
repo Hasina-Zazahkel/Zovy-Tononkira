@@ -51,5 +51,6 @@
     "audio": false
   },
   "appId": "zovy-tononkira",
-  "themeColor": "#121212"
+  "themeColor": "#121212",
+  "manifestId": "/Zovy-Tononkira/"
 }

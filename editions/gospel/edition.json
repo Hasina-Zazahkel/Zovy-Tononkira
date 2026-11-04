@@ -50,5 +50,6 @@
     "audio": true
   },
   "appId": "gospel-system",
-  "themeColor": "#0b0a08"
+  "themeColor": "#0b0a08",
+  "manifestId": "/Gospel-System/app"
 }

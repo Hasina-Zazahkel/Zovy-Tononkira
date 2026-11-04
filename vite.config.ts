@@ -27,8 +27,8 @@ export default defineConfig({
         short_name: edition.shortName,
         description: edition.description,
         lang: 'fr',
-        // Identifiant d'app explicite (= adresse de départ) : deux apps distinctes sur le même domaine github.io
-        id: base,
+        // Identifiant d'app explicite par édition (Zovy : identique à l'implicite, donc aucune réinstallation)
+        id: edition.manifestId ?? base,
         start_url: base,
         scope: base,
         display: 'standalone',
