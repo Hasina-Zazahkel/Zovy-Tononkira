@@ -307,8 +307,9 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .hl-bleu   { --hl: 118 156 206; }
 .hl-rose   { --hl: 214 140 178; }
 .hl-violet { --hl: 158 136 206; }
-.hl { background: rgb(var(--hl) / .2); box-shadow: -.22em 0 0 rgb(var(--hl) / .2), .22em 0 0 rgb(var(--hl) / .2); border-radius: .12em; }
-.hl + .hl { margin-top: .08em; }
+/* Surligneur : le fond suit le texte de chaque ligne (et chaque retour à la ligne), pas toute la largeur */
+.ln-t { -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.hl .ln-t { background: rgb(var(--hl) / .22); padding: 0 .22em 0 .06em; border-radius: .12em; }
 .hl .grp-note { color: rgb(var(--hl)); opacity: 1; }
 .hl .grp-note::before { content: '— '; }
 .pick-bar { margin: 4px 0 6px; }
@@ -321,14 +322,8 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .swatch.on { border-color: var(--fg); box-shadow: 0 0 0 2px var(--bg); }
 
 /* ---------- Notes personnelles (locales) ---------- */
-.ln.pn { position: relative; }
-.ln.pn::before {
-  content: ''; position: absolute; inset: 0 -.3em; pointer-events: none;
-  background: rgb(var(--pn) / .1);
-  border: .1em dotted rgb(var(--pn) / .9); border-top-style: none; border-bottom-style: none;
-}
-.ln.pn.pn-first::before { border-top-style: dotted; border-top-left-radius: .2em; border-top-right-radius: .2em; top: -.06em; }
-.ln.pn.pn-last::before { border-bottom-style: dotted; border-bottom-left-radius: .2em; border-bottom-right-radius: .2em; bottom: -.06em; }
+.ln.pn .ln-t { background: rgb(var(--pn) / .12); outline: .08em dotted rgb(var(--pn) / .9); outline-offset: -.02em; padding: 0 .22em 0 .06em; border-radius: .12em; }
+.hl .ln.pn .ln-t { background: rgb(var(--hl) / .22); }
 .pn-jaune { --pn: 214 186 120; } .pn-vert { --pn: 120 178 140; } .pn-bleu { --pn: 118 156 206; } .pn-rose { --pn: 214 140 178; } .pn-violet { --pn: 158 136 206; }
 .pn-note { display: block; font-family: var(--font); font-style: italic; font-weight: 600; font-size: .5em; line-height: 1.5; letter-spacing: 0; text-transform: none; color: rgb(var(--pn)); padding-top: .15em; }
 .ln.pickable { cursor: pointer; border-radius: .15em; }
