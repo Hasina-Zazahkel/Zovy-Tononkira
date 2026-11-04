@@ -27,6 +27,8 @@ export default defineConfig({
         short_name: edition.shortName,
         description: edition.description,
         lang: 'fr',
+        // Identifiant d'app explicite (= adresse de départ) : deux apps distinctes sur le même domaine github.io
+        id: base,
         start_url: base,
         scope: base,
         display: 'standalone',
