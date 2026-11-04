@@ -582,7 +582,7 @@ export function UnitView({ u, pn, hide }: { u: Unit; pn?: PnProps; hide?: HidePr
             <div class={cls} key={i} onClick={hide?.onToggle ? (e) => { e.stopPropagation(); hide.onToggle!(idx); }
               : pn?.onLine ? (e) => { e.stopPropagation(); pn.onLine!(idx); } : undefined}>
               {m?.first && m.note && <span class="pn-note">👤 {m.note}</span>}
-              {v.text}{v.times > 1 && <span class="rep-pill" aria-label={`répéter ${v.times} fois`}>×{v.times}</span>}
+              <span class="ln-t">{v.text}</span>{v.times > 1 && <span class="rep-pill" aria-label={`répéter ${v.times} fois`}>×{v.times}</span>}
               {v.note && <span class="ln-note">{v.note}</span>}
               {g && g.times <= 1 && g.first && g.note && <span class="ln-note grp-note">{g.note}</span>}
               {g && g.times > 1 && g.last && g.note && <span class="ln-note grp-note">{g.note}</span>}
