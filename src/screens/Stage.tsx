@@ -5,7 +5,7 @@ import { liveCatalog, overrides } from '../lib/overrides';
 import { canEdit } from '../lib/publish';
 import { currentSetlist } from '../lib/setlistEdit';
 import { SongEditor } from './editor/SongEditor';
-import { goBack, replaceHash, songHref } from '../lib/router';
+import { goBack, replaceHash, songHref, HOME_HASH } from '../lib/router';
 import { bumpFont, FONT_MAX, FONT_MIN, settings, update } from '../lib/settings';
 import { isCueLine } from '../lib/text';
 import { wakeState } from '../lib/wakeLock';
@@ -38,7 +38,7 @@ export function Stage({ id, setlistId, pos }: Props) {
   const ov = overrides.value[id];
   // Base de l'éditeur : version publiée, ou le morceau lui-même s'il a été créé ici
   const base = catalog.value!.songs.get(id) ?? song;
-  const fallback = setlistId ? '#/repertoire' : '#/';
+  const fallback = setlistId ? '#/repertoire' : HOME_HASH;
 
   // Contexte setlist : morceau précédent / suivant
   const nav = useMemo(() => {

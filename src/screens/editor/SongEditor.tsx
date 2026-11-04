@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'preact/hooks';
 import { catalog } from '../../lib/catalog';
 import { deleteSong, dropOverride, effectiveSong, liveCatalog, overrides, saveCreated, saveOverride } from '../../lib/overrides';
-import { replaceHash } from '../../lib/router';
+import { replaceHash, HOME_HASH } from '../../lib/router';
 import { addToSetlist, removeFromSetlist } from '../../lib/setlistEdit';
 import { slugify } from '../../model/importText';
 import { parseYoutube } from '../../model/youtube';
@@ -126,7 +126,7 @@ export function SongEditor({ base, onClose, tab: initialTab = 'lyrics', create =
     await removeFromSetlist(base.id);
     await deleteSong(base.id);
     onClose();
-    replaceHash('#/');
+    replaceHash(HOME_HASH);
   };
 
   const revert = async () => {

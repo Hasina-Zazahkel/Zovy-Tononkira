@@ -1,4 +1,10 @@
 import { signal } from '@preact/signals';
+import { EDITION } from '../edition';
+
+/** Page d'accueil de l'édition (ouverture de l'app, retour par défaut). */
+export const HOME_HASH = EDITION.startPage === 'repertoire' ? '#/repertoire' : '#/';
+// Ouverture sans adresse précise : page d'accueil de l'édition
+if (!location.hash.replace(/^#\/?/, '') && HOME_HASH !== '#/') history.replaceState(null, '', HOME_HASH);
 
 /**
  * Routeur par hash (compatible GitHub Pages, aucun rewrite serveur).

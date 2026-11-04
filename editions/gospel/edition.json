@@ -25,7 +25,7 @@
     "goldHi": "#e9b866",
     "goldLo": "#b9832f"
   },
-  "admin": "Hasina",
+  "admin": "l'administrateur",
   "groupWord": "chorale",
   "searchPlaceholder": "Titre, artiste ou paroles",
   "sampleLine": "Oh happy day",
@@ -51,5 +51,6 @@
   },
   "appId": "gospel-system",
   "themeColor": "#0b0a08",
-  "manifestId": "/Gospel-System/app"
+  "manifestId": "/Gospel-System/app",
+  "startPage": "repertoire"
 }
