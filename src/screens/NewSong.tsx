@@ -1,7 +1,7 @@
 import { EDITION } from '../edition';
 import { useState } from 'preact/hooks';
 import { liveCatalog, saveCreated } from '../lib/overrides';
-import { goBack, replaceHash, songHref } from '../lib/router';
+import { goBack, replaceHash, songHref, HOME_HASH } from '../lib/router';
 import { addToSetlist } from '../lib/setlistEdit';
 import { PartSelect } from './AddSheets';
 import { serializeChordPro } from '../model/chordpro';
@@ -60,7 +60,7 @@ export function NewSong() {
   return (
     <div class="sheet new-song" role="dialog" aria-modal="true" aria-label="Nouveau morceau">
       <header class="sheet-head">
-        <button class="icon-btn" onClick={() => goBack('#/')} aria-label="Fermer"><IconClose /></button>
+        <button class="icon-btn" onClick={() => goBack(HOME_HASH)} aria-label="Fermer"><IconClose /></button>
         <div class="sheet-title"><div class="t">Nouveau morceau</div><div class="a">Colle le texte, puis Analyser</div></div>
       </header>
       <div class="sheet-body">

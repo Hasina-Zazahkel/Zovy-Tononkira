@@ -51,5 +51,6 @@
   },
   "appId": "gospel-system",
   "themeColor": "#0b0a08",
-  "manifestId": "/Gospel-System/app"
+  "manifestId": "/Gospel-System/app",
+  "startPage": "repertoire"
 }

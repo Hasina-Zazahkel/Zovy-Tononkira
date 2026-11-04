@@ -24,6 +24,8 @@ export interface Edition {
   appId: string;
   /** Identifiant d'app du manifeste (installation). Ne jamais changer une fois l'app installée chez les membres. */
   manifestId?: string;
+  /** Page d'ouverture de l'app : artistes (défaut) ou répertoire. */
+  startPage?: string;
   admin: string;
   groupWord: string;
   searchPlaceholder: string;
