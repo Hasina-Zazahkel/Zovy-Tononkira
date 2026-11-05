@@ -162,7 +162,7 @@ export function parseChordPro(id: string, text: string): ParseResult {
 }
 
 export function serializeChordPro(song: Song): string {
-  const out: string[] = [`{title: ${song.title}}`, `{artist: ${song.artist}}`];
+  const out: string[] = [`{title: ${song.title}}`, ...(song.artist ? [`{artist: ${song.artist}}`] : [])];
   if (song.key) out.push(`{key: ${formatKey(song.key)}}`);
   if (song.capo != null) out.push(`{capo: ${song.capo}}`);
   if (song.tags.length) out.push(`{tags: ${song.tags.join(', ')}}`);

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { EDITION } from '../edition';
-import { settings, update } from '../lib/settings';
 import { downloadSong, offlineSongs, refreshOffline, removeOfflineSong, sourceFor, tracksFor } from '../lib/audio';
 import { fmtSize } from '../model/audio';
 import type { Song } from '../model/types';
@@ -27,7 +26,6 @@ export function AudioPlayer({ song, onClose }: { song: Song; onClose: () => void
   const [playing, setPlaying] = useState(false);
   const [t, setT] = useState({ cur: 0, dur: 0 });
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [srcOffline, setSrcOffline] = useState(false);
   const [dl, setDl] = useState<number | null>(null);
   const [dlErr, setDlErr] = useState('');
   const resume = useRef<{ at: number; play: boolean } | null>(null);
@@ -70,7 +68,6 @@ export function AudioPlayer({ song, onClose }: { song: Song; onClose: () => void
     void sourceFor(cur).then((s) => {
       if (!alive) { s.release(); return; }
       release = s.release;
-      setSrcOffline(s.offline);
       a.src = s.url;
       a.load();
       if (resume.current?.play) void a.play().catch(() => { /* geste requis : ▶ */ });
@@ -109,42 +106,38 @@ export function AudioPlayer({ song, onClose }: { song: Song; onClose: () => void
     setDl(null);
   };
 
-  const { ytBottom: bottom } = settings.value;
-  const msg = state === 'error'
-    ? (navigator.onLine ? 'Lecture impossible : fichier introuvable.' : 'Hors ligne : télécharge ce morceau (⬇) quand tu as du réseau.')
-    : null;
+  const msg = dlErr || (state === 'error'
+    ? (navigator.onLine ? 'Lecture impossible : fichier introuvable.' : 'Hors ligne : télécharge ce chant (⬇) quand tu as du réseau.')
+    : null);
 
+  // Barre fine collée en bas de l'écran : les paroles restent visibles au-dessus
   return (
-    <div class={`yt-panel au-panel${bottom ? ' bottom' : ''}`} role="region" aria-label="Lecteur audio">
-      <div class="au-tracks" role="radiogroup" aria-label="Piste">
-        {tracks.map((x) => (
-          <button key={x.track} role="radio" aria-checked={x.track === track} class={`au-track${x.track === track ? ' on' : ''}`}
-            onClick={() => setTrack(x.track)}>{x.track}{x.local && <i title="Fichier local, pas encore publié"> ●</i>}</button>
-        ))}
-      </div>
+    <div class="au-bar" role="region" aria-label="Lecteur audio">
       <input class="au-seek" type="range" min={0} max={t.dur || 0} step={0.5} value={t.cur} disabled={!t.dur} aria-label="Position"
+        style={{ '--p': t.dur ? `${(t.cur / t.dur) * 100}%` : '0%' }}
         onInput={(e) => { const a = audio.current; if (a) a.currentTime = Number((e.target as HTMLInputElement).value); }} />
-      {msg && <div class="au-msg">{msg}</div>}
-      <div class="yt-ctl">
-        <button class="yt-btn" onClick={() => seek(-10)} disabled={state !== 'ready'} aria-label="Reculer de 10 secondes">−10 s</button>
-        <button class="yt-btn play" onClick={toggle} disabled={state === 'error'} aria-label={playing ? 'Pause' : 'Lecture'}>{playing ? '❚❚' : '▶'}</button>
-        <button class="yt-btn" onClick={() => seek(10)} disabled={state !== 'ready'} aria-label="Avancer de 10 secondes">+10 s</button>
-        <span class="yt-time">{fmt(t.cur)}{t.dur ? <span class="yt-dur"> / {fmt(t.dur)}</span> : null}</span>
-        <button class="yt-mini-btn" onClick={() => update({ ytBottom: !bottom })} aria-label={bottom ? 'Placer le lecteur en haut' : 'Placer le lecteur en bas'}
-          title={bottom ? 'En haut' : 'En bas'}>{bottom ? '⤒' : '⤓'}</button>
-        <button class="icon-btn yt-close" onClick={onClose} aria-label="Fermer le lecteur"><IconClose size={22} /></button>
+      <div class="au-row">
+        <label class="au-voice">
+          <span class="sr">Voix</span>
+          <select value={track} onChange={(e) => setTrack((e.target as HTMLSelectElement).value)} aria-label="Voix">
+            {tracks.map((x) => <option key={x.track} value={x.track}>{x.track}{x.local ? ' ●' : ''}</option>)}
+          </select>
+        </label>
+        <button class="au-btn" onClick={() => seek(-10)} disabled={state !== 'ready'} aria-label="Reculer de 10 secondes">−10</button>
+        <button class="au-btn play" onClick={toggle} disabled={state === 'error'} aria-label={playing ? 'Pause' : 'Lecture'}>{playing ? '❚❚' : '▶'}</button>
+        <button class="au-btn" onClick={() => seek(10)} disabled={state !== 'ready'} aria-label="Avancer de 10 secondes">+10</button>
+        <span class="au-time">{fmt(t.cur)}<span class="au-dur"> / {fmt(t.dur)}</span></span>
+        {hasPublished && (
+          <button class={`au-btn au-dl${offline ? ' ok' : ''}`} disabled={dl !== null}
+            onClick={() => (offline ? confirm('Retirer ce chant du stockage hors ligne ?') && void removeOfflineSong(song.id) : void download())}
+            aria-label={offline ? 'Disponible hors ligne (retirer)' : `Télécharger pour écouter hors ligne (${fmtSize(total)})`}
+            title={offline ? 'Disponible hors ligne' : `Hors ligne · ${fmtSize(total)}`}>
+            {dl !== null ? `${Math.round(dl * 100)}%` : offline ? '✓' : '⬇'}
+          </button>
+        )}
+        <button class="au-btn au-x" onClick={onClose} aria-label="Fermer le lecteur"><IconClose size={20} /></button>
       </div>
-      {hasPublished && (
-        <div class={`au-off${offline ? ' ok' : ''}`}>
-          {dlErr ? <span class="err">{dlErr}</span>
-            : dl !== null ? <span>Téléchargement… {Math.round(dl * 100)} %</span>
-            : offline ? <span>✓ Disponible hors ligne</span>
-            : <span>{srcOffline || state !== 'ready' ? '' : 'Lecture en ligne'}</span>}
-          {dl === null && (offline
-            ? <button class="chip-btn" onClick={() => confirm('Retirer ce morceau du stockage hors ligne ?') && void removeOfflineSong(song.id)}>Retirer</button>
-            : <button class="chip-btn au-dl" onClick={() => void download()}>⬇ Hors ligne · {fmtSize(total)}</button>)}
-        </div>
-      )}
+      {msg && <div class="au-msg">{msg}</div>}
     </div>
   );
 }

@@ -48,7 +48,9 @@
     "musicianView": true,
     "instruments": true,
     "youtube": true,
-    "audio": false
+    "audio": false,
+    "artist": true,
+    "pdf": false
   },
   "appId": "zovy-tononkira",
   "themeColor": "#121212",

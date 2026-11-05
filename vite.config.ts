@@ -14,7 +14,10 @@ const demo = process.env.VITE_DEMO === '1';
 export default defineConfig({
   base,
   publicDir: edition.publicDir,
-  define: { __EDITION_ID__: JSON.stringify(editionId) },
+  // __PDF__ constant : la bibliothèque PDF n'est pas embarquée dans les éditions qui n'en ont pas besoin
+  // jsPDF : export HTML / SVG inutilisés, leurs bibliothèques ne sont pas embarquées
+  resolve: { alias: { html2canvas: '/src/lib/empty.ts', canvg: '/src/lib/empty.ts', dompurify: '/src/lib/empty.ts' } },
+  define: { __EDITION_ID__: JSON.stringify(editionId), __PDF__: JSON.stringify(!!edition.features.pdf) },
   plugins: [
     preact(),
     { name: 'edition-html', transformIndexHtml: (html: string) => html.replace(/<title>[^<]*<\/title>/, `<title>${edition.name}</title>`).replace(/(<meta name="theme-color" content=")[^"]*/, `$1${edition.themeColor}`) },

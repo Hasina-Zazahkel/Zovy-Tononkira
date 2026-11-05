@@ -1,3 +1,4 @@
+import { FEATURES } from '../../edition';
 import { useMemo, useState } from 'preact/hooks';
 import { catalog } from '../../lib/catalog';
 import { deleteSong, dropOverride, effectiveSong, liveCatalog, overrides, saveCreated, saveOverride } from '../../lib/overrides';
@@ -81,7 +82,7 @@ export function SongEditor({ base, onClose, tab: initialTab = 'lyrics', create =
     const errors: string[] = [];
     if (!song.title) errors.push('Le titre est obligatoire.');
     if (head.youtube.trim() && !yt) errors.push('Lien YouTube non reconnu (onglet En-tête).');
-    if (!song.artist) errors.push("L'artiste est obligatoire.");
+    if (!song.artist && FEATURES.artist) errors.push("L'artiste est obligatoire.");
     if (!song.sections.some((s) => s.stanzas.length)) errors.push('Le morceau doit contenir au moins une ligne de paroles.');
     const bad = [...song.singers.filter((a) => a.role && !VOICE_ROLES.includes(a.role as never)),
       ...song.musicians.filter((a) => a.role && !INSTRUMENT_ROLES.includes(a.role as never))];
@@ -101,8 +102,8 @@ export function SongEditor({ base, onClose, tab: initialTab = 'lyrics', create =
     if (create) {
       const live = liveCatalog.value!.songs;
       const fold = (x: string) => slugify(x);
-      const dup = [...live.values()].find((s) => fold(s.title) === fold(song.title) && fold(s.artist) === fold(song.artist));
-      if (dup && !confirm(`« ${dup.title} » (${dup.artist}) existe déjà. Créer quand même un second morceau ?`)) return;
+      const dup = [...live.values()].find((s) => fold(s.title) === fold(song.title) && (!FEATURES.artist || fold(s.artist) === fold(song.artist)));
+      if (dup && !confirm(`« ${dup.title} »${FEATURES.artist ? ` (${dup.artist})` : ''} existe déjà. Créer quand même un second morceau ?`)) return;
       const taken = (id: string) => live.has(id) || !!catalog.value?.songs.has(id) || !!overrides.value[id];
       const stem = slugify(song.title);
       let id = stem;

@@ -1,3 +1,4 @@
+import { FEATURES } from '../edition';
 import { useMemo, useState } from 'preact/hooks';
 import { search } from '../lib/catalog';
 import { liveCatalog } from '../lib/overrides';
@@ -33,7 +34,7 @@ export function AddSongSheet({ part, onClose }: { part: number; onClose: () => v
           const at = findSong(currentSetlist.value!, song.id);
           return (
             <div class="song-row edit-row" key={song.id}>
-              <span class="t">{song.title}<span class="sub">{song.artist}</span></span>
+              <span class="t">{song.title}{FEATURES.artist && <span class="sub">{song.artist}</span>}</span>
               <KeyBadge song={song} />
               {at ? (
                 <span class="in-sl">{currentSetlist.value!.parts[at.part].name}</span>

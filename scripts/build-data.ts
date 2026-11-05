@@ -34,7 +34,9 @@ for (const file of (existsSync(SONGS_DIR) ? readdirSync(SONGS_DIR) : []).filter(
   if (!ID_RE.test(id)) errors.push(`${file} : nom de fichier invalide (slug a-z0-9-)`);
   const raw = readFileSync(join(SONGS_DIR, file), 'utf8');
   const { song, warnings: w } = parseChordPro(id, raw);
-  w.forEach((m) => (m.includes('manquant') || m.includes('invalide') ? errors : warnings).push(`${file} : ${m}`));
+  // Édition sans artiste (chorale) : l'artiste n'est pas exigé
+  w.filter((m) => EDITION.features.artist || m !== 'artiste manquant')
+    .forEach((m) => (m.includes('manquant') || m.includes('invalide') ? errors : warnings).push(`${file} : ${m}`));
   if (!song.sections.some((s) => s.stanzas.length)) warnings.push(`${file} : aucune parole`);
   const badRole = (list: { role?: string }[], allowed: readonly string[], what: string) =>
     list.filter((a) => a.role && !allowed.includes(a.role)).forEach((a) => errors.push(`${file} : ${what} « ${a.role} » hors liste`));
