@@ -34,7 +34,11 @@ export interface Edition {
   /** Pistes audio, dans l'ordre d'affichage (par défaut : les pupitres). */
   audioTracks?: string[];
   instruments: string[];
-  features: { musicianView: boolean; instruments: boolean; youtube: boolean; audio: boolean };
+  features: { musicianView: boolean; instruments: boolean; youtube: boolean; audio: boolean;
+    /** Artiste affiché, saisi et recherché (sinon : « Liste des chants » A→Z). */
+    artist: boolean;
+    /** Bouton « PDF » des paroles. */
+    pdf: boolean };
 }
 
 declare const __EDITION_ID__: string | undefined;

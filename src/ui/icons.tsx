@@ -23,3 +23,4 @@ export const IconMic = svg('M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z
 export const IconGuitar = svg('M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z');
 export const IconEyeOff = svg('M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6 0 10 7 10 7a17 17 0 0 1-3 3.7M6.6 6.6A17 17 0 0 0 2 12s4 7 10 7a9.6 9.6 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2');
 export const IconPlay = svg('M7 4.5v15l12-7.5z');
+export const IconDownload = svg('M12 4v11M7 10l5 5 5-5M5 20h14');

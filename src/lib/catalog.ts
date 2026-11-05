@@ -1,3 +1,4 @@
+import { FEATURES } from '../edition';
 import { signal } from '@preact/signals';
 import type { Catalog, Setlist, Song } from '../model/types';
 import { normalize } from './text';
@@ -79,7 +80,7 @@ export function search(state: CatalogState, query: string): SearchHit[] {
     let excerpt: string | undefined;
     if (it.nTitle.startsWith(q)) score = 100;
     else if (it.nTitle.includes(q)) score = 80;
-    else if (it.nArtist.includes(q)) score = 60;
+    else if (FEATURES.artist && it.nArtist.includes(q)) score = 60;
     else {
       const i = it.nLines.findIndex((l) => l.includes(q));
       if (i >= 0) { score = 30; excerpt = it.lines[i].trim(); }

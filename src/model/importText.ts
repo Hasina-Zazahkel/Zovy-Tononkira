@@ -177,16 +177,16 @@ export function splitSongs(text: string): string[] {
   return text.replace(/\r\n?/g, '\n').split(/^\s*-{3,}\s*$/m).map((s) => s.trim()).filter(Boolean);
 }
 
-export function parseImport(text: string, existing: Song[] = []): ImportResult[] {
+export function parseImport(text: string, existing: Song[] = [], opts: { artist?: boolean } = {}): ImportResult[] {
   const taken = new Set(existing.map((s) => s.id));
   return splitSongs(text).map((chunk) => {
-    const r = parseOne(chunk, existing, taken);
+    const r = parseOne(chunk, existing, taken, opts.artist ?? true);
     taken.add(r.song.id);
     return r;
   });
 }
 
-function parseOne(chunk: string, existing: Song[], taken: Set<string>): ImportResult {
+function parseOne(chunk: string, existing: Song[], taken: Set<string>, withArtist = true): ImportResult {
   const warnings: string[] = [];
   const found: string[] = [];
   const errors: string[] = [];
@@ -293,12 +293,12 @@ function parseOne(chunk: string, existing: Song[], taken: Set<string>): ImportRe
   const { song } = withItems(base, conv.items);
 
   if (!title) errors.push('Titre manquant');
-  if (!artist) errors.push('Artiste manquant');
+  if (!artist && withArtist) errors.push('Artiste manquant');
   const nLines = song.sections.reduce((n, s) => n + s.stanzas.flat().length, 0);
   if (!nLines) errors.push('Aucune ligne de paroles');
 
   if (title) found.push(`Titre : ${title}`);
-  if (artist) found.push(`Artiste : ${artist}`);
+  if (artist && withArtist) found.push(`Artiste : ${artist}`);
   if (song.key) found.push(`Tonalité : ${song.key.root}${song.key.accidental ?? ''}`);
   if (song.notes) found.push(`Commentaire : ${song.notes}`);
   if (song.youtube) found.push('Lien YouTube');
@@ -322,9 +322,14 @@ function parseOne(chunk: string, existing: Song[], taken: Set<string>): ImportRe
   if (noteGroups) found.push(`${noteGroups} surlignage${noteGroups > 1 ? 's' : ''}`);
   if (notes) found.push(`${notes} commentaire${notes > 1 ? 's' : ''} de ligne`);
 
-  const dup = existing.find((s) => fold(s.title) === fold(title) && fold(s.artist) === fold(artist));
-  if (dup) warnings.unshift(`Existe déjà : « ${dup.title} » (${dup.artist})`);
+  const dup = existing.find((s) => fold(s.title) === fold(title) && (!withArtist || fold(s.artist) === fold(artist)));
+  if (dup) warnings.unshift(withArtist ? `Existe déjà : « ${dup.title} » (${dup.artist})` : `Existe déjà : « ${dup.title} »`);
   return { song, found, warnings, errors, ...(dup ? { duplicateOf: dup.id } : {}) };
+}
+
+/** Modèle / exemple sans les rubriques inutiles à l'édition (artiste, musiciens). */
+export function trimTemplate(t: string, opts: { artist: boolean; instruments: boolean }): string {
+  return t.split('\n').filter((l) => !(!opts.artist && /^Artiste :/.test(l)) && !(!opts.instruments && /^Musique :/.test(l))).join('\n');
 }
 
 /** Contenu .cho canonique d'un import (pour enregistrement). */

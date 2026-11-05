@@ -1,3 +1,4 @@
+import { FEATURES } from '../edition';
 import { liveCatalog } from '../lib/overrides';
 import { useState } from 'preact/hooks';
 import { canEdit } from '../lib/publish';
@@ -57,7 +58,7 @@ export function SetlistView() {
               return (
                 <a class="song-row" href={songHref(id, sl.id, p)} key={id}>
                   <span class="pos">{i + 1}</span>
-                  <span class="t">{song.title}<span class="sub">{song.artist}</span></span>
+                  <span class="t">{song.title}{FEATURES.artist && <span class="sub">{song.artist}</span>}</span>
                   <KeyBadge song={song} />
                 </a>
               );
@@ -65,7 +66,7 @@ export function SetlistView() {
             return (
               <div class="song-row edit-row" key={id}>
                 <span class="pos">{i + 1}</span>
-                <span class="t">{song.title}<span class="sub">{song.artist}</span></span>
+                <span class="t">{song.title}{FEATURES.artist && <span class="sub">{song.artist}</span>}</span>
                 <button class="mv" disabled={!canMove(sl, pi, i, -1)} aria-label="Monter"
                   onClick={() => void saveSetlist(moveSong(sl, pi, i, -1))}>↑</button>
                 <button class="mv" disabled={!canMove(sl, pi, i, 1)} aria-label="Descendre"

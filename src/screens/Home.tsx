@@ -1,4 +1,4 @@
-import { EDITION } from '../edition';
+import { EDITION, FEATURES } from '../edition';
 import { signal } from '@preact/signals';
 import { useMemo, useState } from 'preact/hooks';
 import { search } from '../lib/catalog';
@@ -67,7 +67,9 @@ export function Home() {
       {q.value.trim() ? (
         <SearchResults hits={hits} />
       ) : (
-        <ArtistList open={open.value} onToggle={(n) => { open.value = open.value === n ? null : n; }} />
+        FEATURES.artist
+          ? <ArtistList open={open.value} onToggle={(n) => { open.value = open.value === n ? null : n; }} />
+          : <SongList />
       )}
     </>
   );
@@ -80,8 +82,38 @@ function SearchResults({ hits }: { hits: ReturnType<typeof search> }) {
       <div class="count">{hits.length} résultat{hits.length > 1 ? 's' : ''}</div>
       <div class="songs-grid">
         {hits.map((h) => (
-          <SongLine song={h.song} sub={h.excerpt ? `« ${h.excerpt} »` : h.song.artist} key={h.song.id} />
+          <SongLine song={h.song} sub={h.excerpt ? `« ${h.excerpt} »` : FEATURES.artist ? h.song.artist : undefined} key={h.song.id} />
         ))}
+      </div>
+    </div>
+  );
+}
+
+const collator = new Intl.Collator('fr', { sensitivity: 'base', numeric: true });
+
+/** Tous les morceaux par ordre alphabétique du titre (édition sans artiste). */
+export function sortedSongs(songs: Iterable<Song>): Song[] {
+  return [...songs].sort((a, b) => collator.compare(a.title, b.title));
+}
+
+function SongList() {
+  const state = liveCatalog.value!;
+  const list = useMemo(() => sortedSongs(state.songs.values()), [state]);
+  const seen = new Set<string>();
+  return (
+    <div>
+      <div class="count-row">
+        <div class="count">{list.length} chant{list.length > 1 ? 's' : ''}</div>
+        {canEdit.value && <a class="btn small primary" href="#/nouveau">+ Nouveau chant</a>}
+      </div>
+      <div class="songs-grid chants">
+        {list.flatMap((s) => {
+          const l = initial(s.title);
+          const nodes = [];
+          if (!seen.has(l)) { seen.add(l); nodes.push(<div class="letter-head" id={`az-${l}`} key={`h-${l}`}><span>{l}</span></div>); }
+          nodes.push(<SongLine song={s} key={s.id} />);
+          return nodes;
+        })}
       </div>
     </div>
   );

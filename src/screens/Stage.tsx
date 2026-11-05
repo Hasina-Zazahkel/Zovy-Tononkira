@@ -26,8 +26,9 @@ import { DraftInput } from '../ui/DraftInput';
 import { YoutubePlayer } from '../ui/YoutubePlayer';
 import { AudioPlayer } from '../ui/AudioPlayer';
 import { tracksFor } from '../lib/audio';
+import { downloadSongPdf } from '../lib/pdfButton';
 import { FEATURES } from '../edition';
-import { IconBack, IconPlay, IconGuitar, IconMic, IconNote, IconEyeOff, IconCollapse, IconEdit, IconExpand, IconInfo, IconMoon, IconNext, IconPrev, IconSun } from '../ui/icons';
+import { IconBack, IconPlay, IconGuitar, IconMic, IconNote, IconEyeOff, IconCollapse, IconEdit, IconExpand, IconInfo, IconMoon, IconNext, IconPrev, IconSun, IconDownload } from '../ui/icons';
 
 interface Props { id: string; setlistId?: string; pos?: number }
 
@@ -84,6 +85,7 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
   const [infoOpen, setInfoOpen] = useState(false);
   const [ytOpen, setYtOpen] = useState(false);
   const [auOpen, setAuOpen] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
   const units = useMemo(() => buildUnits(song), [song]);
 
   // Notes personnelles (locales) : mode annotation, sélection, panneau
@@ -308,7 +310,7 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
   const lyricsCls = `lyrics${uppercase ? ' upper' : ''}`;
   const note = comment(song);
   const hasInfo = song.singers.length + song.musicians.length + song.medley.length > 0 || !!note;
-  const sub = `${song.artist}${nav?.part ? ` · ${nav.part} · ${nav.pos + 1}/${nav.total}` : ''}`;
+  const sub = [FEATURES.artist ? song.artist : '', nav?.part ? `${nav.part} · ${nav.pos + 1}/${nav.total}` : ''].filter(Boolean).join(' · ');
 
   const keyBadge = song.key ? <span class="key" aria-label="Tonalité">{displayKey(song.key)}</span> : null;
   const commentEl = note
@@ -359,6 +361,12 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
                 <IconPlay size={20} /><span>Écouter</span>
               </button>
             )}
+            {FEATURES.pdf && (
+              <button class={`pill-btn pdf-btn${pdfBusy ? ' on' : ''}`} disabled={pdfBusy} aria-label="Télécharger les paroles en PDF"
+                onClick={async () => { setPdfBusy(true); try { await downloadSongPdf(song, { uppercase }); } catch { alert('PDF impossible à créer.'); } setPdfBusy(false); }}>
+                <IconDownload size={20} /><span>PDF</span>
+              </button>
+            )}
             {FEATURES.musicianView && <button class="pill-btn view-btn" onClick={() => { update({ view: musician ? 'chanteur' : 'musicien' }); setHideMode(false); setPanel(null); setPick(null); }}
               aria-label={`Vue ${mode} (changer)`} title="Changer de vue">
               {musician ? <IconGuitar size={22} /> : <IconMic size={22} />}<span>{musician ? 'Musicien' : 'Chanteur'}</span>
@@ -404,7 +412,6 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
           {units.map((u) => <UnitView u={u} key={u.key} pn={pnFor(u, false)} hide={hideFor(u, false)} />)}
         </div>
         {ytOpen && song.youtube && <YoutubePlayer id={song.youtube} onClose={() => setYtOpen(false)} />}
-        {auOpen && FEATURES.audio && tracksFor(song.id).length > 0 && <AudioPlayer key={song.id} song={song} onClose={() => setAuOpen(false)} />}
         <div class="pages" ref={pagesRef} onScroll={onScroll} onClick={() => infoOpen && setInfoOpen(false)}>
           {pages.map((p, i) => (
             <div class={`page ${lyricsCls}${cols > 1 ? ' two' : ''}`} key={i} aria-hidden={i !== page}>
@@ -475,6 +482,7 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
         </div>
       )}
 
+      {auOpen && FEATURES.audio && tracksFor(song.id).length > 0 && <AudioPlayer key={song.id} song={song} onClose={() => setAuOpen(false)} />}
       <footer class="stage-foot">
         {atStart && nav?.prev ? (
           <button class="nav-btn song" onClick={prev}><IconPrev /><span class="lbl">{nav.prev.song.title}</span></button>

@@ -413,22 +413,27 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 /* Logo très allongé (édition) : limité dans l'en-tête */
 [data-edition='gospel'] .top .logo { max-width: min(36vw, 300px); height: auto; }
 
-/* ---------- Lecteur audio par pupitre (édition chorale) ---------- */
-.au-panel { padding-top: 10px; }
-.au-tracks { display: flex; gap: 6px; padding: 0 10px; overflow-x: auto; scrollbar-width: none; }
-.au-track { flex: 1 0 auto; min-height: 40px; padding: 0 10px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); color: var(--fg); font-weight: 800; font-size: 15px; }
-.au-track.on { background: var(--gold); border-color: var(--gold); color: #111; }
-.au-track i { font-style: normal; color: var(--gold); }
-.au-track.on i { color: #111; }
-.au-seek { display: block; width: calc(100% - 20px); margin: 10px 10px 0; accent-color: var(--gold); height: 28px; }
-.au-msg { padding: 4px 12px 0; color: #f28b82; font-size: 14px; }
-.au-panel { width: min(430px, calc(100% - 16px)); }
-.au-off { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 0 10px 10px 12px; color: var(--fg-dim); font-size: 14px; }
-.au-off.ok { color: #7ee2a0; }
-.au-off .err { color: #f28b82; }
+/* ---------- Lecteur audio par pupitre (édition chorale) : barre fine en bas ---------- */
+.au-bar { flex: none; background: #14110b; border-top: 1px solid var(--bg-3); font-family: var(--font); }
+.au-seek { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 14px; margin: 0; background: transparent; cursor: pointer; }
+.au-seek::-webkit-slider-runnable-track { height: 4px; background: linear-gradient(90deg, var(--gold) var(--p, 0%), rgb(255 255 255 / .14) var(--p, 0%)); }
+.au-seek::-moz-range-track { height: 4px; background: linear-gradient(90deg, var(--gold) var(--p, 0%), rgb(255 255 255 / .14) var(--p, 0%)); }
+.au-seek::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; margin-top: -5px; border-radius: 50%; background: var(--gold); border: 0; }
+.au-seek::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--gold); border: 0; }
+.au-row { display: flex; align-items: center; gap: 6px; padding: 2px 8px 6px; }
+.au-voice select { height: 40px; max-width: 108px; padding: 0 26px 0 10px; border-radius: 999px; border: 1px solid var(--gold); background: var(--bg-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23d29a3c' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 10px center; color: var(--gold); font: 800 15px var(--font); -webkit-appearance: none; appearance: none; }
+.au-btn { flex: none; min-width: 42px; height: 40px; padding: 0 6px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--line); color: var(--fg); font: 800 15px var(--font); display: inline-flex; align-items: center; justify-content: center; }
+.au-btn.play { min-width: 48px; background: var(--gold); border-color: var(--gold); color: #111; font-size: 17px; }
+.au-btn:disabled { opacity: .45; }
+.au-time { flex: 1; min-width: 0; text-align: center; font-variant-numeric: tabular-nums; font-size: 14px; color: var(--fg-dim); white-space: nowrap; }
 .au-dl { color: var(--gold); }
+.au-dl.ok { color: #7ee2a0; border-color: #2f6b45; }
+.au-x { min-width: 40px; color: var(--fg-dim); }
+.au-msg { padding: 0 12px 6px; color: #f28b82; font-size: 13px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .au-open { color: var(--gold); }
 .au-open.on { background: var(--gold); color: #111; }
+@media (max-width: 440px) { .au-dur { display: none; } .au-row { gap: 5px; } }
 .au-ed { display: grid; gap: 2px; }
 .au-ed-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; min-height: 56px; border-bottom: 1px solid var(--line); }
 .au-ed-t { font-size: 18px; font-weight: 800; display: flex; flex-direction: column; }
