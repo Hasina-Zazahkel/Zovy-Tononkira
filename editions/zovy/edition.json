@@ -51,7 +51,9 @@
     "audio": false,
     "artist": true,
     "pdf": false,
-    "memberEditorInfo": true
+    "memberEditorInfo": true,
+    "songList": false,
+    "artistRequired": true
   },
   "appId": "zovy-tononkira",
   "themeColor": "#121212",

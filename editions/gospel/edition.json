@@ -27,7 +27,7 @@
   },
   "admin": "l'administrateur",
   "groupWord": "chorale",
-  "searchPlaceholder": "Titre ou paroles",
+  "searchPlaceholder": "Titre, artiste ou paroles",
   "sampleLine": "Oh happy day",
   "voices": [
     "Soprano",
@@ -48,9 +48,11 @@
     "instruments": false,
     "youtube": false,
     "audio": true,
-    "artist": false,
+    "artist": true,
     "pdf": true,
-    "memberEditorInfo": false
+    "memberEditorInfo": false,
+    "songList": true,
+    "artistRequired": false
   },
   "appId": "gospel-system",
   "themeColor": "#0b0a08",
