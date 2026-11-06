@@ -5,7 +5,7 @@ import { EDITION, FEATURES } from '../edition';
 
 const NOTES_HINT = FEATURES.musicianView
   ? `Surlignages et commentaires personnels (séparés pour la vue chanteur et la vue musicien) et lignes masquées en vue musicien. Ils restent sur cet appareil et ne sont jamais envoyés ${EDITION.groupWord === 'chorale' ? 'à la chorale' : 'au groupe'} ; l'export les sauvegarde tous.`
-  : `Surlignages et commentaires personnels. Ils restent sur cet appareil et ne sont jamais envoyés ${EDITION.groupWord === 'chorale' ? 'à la chorale' : 'au groupe'} ; l'export les sauvegarde tous.`;
+  : `Passages en couleur et commentaires personnels. Ils restent sur cet appareil et ne sont jamais envoyés ${EDITION.groupWord === 'chorale' ? 'à la chorale' : 'au groupe'} ; l'export les sauvegarde tous.`;
 import { countNotes, parseNotesExport } from '../model/personal';
 import type { PersonalHide } from '../model/hide';
 

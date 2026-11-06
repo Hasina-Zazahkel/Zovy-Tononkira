@@ -67,7 +67,7 @@ export function Home() {
       {q.value.trim() ? (
         <SearchResults hits={hits} />
       ) : (
-        FEATURES.artist
+        !FEATURES.songList
           ? <ArtistList open={open.value} onToggle={(n) => { open.value = open.value === n ? null : n; }} />
           : <SongList />
       )}
@@ -111,7 +111,7 @@ function SongList() {
           const l = initial(s.title);
           const nodes = [];
           if (!seen.has(l)) { seen.add(l); nodes.push(<div class="letter-head" id={`az-${l}`} key={`h-${l}`}><span>{l}</span></div>); }
-          nodes.push(<SongLine song={s} key={s.id} />);
+          nodes.push(<SongLine song={s} sub={FEATURES.artist ? s.artist || undefined : undefined} key={s.id} />);
           return nodes;
         })}
       </div>

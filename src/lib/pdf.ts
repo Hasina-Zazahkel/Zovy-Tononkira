@@ -35,6 +35,7 @@ export function buildSongPdf(song: Song, opts: { uppercase?: boolean } = {}): js
   // En-tête
   doc.setFont('helvetica', 'bold'); doc.setFontSize(22); doc.setTextColor(...BLACK);
   for (const l of doc.splitTextToSize(song.title, W - 2 * M) as string[]) { doc.text(l, M, y + 7); y += 9; }
+  if (song.artist) { doc.setFont('helvetica', 'normal'); doc.setFontSize(12); doc.setTextColor(...GREY); doc.text(song.artist, M, y + 3); y += 6; }
   const meta = [song.key ? `Tonalité : ${displayKey(song.key)}` : '', song.notes ?? ''].filter(Boolean).join('   ·   ');
   if (meta) { doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.setTextColor(...GREY); doc.text(meta, M, y + 4); y += 7; }
   doc.setDrawColor(...gold); doc.setLineWidth(0.6); doc.line(M, y + 1, W - M, y + 1); y += 8;

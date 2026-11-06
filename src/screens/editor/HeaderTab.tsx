@@ -27,7 +27,7 @@ export function HeaderTab({ d, set, songId }: { d: HeaderDraft; set: (p: Partial
       <label class="ed-l" for="ed-title">Titre</label>
       <input id="ed-title" class="in" value={d.title} onInput={(e) => set({ title: (e.target as HTMLInputElement).value })} />
       {FEATURES.artist && <>
-        <label class="ed-l" for="ed-artist">Artiste</label>
+        <label class="ed-l" for="ed-artist">Artiste{FEATURES.artistRequired ? '' : ' (facultatif)'}</label>
         <input id="ed-artist" class="in" value={d.artist} list="zovy-artists" onInput={(e) => set({ artist: (e.target as HTMLInputElement).value })} />
       </>}
 

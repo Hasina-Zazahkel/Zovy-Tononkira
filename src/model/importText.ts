@@ -298,7 +298,7 @@ function parseOne(chunk: string, existing: Song[], taken: Set<string>, withArtis
   if (!nLines) errors.push('Aucune ligne de paroles');
 
   if (title) found.push(`Titre : ${title}`);
-  if (artist && withArtist) found.push(`Artiste : ${artist}`);
+  if (artist) found.push(`Artiste : ${artist}`);
   if (song.key) found.push(`Tonalité : ${song.key.root}${song.key.accidental ?? ''}`);
   if (song.notes) found.push(`Commentaire : ${song.notes}`);
   if (song.youtube) found.push('Lien YouTube');
@@ -323,7 +323,7 @@ function parseOne(chunk: string, existing: Song[], taken: Set<string>, withArtis
   if (notes) found.push(`${notes} commentaire${notes > 1 ? 's' : ''} de ligne`);
 
   const dup = existing.find((s) => fold(s.title) === fold(title) && (!withArtist || fold(s.artist) === fold(artist)));
-  if (dup) warnings.unshift(withArtist ? `Existe déjà : « ${dup.title} » (${dup.artist})` : `Existe déjà : « ${dup.title} »`);
+  if (dup) warnings.unshift(dup.artist ? `Existe déjà : « ${dup.title} » (${dup.artist})` : `Existe déjà : « ${dup.title} »`);
   return { song, found, warnings, errors, ...(dup ? { duplicateOf: dup.id } : {}) };
 }
 

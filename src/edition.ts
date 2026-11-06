@@ -35,10 +35,16 @@ export interface Edition {
   audioTracks?: string[];
   instruments: string[];
   features: { musicianView: boolean; instruments: boolean; youtube: boolean; audio: boolean;
-    /** Artiste affiché, saisi et recherché (sinon : « Liste des chants » A→Z). */
+    /** Artiste affiché (en petit sous les titres), saisi et recherché. */
     artist: boolean;
+    /** Accueil = « Liste des chants » A→Z par titre (sinon : liste par artiste). */
+    songList: boolean;
+    /** Artiste obligatoire à la saisie et au build. */
+    artistRequired: boolean;
     /** Bouton « PDF » des paroles. */
-    pdf: boolean };
+    pdf: boolean;
+    /** Rubrique « Mode éditeur » visible des comptes non admin (texte « lecture seule »). */
+    memberEditorInfo: boolean };
 }
 
 declare const __EDITION_ID__: string | undefined;

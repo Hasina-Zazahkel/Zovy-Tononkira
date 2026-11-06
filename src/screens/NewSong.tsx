@@ -34,7 +34,7 @@ export function NewSong() {
   const [copied, setCopied] = useState(false);
 
   const input = (t: string) => { setText(t); writeDraft(t); setResults(null); setSaved({}); };
-  const analyse = () => setResults(parseImport(text, [...liveCatalog.value!.songs.values()], { artist: FEATURES.artist }));
+  const analyse = () => setResults(parseImport(text, [...liveCatalog.value!.songs.values()], { artist: FEATURES.artistRequired }));
   const copyTemplate = async () => {
     try { await navigator.clipboard.writeText(IMPORT_TEMPLATE); setCopied(true); setTimeout(() => setCopied(false), 2000); }
     catch { input(IMPORT_TEMPLATE); }
@@ -83,7 +83,7 @@ export function NewSong() {
             {results.map((r, i) => (
               <div class={`ns-card${r.errors.length ? ' bad' : ''}`} key={i}>
                 <div class="ns-title">
-                  <b>{r.song.title || 'Sans titre'}</b> {FEATURES.artist && <span>{r.song.artist}</span>}
+                  <b>{r.song.title || 'Sans titre'}</b> {FEATURES.artist && r.song.artist && <span>{r.song.artist}</span>}
                 </div>
                 {r.found.length > 0 && <ul class="ns-found">{r.found.map((f) => <li key={f}>{f}</li>)}</ul>}
                 {r.warnings.length > 0 && <ul class="ns-warn">{r.warnings.map((w) => <li key={w}>{w}</li>)}</ul>}
