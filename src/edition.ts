@@ -38,7 +38,9 @@ export interface Edition {
     /** Artiste affiché, saisi et recherché (sinon : « Liste des chants » A→Z). */
     artist: boolean;
     /** Bouton « PDF » des paroles. */
-    pdf: boolean };
+    pdf: boolean;
+    /** Rubrique « Mode éditeur » visible des comptes non admin (texte « lecture seule »). */
+    memberEditorInfo: boolean };
 }
 
 declare const __EDITION_ID__: string | undefined;

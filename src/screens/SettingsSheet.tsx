@@ -205,12 +205,10 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
             {!st.editorOn && nPending > 0 && <p class="hint">{nPending} modification{nPending > 1 ? 's' : ''} non publiée{nPending > 1 ? 's' : ''} conservée{nPending > 1 ? 's' : ''} sur cet appareil.</p>}
             <button class="btn ghost" onClick={forget}>Oublier le jeton de cet appareil</button>
           </>
-        ) : !adminSession.value ? (
-          <>
+        ) : !adminSession.value ? (FEATURES.memberEditorInfo && <>
             <h3 class="sheet-h">Mode éditeur</h3>
             <p class="hint">Cet appareil est en <b>lecture seule</b>{tokenHere ? ' (compte non admin)' : ''}. La modification est réservée à un compte admin.</p>
-          </>
-        ) : (
+          </>) : (
           <>
             {msg && <p class={`msg ${msg.kind}`}>{msg.text}</p>}
             <h3 class="sheet-h">Mode éditeur</h3>

@@ -49,7 +49,8 @@
     "youtube": false,
     "audio": true,
     "artist": false,
-    "pdf": true
+    "pdf": true,
+    "memberEditorInfo": false
   },
   "appId": "gospel-system",
   "themeColor": "#0b0a08",
