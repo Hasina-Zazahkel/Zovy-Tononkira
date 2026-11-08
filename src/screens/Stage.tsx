@@ -411,7 +411,6 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
         <div class={`measure ${lyricsCls}`} ref={measureRef} aria-hidden="true" style={geo ? { width: `${geo.colW}px` } : undefined}>
           {units.map((u) => <UnitView u={u} key={u.key} pn={pnFor(u, false)} hide={hideFor(u, false)} />)}
         </div>
-        {ytOpen && song.youtube && <YoutubePlayer id={song.youtube} onClose={() => setYtOpen(false)} />}
         <div class="pages" ref={pagesRef} onScroll={onScroll} onClick={() => infoOpen && setInfoOpen(false)}>
           {pages.map((p, i) => (
             <div class={`page ${lyricsCls}${cols > 1 ? ' two' : ''}`} key={i} aria-hidden={i !== page}>
@@ -482,6 +481,7 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
         </div>
       )}
 
+      {ytOpen && song.youtube && FEATURES.youtube && <YoutubePlayer key={song.youtube} id={song.youtube} onClose={() => setYtOpen(false)} />}
       {auOpen && FEATURES.audio && tracksFor(song.id).length > 0 && <AudioPlayer key={song.id} song={song} onClose={() => setAuOpen(false)} />}
       <footer class="stage-foot">
         {atStart && nav?.prev ? (
