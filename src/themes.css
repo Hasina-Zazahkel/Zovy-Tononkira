@@ -440,3 +440,10 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .au-ed-t small { font-size: 13px; font-weight: 600; color: var(--fg-dim); }
 .au-ed-t small.pend { color: var(--gold); }
 .au-ed-pick { cursor: pointer; display: inline-flex; align-items: center; }
+
+/* ---------- Lecteur de l'original (YouTube) : barre fine en bas, vidéo sur demande ---------- */
+.yt-dock { position: fixed; right: 0; bottom: 0; width: 200px; height: 200px; opacity: 0; pointer-events: none; z-index: -1; }
+.yt-dock.show { position: relative; width: 100%; height: auto; aspect-ratio: 16 / 9; max-height: 34vh; min-height: 200px; opacity: 1; pointer-events: auto; z-index: auto; background: #000; }
+.yt-dock iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.yt-vid { font-size: 18px; }
+.yt-vid.on { border-color: var(--gold); background: rgb(var(--gold-rgb) / .18); }

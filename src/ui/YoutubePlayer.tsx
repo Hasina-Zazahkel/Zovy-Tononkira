@@ -77,25 +77,28 @@ export function YoutubePlayer({ id, onClose }: { id: string; onClose: () => void
   };
   const toggle = () => { const p = player.current; if (!p) return; if (playing) p.pauseVideo(); else p.playVideo(); };
 
-  const { ytMini: mini, ytBottom: bottom } = settings.value;
+  const video = settings.value.ytVideo || state === 'offline';
+  // Barre fine collée en bas (comme le lecteur audio) ; la vidéo n'est affichée que sur demande (🎬)
   return (
-    <div class={`yt-panel${mini ? ' mini' : ''}${bottom ? ' bottom' : ''}`} role="region" aria-label="Lecteur de l'original">
-      <div class="yt-video" ref={host}>
-        {state !== 'ready' && (
+    <div class="au-bar yt-bar" role="region" aria-label="Lecteur de l'original">
+      <div class={`yt-dock${video ? ' show' : ''}`} ref={host} aria-hidden={!video}>
+        {state !== 'ready' && video && (
           <div class="yt-msg">{state === 'offline' ? 'Pas de connexion : le lecteur a besoin du réseau.' : 'Chargement…'}</div>
         )}
       </div>
-      <div class="yt-ctl">
-        <button class="yt-btn" onClick={() => seek(-10)} disabled={state !== 'ready'} aria-label="Reculer de 10 secondes">−10 s</button>
-        <button class="yt-btn play" onClick={toggle} disabled={state !== 'ready'} aria-label={playing ? 'Pause' : 'Lecture'}>{playing ? '❚❚' : '▶'}</button>
-        <button class="yt-btn" onClick={() => seek(10)} disabled={state !== 'ready'} aria-label="Avancer de 10 secondes">+10 s</button>
-        <span class="yt-time">{fmt(t.cur)}{t.dur ? <span class="yt-dur"> / {fmt(t.dur)}</span> : null}</span>
-        <button class="yt-mini-btn" onClick={() => update({ ytBottom: !bottom })} aria-label={bottom ? 'Placer le lecteur en haut' : 'Placer le lecteur en bas'}
-          title={bottom ? 'En haut' : 'En bas'}>{bottom ? '⤒' : '⤓'}</button>
-        <button class="yt-mini-btn" onClick={() => update({ ytMini: !mini })} aria-label={mini ? 'Agrandir le lecteur' : 'Réduire le lecteur'}
-          title={mini ? 'Agrandir' : 'Réduire'}>{mini ? '⤢' : '⤡'}</button>
-        <button class="icon-btn yt-close" onClick={onClose} aria-label="Fermer le lecteur"><IconClose size={22} /></button>
+      <input class="au-seek" type="range" min={0} max={t.dur || 0} step={1} value={t.cur} disabled={!t.dur} aria-label="Position"
+        style={{ '--p': t.dur ? `${(t.cur / t.dur) * 100}%` : '0%' }}
+        onInput={(e) => { const p = player.current; const v = Number((e.target as HTMLInputElement).value); if (p) { p.seekTo(v, true); setT((x) => ({ ...x, cur: v })); } }} />
+      <div class="au-row">
+        <button class={`au-btn yt-vid${settings.value.ytVideo ? ' on' : ''}`} onClick={() => update({ ytVideo: !settings.value.ytVideo })}
+          aria-pressed={settings.value.ytVideo} aria-label={settings.value.ytVideo ? 'Masquer la vidéo' : 'Afficher la vidéo'} title="Vidéo">🎬</button>
+        <button class="au-btn" onClick={() => seek(-10)} disabled={state !== 'ready'} aria-label="Reculer de 10 secondes">−10</button>
+        <button class="au-btn play" onClick={toggle} disabled={state !== 'ready'} aria-label={playing ? 'Pause' : 'Lecture'}>{playing ? '❚❚' : '▶'}</button>
+        <button class="au-btn" onClick={() => seek(10)} disabled={state !== 'ready'} aria-label="Avancer de 10 secondes">+10</button>
+        <span class="au-time">{state === 'loading' ? '…' : fmt(t.cur)}{t.dur ? <span class="au-dur"> / {fmt(t.dur)}</span> : null}</span>
+        <button class="au-btn au-x" onClick={onClose} aria-label="Fermer le lecteur"><IconClose size={20} /></button>
       </div>
+      {state === 'offline' && <div class="au-msg">Pas de connexion : l'original a besoin du réseau.</div>}
     </div>
   );
 }
