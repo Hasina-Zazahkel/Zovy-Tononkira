@@ -5,12 +5,7 @@ import { goBack, replaceHash, songHref, HOME_HASH } from '../lib/router';
 import { addToSetlist } from '../lib/setlistEdit';
 import { PartSelect } from './AddSheets';
 import { serializeChordPro } from '../model/chordpro';
-import { IMPORT_EXAMPLE as EXAMPLE, IMPORT_TEMPLATE as TEMPLATE, parseImport, trimTemplate, type ImportResult } from '../model/importText';
-import { FEATURES } from '../edition';
-
-const TPL_OPTS = { artist: FEATURES.artist, instruments: FEATURES.instruments };
-const IMPORT_TEMPLATE = trimTemplate(TEMPLATE, TPL_OPTS);
-const IMPORT_EXAMPLE = trimTemplate(EXAMPLE, TPL_OPTS);
+import { IMPORT_EXAMPLE, IMPORT_TEMPLATE, parseImport, type ImportResult } from '../model/importText';
 import type { Song } from '../model/types';
 import { IconClose } from '../ui/icons';
 import { SongEditor } from './editor/SongEditor';
@@ -34,7 +29,7 @@ export function NewSong() {
   const [copied, setCopied] = useState(false);
 
   const input = (t: string) => { setText(t); writeDraft(t); setResults(null); setSaved({}); };
-  const analyse = () => setResults(parseImport(text, [...liveCatalog.value!.songs.values()], { artist: FEATURES.artistRequired }));
+  const analyse = () => setResults(parseImport(text, [...liveCatalog.value!.songs.values()]));
   const copyTemplate = async () => {
     try { await navigator.clipboard.writeText(IMPORT_TEMPLATE); setCopied(true); setTimeout(() => setCopied(false), 2000); }
     catch { input(IMPORT_TEMPLATE); }
@@ -83,7 +78,7 @@ export function NewSong() {
             {results.map((r, i) => (
               <div class={`ns-card${r.errors.length ? ' bad' : ''}`} key={i}>
                 <div class="ns-title">
-                  <b>{r.song.title || 'Sans titre'}</b> {FEATURES.artist && r.song.artist && <span>{r.song.artist}</span>}
+                  <b>{r.song.title || 'Sans titre'}</b> <span>{r.song.artist}</span>
                 </div>
                 {r.found.length > 0 && <ul class="ns-found">{r.found.map((f) => <li key={f}>{f}</li>)}</ul>}
                 {r.warnings.length > 0 && <ul class="ns-warn">{r.warnings.map((w) => <li key={w}>{w}</li>)}</ul>}

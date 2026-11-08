@@ -1,8 +1,6 @@
 /**
- * Édition de l'app (Zovy, Gospel System…) : un seul code, une configuration par édition (editions/<id>/edition.json).
- * L'édition est choisie au build (EDITION=gospel) ; Zovy par défaut.
+ * Configuration de l'app (editions/zovy/edition.json) : nom, dépôt, adresse, thème, rôles, fonctions.
  */
-import gospel from '../editions/gospel/edition.json';
 import zovy from '../editions/zovy/edition.json';
 
 export interface Edition {
@@ -31,25 +29,13 @@ export interface Edition {
   searchPlaceholder: string;
   sampleLine: string;
   voices: string[];
-  /** Pistes audio, dans l'ordre d'affichage (par défaut : les pupitres). */
-  audioTracks?: string[];
   instruments: string[];
-  features: { musicianView: boolean; instruments: boolean; youtube: boolean; audio: boolean;
-    /** Artiste affiché (en petit sous les titres), saisi et recherché. */
-    artist: boolean;
-    /** Accueil = « Liste des chants » A→Z par titre (sinon : liste par artiste). */
-    songList: boolean;
-    /** Artiste obligatoire à la saisie et au build. */
-    artistRequired: boolean;
-    /** Bouton « PDF » des paroles. */
-    pdf: boolean;
-    /** Rubrique « Mode éditeur » visible des comptes non admin (texte « lecture seule »). */
-    memberEditorInfo: boolean };
+  features: { musicianView: boolean; instruments: boolean; youtube: boolean };
 }
 
 declare const __EDITION_ID__: string | undefined;
 
-export const EDITIONS: Record<string, Edition> = { zovy, gospel };
+export const EDITIONS: Record<string, Edition> = { zovy };
 
 function currentId(): string {
   if (typeof __EDITION_ID__ !== 'undefined' && __EDITION_ID__) return __EDITION_ID__;

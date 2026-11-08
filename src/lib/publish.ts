@@ -83,23 +83,10 @@ export interface PublishResult {
   warnings: string[];
 }
 
-export interface AudioUpload { path: string; blob?: Blob; label: string; remove: string[] }
-
-/** Contenu binaire en base64 (sans l'en-tête data:). */
-function blobBase64(b: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(String(r.result).replace(/^data:[^,]*,/, ''));
-    r.onerror = () => reject(r.error);
-    r.readAsDataURL(b);
-  });
-}
-
-export async function publish(token: string, list: SongOverride[], setlist?: Setlist, members?: Member[], musician?: HideBook,
-  audio: AudioUpload[] = []): Promise<PublishResult> {
-  if (!list.length && !setlist && !members && !musician && !audio.length) throw new PublishError('rien à publier');
+export async function publish(token: string, list: SongOverride[], setlist?: Setlist, members?: Member[], musician?: HideBook): Promise<PublishResult> {
+  if (!list.length && !setlist && !members && !musician) throw new PublishError('rien à publier');
   if (DEMO) {
-    const files = list.length + (setlist ? 1 : 0) + (members ? 1 : 0) + (musician ? 1 : 0) + audio.length;
+    const files = list.length + (setlist ? 1 : 0) + (members ? 1 : 0) + (musician ? 1 : 0);
     return { commitUrl: '', files, warnings: ['démo : rien n\'a été envoyé sur GitHub'] };
   }
   if (members && !hasAdmin(members)) throw new PublishError('la liste des membres doit contenir au moins un admin');
@@ -108,7 +95,7 @@ export async function publish(token: string, list: SongOverride[], setlist?: Set
   const commit = await gh<{ tree: { sha: string } }>(token, `/git/commits/${head}`);
 
   const warnings: string[] = [];
-  const tree: { path: string; mode: '100644'; type: 'blob'; content?: string; sha?: string | null }[] = [];
+  const tree: { path: string; mode: '100644'; type: 'blob'; content?: string; sha?: null }[] = [];
   const labels: string[] = [];
   for (const ov of list) {
     const path = `data/songs/${ov.songId}.cho`;
@@ -143,25 +130,6 @@ export async function publish(token: string, list: SongOverride[], setlist?: Set
   if (members) {
     tree.push({ path: 'data/members.json', mode: '100644', type: 'blob', content: serializeMembers(members) });
     labels.push('membres');
-  }
-  // Liste d'un dossier distant (noms seulement : pas de téléchargement des fichiers audio)
-  const dirs = new Map<string, Set<string>>();
-  const existsRemote = async (path: string) => {
-    const dir = path.slice(0, path.lastIndexOf('/'));
-    if (!dirs.has(dir)) {
-      const ls = await gh<{ path: string }[] | null>(token, `/contents/${dir}?ref=${head}`, undefined, true);
-      dirs.set(dir, new Set(Array.isArray(ls) ? ls.map((f) => f.path) : []));
-    }
-    return dirs.get(dir)!.has(path);
-  };
-  for (const a of audio) {
-    for (const old of a.remove) if ((old !== a.path || !a.blob) && await existsRemote(old)) tree.push({ path: old, mode: '100644', type: 'blob', sha: null });
-    if (a.blob) {
-      // Fichier binaire : créé d'abord comme blob Git, puis référencé dans l'arbre
-      const b = await gh<{ sha: string }>(token, '/git/blobs', { method: 'POST', body: JSON.stringify({ content: await blobBase64(a.blob), encoding: 'base64' }) });
-      tree.push({ path: a.path, mode: '100644', type: 'blob', sha: b.sha });
-    }
-    labels.push(a.label);
   }
   if (!tree.length) return { commitUrl: '', files: 0, warnings };
 

@@ -26,9 +26,7 @@ export function App() {
   const r = route.value;
   const tab = r.name === 'setlist' ? 'setlist' : 'home';
 
-  const letters = useMemo(() => new Set(!FEATURES.songList
-    ? (liveCatalog.value?.artists ?? []).map((a) => initial(a.name))
-    : [...(liveCatalog.value?.songs.values() ?? [])].map((s) => initial(s.title))), [liveCatalog.value]);
+  const letters = useMemo(() => new Set((liveCatalog.value?.artists ?? []).map((a) => initial(a.name))), [liveCatalog.value]);
 
   if (catalogError.value) return <div class="state">Impossible de charger le catalogue : {catalogError.value}</div>;
   if (!authReady.value) return <div class="state">Chargement…</div>;
@@ -43,7 +41,7 @@ export function App() {
           <div class="top-row">
             <img class="logo" src={logo} alt={EDITION.logo.alt} width={EDITION.logo.width} height={EDITION.logo.height} />
             <nav class="tabs">
-              <a class="tab" href="#/" aria-current={tab === 'home' ? 'page' : undefined}>{FEATURES.songList ? 'LISTE DES CHANTS' : 'ARTISTES'}</a>
+              <a class="tab" href="#/" aria-current={tab === 'home' ? 'page' : undefined}>ARTISTES</a>
               <a class="tab" href="#/repertoire" aria-current={tab === 'setlist' ? 'page' : undefined}>RÉPERTOIRE</a>
             </nav>
             <button class="icon-btn gear" onClick={() => setSheet(true)} aria-label="Réglages"><IconGear size={28} /></button>

@@ -2,7 +2,6 @@ import type { Accidental, Key, NoteRoot } from '../../model/types';
 import { parseYoutube, youtubeUrl } from '../../model/youtube';
 import { FEATURES } from '../../edition';
 import { RoleRows, type Row } from './RoleRows';
-import { AudioTracks } from './AudioTracks';
 
 export interface HeaderDraft {
   title: string;
@@ -20,16 +19,14 @@ const ROOTS: { v: NoteRoot; l: string }[] = [
 ];
 const ACC: { v?: Accidental; l: string; a: string }[] = [{ v: 'b', l: '♭', a: 'bémol' }, { v: undefined, l: '♮', a: 'naturel' }, { v: '#', l: '♯', a: 'dièse' }];
 
-export function HeaderTab({ d, set, songId }: { d: HeaderDraft; set: (p: Partial<HeaderDraft>) => void; songId?: string }) {
+export function HeaderTab({ d, set }: { d: HeaderDraft; set: (p: Partial<HeaderDraft>) => void }) {
   const k = d.key;
   return (
     <div class="ed-form">
       <label class="ed-l" for="ed-title">Titre</label>
       <input id="ed-title" class="in" value={d.title} onInput={(e) => set({ title: (e.target as HTMLInputElement).value })} />
-      {FEATURES.artist && <>
-        <label class="ed-l" for="ed-artist">Artiste{FEATURES.artistRequired ? '' : ' (facultatif)'}</label>
-        <input id="ed-artist" class="in" value={d.artist} list="zovy-artists" onInput={(e) => set({ artist: (e.target as HTMLInputElement).value })} />
-      </>}
+      <label class="ed-l" for="ed-artist">Artiste</label>
+      <input id="ed-artist" class="in" value={d.artist} list="zovy-artists" onInput={(e) => set({ artist: (e.target as HTMLInputElement).value })} />
 
       <div class="ed-l">Tonalité</div>
       <div class="key-pick" role="group" aria-label="Tonalité">
@@ -67,7 +64,6 @@ export function HeaderTab({ d, set, songId }: { d: HeaderDraft; set: (p: Partial
         <h3 class="sheet-h inst">Musiciens</h3>
         <RoleRows rows={d.musicians} kind="inst" onChange={(musicians) => set({ musicians })} addLabel="Ajouter un musicien" />
       </>}
-      {FEATURES.audio && <AudioTracks songId={songId} />}
     </div>
   );
 }

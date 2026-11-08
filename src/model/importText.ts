@@ -177,16 +177,16 @@ export function splitSongs(text: string): string[] {
   return text.replace(/\r\n?/g, '\n').split(/^\s*-{3,}\s*$/m).map((s) => s.trim()).filter(Boolean);
 }
 
-export function parseImport(text: string, existing: Song[] = [], opts: { artist?: boolean } = {}): ImportResult[] {
+export function parseImport(text: string, existing: Song[] = []): ImportResult[] {
   const taken = new Set(existing.map((s) => s.id));
   return splitSongs(text).map((chunk) => {
-    const r = parseOne(chunk, existing, taken, opts.artist ?? true);
+    const r = parseOne(chunk, existing, taken);
     taken.add(r.song.id);
     return r;
   });
 }
 
-function parseOne(chunk: string, existing: Song[], taken: Set<string>, withArtist = true): ImportResult {
+function parseOne(chunk: string, existing: Song[], taken: Set<string>): ImportResult {
   const warnings: string[] = [];
   const found: string[] = [];
   const errors: string[] = [];
@@ -293,7 +293,7 @@ function parseOne(chunk: string, existing: Song[], taken: Set<string>, withArtis
   const { song } = withItems(base, conv.items);
 
   if (!title) errors.push('Titre manquant');
-  if (!artist && withArtist) errors.push('Artiste manquant');
+  if (!artist) errors.push('Artiste manquant');
   const nLines = song.sections.reduce((n, s) => n + s.stanzas.flat().length, 0);
   if (!nLines) errors.push('Aucune ligne de paroles');
 
@@ -322,14 +322,9 @@ function parseOne(chunk: string, existing: Song[], taken: Set<string>, withArtis
   if (noteGroups) found.push(`${noteGroups} surlignage${noteGroups > 1 ? 's' : ''}`);
   if (notes) found.push(`${notes} commentaire${notes > 1 ? 's' : ''} de ligne`);
 
-  const dup = existing.find((s) => fold(s.title) === fold(title) && (!withArtist || fold(s.artist) === fold(artist)));
+  const dup = existing.find((s) => fold(s.title) === fold(title) && fold(s.artist) === fold(artist));
   if (dup) warnings.unshift(dup.artist ? `Existe déjà : « ${dup.title} » (${dup.artist})` : `Existe déjà : « ${dup.title} »`);
   return { song, found, warnings, errors, ...(dup ? { duplicateOf: dup.id } : {}) };
-}
-
-/** Modèle / exemple sans les rubriques inutiles à l'édition (artiste, musiciens). */
-export function trimTemplate(t: string, opts: { artist: boolean; instruments: boolean }): string {
-  return t.split('\n').filter((l) => !(!opts.artist && /^Artiste :/.test(l)) && !(!opts.instruments && /^Musique :/.test(l))).join('\n');
 }
 
 /** Contenu .cho canonique d'un import (pour enregistrement). */
