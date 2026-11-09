@@ -3,7 +3,7 @@ import preact from '@preact/preset-vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { readFileSync } from 'node:fs';
 
-// Édition (Zovy par défaut, EDITION=gospel pour Gospel System)
+// Configuration de l'app (editions/zovy)
 const editionId = process.env.EDITION ?? 'zovy';
 const edition = JSON.parse(readFileSync(new URL(`./editions/${editionId}/edition.json`, import.meta.url), 'utf8'));
 // GitHub Pages sert le site sous /<dépôt>/
@@ -14,10 +14,7 @@ const demo = process.env.VITE_DEMO === '1';
 export default defineConfig({
   base,
   publicDir: edition.publicDir,
-  // __PDF__ constant : la bibliothèque PDF n'est pas embarquée dans les éditions qui n'en ont pas besoin
-  // jsPDF : export HTML / SVG inutilisés, leurs bibliothèques ne sont pas embarquées
-  resolve: { alias: { html2canvas: '/src/lib/empty.ts', canvg: '/src/lib/empty.ts', dompurify: '/src/lib/empty.ts' } },
-  define: { __EDITION_ID__: JSON.stringify(editionId), __PDF__: JSON.stringify(!!edition.features.pdf) },
+  define: { __EDITION_ID__: JSON.stringify(editionId) },
   plugins: [
     preact(),
     { name: 'edition-html', transformIndexHtml: (html: string) => html.replace(/<title>[^<]*<\/title>/, `<title>${edition.name}</title>`).replace(/(<meta name="theme-color" content=")[^"]*/, `$1${edition.themeColor}`) },

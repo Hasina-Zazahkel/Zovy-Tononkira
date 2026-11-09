@@ -24,11 +24,8 @@ import { makeNote, resolveNotes, type PersonalNote, type PnMark } from '../model
 import { groupLines, HL_COLORS, HL_DEFAULT, ungroupWhere, type HlColor } from '../model/repeat';
 import { DraftInput } from '../ui/DraftInput';
 import { YoutubePlayer } from '../ui/YoutubePlayer';
-import { AudioPlayer } from '../ui/AudioPlayer';
-import { tracksFor } from '../lib/audio';
-import { downloadSongPdf } from '../lib/pdfButton';
 import { FEATURES } from '../edition';
-import { IconBack, IconPlay, IconGuitar, IconMic, IconNote, IconEyeOff, IconCollapse, IconEdit, IconExpand, IconInfo, IconMoon, IconNext, IconPrev, IconSun, IconDownload } from '../ui/icons';
+import { IconBack, IconPlay, IconGuitar, IconMic, IconNote, IconEyeOff, IconCollapse, IconEdit, IconExpand, IconInfo, IconMoon, IconNext, IconPrev, IconSun } from '../ui/icons';
 
 interface Props { id: string; setlistId?: string; pos?: number }
 
@@ -84,8 +81,6 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
   const press = useRef<number | undefined>(undefined);
   const [infoOpen, setInfoOpen] = useState(false);
   const [ytOpen, setYtOpen] = useState(false);
-  const [auOpen, setAuOpen] = useState(false);
-  const [pdfBusy, setPdfBusy] = useState(false);
   const units = useMemo(() => buildUnits(song), [song]);
 
   // Notes personnelles (locales) : mode annotation, sélection, panneau
@@ -310,7 +305,7 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
   const lyricsCls = `lyrics${uppercase ? ' upper' : ''}`;
   const note = comment(song);
   const hasInfo = song.singers.length + song.musicians.length + song.medley.length > 0 || !!note;
-  const sub = [FEATURES.artist ? song.artist : '', nav?.part ? `${nav.part} · ${nav.pos + 1}/${nav.total}` : ''].filter(Boolean).join(' · ');
+  const sub = [song.artist, nav?.part ? `${nav.part} · ${nav.pos + 1}/${nav.total}` : ''].filter(Boolean).join(' · ');
 
   const keyBadge = song.key ? <span class="key" aria-label="Tonalité">{displayKey(song.key)}</span> : null;
   const commentEl = note
@@ -354,17 +349,6 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
             {FEATURES.youtube && song.youtube && (
               <button class={`pill-btn yt-open${ytOpen ? ' on' : ''}`} onClick={() => setYtOpen(!ytOpen)} aria-pressed={ytOpen} aria-label="Écouter l'original">
                 <IconPlay size={20} /><span>Original</span>
-              </button>
-            )}
-            {FEATURES.audio && tracksFor(song.id).length > 0 && (
-              <button class={`pill-btn au-open${auOpen ? ' on' : ''}`} onClick={() => setAuOpen(!auOpen)} aria-pressed={auOpen} aria-label="Écouter les pistes audio">
-                <IconPlay size={20} /><span>Écouter</span>
-              </button>
-            )}
-            {FEATURES.pdf && (
-              <button class={`pill-btn pdf-btn${pdfBusy ? ' on' : ''}`} disabled={pdfBusy} aria-label="Télécharger les paroles en PDF"
-                onClick={async () => { setPdfBusy(true); try { await downloadSongPdf(song, { uppercase }); } catch { alert('PDF impossible à créer.'); } setPdfBusy(false); }}>
-                <IconDownload size={20} /><span>PDF</span>
               </button>
             )}
             {FEATURES.musicianView && <button class="pill-btn view-btn" onClick={() => { update({ view: musician ? 'chanteur' : 'musicien' }); setHideMode(false); setPanel(null); setPick(null); }}
@@ -482,7 +466,6 @@ function StageView({ song, base, local, nav, fallback }: { song: Song; base: Son
       )}
 
       {ytOpen && song.youtube && FEATURES.youtube && <YoutubePlayer key={song.youtube} id={song.youtube} onClose={() => setYtOpen(false)} />}
-      {auOpen && FEATURES.audio && tracksFor(song.id).length > 0 && <AudioPlayer key={song.id} song={song} onClose={() => setAuOpen(false)} />}
       <footer class="stage-foot">
         {atStart && nav?.prev ? (
           <button class="nav-btn song" onClick={prev}><IconPrev /><span class="lbl">{nav.prev.song.title}</span></button>

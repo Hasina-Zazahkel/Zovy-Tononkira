@@ -4,7 +4,7 @@ import { login } from '../lib/members';
 import { DEMO } from '../lib/demo';
 
 const logo = `${import.meta.env.BASE_URL}${EDITION.logo.src}`;
-const HINT = `Accès réservé aux membres ${EDITION.groupWord === 'chorale' ? 'de la chorale' : 'du groupe'}. Identifiants fournis par ${EDITION.admin}.`;
+const HINT = `Accès réservé aux membres du groupe. Identifiants fournis par ${EDITION.admin}.`;
 const hero = EDITION.loginImage ? `${import.meta.env.BASE_URL}${EDITION.loginImage}` : null;
 
 /** Page de connexion (dès qu'une liste de membres est publiée). Fonctionne hors ligne. */
