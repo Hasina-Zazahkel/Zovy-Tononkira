@@ -16,7 +16,7 @@ legacy/                   Ancien site (référence, ne plus éditer)
 
 ## Commandes
 
-App en ligne : https://hasina-zazahkel.github.io/Zovy-Tononkira/ (déployée à chaque merge sur `main`).
+App en ligne : https://tarika-zovy.github.io/Zovy-Tononkira/ (déployée à chaque merge sur `main`).
 
 | Commande | Effet |
 |---|---|
